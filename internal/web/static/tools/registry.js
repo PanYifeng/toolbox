@@ -1,14 +1,29 @@
 // 自动生成，请勿手动编辑。运行 scripts/gen-registry.sh 重新生成。
+import audio_convert from './audio_convert/manifest.js';
 import base64 from './base64/manifest.js';
 import color from './color/manifest.js';
+import doc_convert from './doc_convert/manifest.js';
+import game_2048 from './game-2048/manifest.js';
+import game_snake from './game-snake/manifest.js';
+import game_ttt from './game-ttt/manifest.js';
 import hash from './hash/manifest.js';
+import html_entity from './html-entity/manifest.js';
 import json_format from './json-format/manifest.js';
 import jwt from './jwt/manifest.js';
+import lorem from './lorem/manifest.js';
+import markdown from './markdown/manifest.js';
+import password from './password/manifest.js';
 import radix from './radix/manifest.js';
 import regex from './regex/manifest.js';
+import slugify from './slugify/manifest.js';
+import text_case from './text-case/manifest.js';
+import text_diff from './text-diff/manifest.js';
+import text_lines from './text-lines/manifest.js';
+import text_stats from './text-stats/manifest.js';
 import timestamp from './timestamp/manifest.js';
 import url_encode from './url-encode/manifest.js';
+import url_parse from './url-parse/manifest.js';
 import uuid from './uuid/manifest.js';
 import video_convert from './video_convert/manifest.js';
 
-export const registry = [base64, color, hash, json_format, jwt, radix, regex, timestamp, url_encode, uuid, video_convert];
+export const registry = [audio_convert, base64, color, doc_convert, game_2048, game_snake, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert];

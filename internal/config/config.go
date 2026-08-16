@@ -20,9 +20,9 @@ type ServerConfig struct {
 
 // LimitsConfig 资源限制
 type LimitsConfig struct {
-	MaxUploadBytes    int64 `json:"maxUploadBytes"`
-	VideoConcurrency  int   `json:"videoConcurrency"`
-	JobTimeoutSeconds int   `json:"jobTimeoutSeconds"`
+	MaxUploadBytes      int64 `json:"maxUploadBytes"`
+	HeavyConcurrency    int   `json:"heavyConcurrency"`
+	JobTimeoutSeconds   int   `json:"jobTimeoutSeconds"`
 }
 
 // AdsConfig 广告配置
@@ -66,8 +66,8 @@ func (c *Config) applyDefaults() {
 	if c.Limits.MaxUploadBytes == 0 {
 		c.Limits.MaxUploadBytes = 50 << 20
 	}
-	if c.Limits.VideoConcurrency == 0 {
-		c.Limits.VideoConcurrency = 1
+	if c.Limits.HeavyConcurrency == 0 {
+		c.Limits.HeavyConcurrency = 1
 	}
 	if c.Limits.JobTimeoutSeconds == 0 {
 		c.Limits.JobTimeoutSeconds = 300

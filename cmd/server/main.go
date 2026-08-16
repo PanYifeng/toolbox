@@ -11,6 +11,8 @@ import (
 	"toolbox/internal/web"
 
 	// 通过 init 注册服务端工具
+	_ "toolbox/internal/tools/server/audio_convert"
+	_ "toolbox/internal/tools/server/doc_convert"
 	_ "toolbox/internal/tools/server/video_convert"
 )
 

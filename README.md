@@ -15,7 +15,24 @@ JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站
 
 - 后端：Go 1.21+，零第三方依赖
 - 前端：原生 ES Modules，无框架
-- 重型处理：ffmpeg（系统包）
+- 重型处理：ffmpeg（视频/音频）、LibreOffice（文档→pdf/html）、pdf2docx（PDF→docx）
+
+## 功能一览
+
+| 类别 | 工具 |
+|------|------|
+| 编码 | JSON 格式化、Base64、URL、Hash(SHA)、JWT 解码、HTML 实体 |
+| 时间 | 时间戳转换 |
+| 文本 | 正则测试、大小写、文本统计、Markdown 预览、文本差异、Slug、文本行处理 |
+| 生成 | UUID、密码、Lorem ipsum |
+| 数学/设计 | 进制转换、颜色转换 |
+| 网络 | URL 解析 |
+| 视频 | 视频转码（ffmpeg） |
+| 音频 | 音频转换（ffmpeg：mp3/wav/flac/ogg/m4a） |
+| 文档 | 文档转换（docx↔pdf 等） |
+| 游戏 | 2048、贪吃蛇、井字棋（纯前端，零负载） |
+
+> 纯前端工具零服务器成本；视频/音频/文档转换走服务端队列限流。PDF→docx 依赖 `pip install pdf2docx`，docx→pdf 等依赖 LibreOffice。
 
 ## 目录结构
 
@@ -113,7 +130,7 @@ func init() {
 ## 视频转码在 1C2G 上的保护策略
 
 - 文件大小硬限（默认 50MB，见 `config.json`）
-- 全局单并发（`videoConcurrency: 1`），其余排队
+- 全局单并发（`heavyConcurrency: 1`），其余排队
 - ffmpeg `-threads 1` 限制 CPU
 - 单任务超时熔断（默认 300s）
 - 产物 1 小时后自动清理，防磁盘打满
@@ -179,7 +196,7 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 |------|------|--------|
 | `server.addr` | 监听地址 | `:8080` |
 | `limits.maxUploadBytes` | 上传上限 | 52428800 (50MB) |
-| `limits.videoConcurrency` | 重型任务并发数 | 1 |
+| `limits.heavyConcurrency` | 重型任务并发数（视频/文档） | 1 |
 | `limits.jobTimeoutSeconds` | 任务超时 | 300 |
 | `pro.tokens` | Pro token 列表 | `[]` |
 | `pro.maxUploadBytes` | Pro 上传上限 | 209715200 (200MB) |
@@ -199,8 +216,9 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 - **路径穿越防护**：下载产物路径校验绝对路径 + `..` 段拒绝。
 - **HTTP 加固**：`ReadHeaderTimeout` 防 slowloris、`MaxHeaderBytes` 限制、安全响应头（CSP / X-Frame-Options / nosniff / Referrer-Policy）。
 - **文件名安全**：上传文件用 `CreateTemp` 落盘，输出用时间戳命名，不信任客户端文件名。
+- **LibreOffice 隔离**：文档转换每任务独立输出目录 + 独立 UserInstallation profile（防锁冲突与 profile 污染），`--headless --norestore --nologo` 不执行宏；输入/输出格式白名单。
 
-> 生产建议：在 ffmpeg 进程外再用 cgroup 限制内存上限（如 1G），并用反代（Nginx/Caddy）做 TLS 与连接级限流。
+> 生产建议：在 ffmpeg/LibreOffice 进程外用 cgroup 限制内存上限（如 1G），并用反代（Nginx/Caddy）做 TLS 与连接级限流。**建议在主机防火墙屏蔽全部出站网络**——本服务无需出站，可直接消除 ffmpeg/LibreOffice 处理恶意文件时的 SSRF 面。
 
 ## 许可证
 

@@ -92,6 +92,89 @@ html, body {
   display: inline-block;
 }
 
+.md-preview {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  overflow: auto;
+  min-height: 180px;
+  background: var(--bg-soft);
+}
+
+.md-preview h1, .md-preview h2, .md-preview h3 { margin: 0.4em 0; }
+.md-preview code {
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: ui-monospace, monospace;
+}
+.md-preview pre {
+  background: var(--bg);
+  padding: 8px;
+}
+.md-preview a { color: var(--accent); }
+
+/* 游戏 */
+.game-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.game-bar button { margin: 0; }
+
+.board-2048 {
+  display: grid;
+  grid-template-columns: repeat(4, 72px);
+  grid-template-rows: repeat(4, 72px);
+  gap: 8px;
+  padding: 8px;
+  background: var(--border);
+  border-radius: 8px;
+  width: fit-content;
+  outline: none;
+}
+.board-2048 .tile {
+  background: var(--bg);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--fg);
+}
+.board-2048 .t2 { background: #eee4da; color: #776e65; }
+.board-2048 .t4 { background: #ede0c8; color: #776e65; }
+.board-2048 .t8 { background: #f2b179; color: #fff; }
+.board-2048 .t16 { background: #f59563; color: #fff; }
+.board-2048 .t32 { background: #f67c5f; color: #fff; }
+.board-2048 .t64 { background: #f65e3b; color: #fff; }
+.board-2048 .t128 { background: #edcf72; color: #fff; font-size: 18px; }
+.board-2048 .t256, .board-2048 .t512 { background: #edcc61; color: #fff; font-size: 18px; }
+.board-2048 .t1024, .board-2048 .t2048 { background: #edc53f; color: #fff; font-size: 16px; }
+
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  grid-template-rows: repeat(3, 80px);
+  gap: 6px;
+  width: fit-content;
+}
+.ttt-cell {
+  font-size: 32px;
+  font-weight: 700;
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  margin: 0;
+}
+.ttt-cell.ttt-X { color: var(--accent); }
+.ttt-cell.ttt-O { color: var(--err); }
+canvas { outline: none; border-radius: 6px; }
+
 .sidebar input {
   margin: 12px;
   padding: 8px 10px;

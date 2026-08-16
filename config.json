@@ -4,7 +4,7 @@
   },
   "limits": {
     "maxUploadBytes": 52428800,
-    "videoConcurrency": 1,
+    "heavyConcurrency": 1,
     "jobTimeoutSeconds": 300
   },
   "pro": {

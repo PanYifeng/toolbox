@@ -34,7 +34,7 @@ type Server struct {
 func NewServer(cfg *config.Config) *Server {
 	s := &Server{
 		cfg:      cfg,
-		queue:    queue.New(cfg.Limits.VideoConcurrency, cfg.Limits.JobTimeoutSeconds),
+		queue:    queue.New(cfg.Limits.HeavyConcurrency, cfg.Limits.JobTimeoutSeconds),
 		// 上传接口每 IP 每分钟最多 20 次，防滥用
 		uploadRL: newRateLimiter(20, time.Minute),
 	}
@@ -126,7 +126,9 @@ func (s *Server) handleSubmitTool(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
-	tmp, err := os.CreateTemp("", "toolbox-in-*")
+	// 保留原始扩展名落盘：LibreOffice 等工具靠扩展名选导入过滤器
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	tmp, err := os.CreateTemp("", "toolbox-in-*"+ext)
 	if err != nil {
 		http.Error(w, "server error", http.StatusInternalServerError)
 		return
