@@ -1,0 +1,19 @@
+{
+  "server": {
+    "addr": ":8080"
+  },
+  "limits": {
+    "maxUploadBytes": 52428800,
+    "videoConcurrency": 1,
+    "jobTimeoutSeconds": 300
+  },
+  "ads": {
+    "enabled": true,
+    "slots": [
+      {
+        "id": "sidebar",
+        "html": "<!-- 广告位：可在 config.json 中替换为 AdSense / 自售赞助内容 -->"
+      }
+    ]
+  }
+}
