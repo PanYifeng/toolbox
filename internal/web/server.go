@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"crypto/subtle"
 	"embed"
 	"encoding/json"
 	"io"
@@ -45,8 +46,8 @@ func NewServer(cfg *config.Config) *Server {
 func (s *Server) routes() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/tools", s.handleListTools)
-	// 上传接口加限流
-	mux.Handle("POST /api/tools/{id}", s.uploadRL.middleware(http.HandlerFunc(s.handleSubmitTool)))
+	// 上传接口加限流（Pro token 旁路）
+	mux.Handle("POST /api/tools/{id}", s.uploadRL.middleware(http.HandlerFunc(s.handleSubmitTool), s.isProRequest))
 	mux.HandleFunc("GET /api/jobs/{id}", s.handleGetJob)
 	mux.HandleFunc("GET /api/jobs/{id}/download", s.handleDownload)
 	mux.HandleFunc("GET /api/ads", s.handleAds)
@@ -112,8 +113,9 @@ func (s *Server) handleSubmitTool(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "tool not found", http.StatusNotFound)
 		return
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.Limits.MaxUploadBytes)
-	if err := r.ParseMultipartForm(s.cfg.Limits.MaxUploadBytes); err != nil {
+	limit := s.effectiveUploadLimit(r)
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
+	if err := r.ParseMultipartForm(limit); err != nil {
 		http.Error(w, "file too large or invalid: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -158,6 +160,32 @@ func extractParams(r *http.Request) map[string]string {
 		}
 	}
 	return params
+}
+
+// isProRequest 判断请求是否携带有效 Pro token
+func (s *Server) isProRequest(r *http.Request) bool {
+	return s.isProToken(r.Header.Get("X-Pro-Token"))
+}
+
+// isProToken 常数时间校验 token，防时序攻击
+func (s *Server) isProToken(token string) bool {
+	if token == "" {
+		return false
+	}
+	for _, t := range s.cfg.Pro.Tokens {
+		if subtle.ConstantTimeCompare([]byte(token), []byte(t)) == 1 {
+			return true
+		}
+	}
+	return false
+}
+
+// effectiveUploadLimit 取生效上传上限（Pro 用户更高）
+func (s *Server) effectiveUploadLimit(r *http.Request) int64 {
+	if s.isProRequest(r) {
+		return s.cfg.Pro.MaxUploadBytes
+	}
+	return s.cfg.Limits.MaxUploadBytes
 }
 
 // handleGetJob 查询任务状态

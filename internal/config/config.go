@@ -10,6 +10,7 @@ type Config struct {
 	Server ServerConfig `json:"server"`
 	Limits LimitsConfig `json:"limits"`
 	Ads    AdsConfig    `json:"ads"`
+	Pro    ProConfig    `json:"pro"`
 }
 
 // ServerConfig 服务配置
@@ -32,8 +33,15 @@ type AdsConfig struct {
 
 // AdSlot 广告位
 type AdSlot struct {
-	ID   string `json:"id"`
-	HTML string `json:"html"`
+	ID       string `json:"id"`
+	Position string `json:"position"` // top / bottom / sidebar
+	HTML     string `json:"html"`
+}
+
+// ProConfig 付费层配置（售卖 API token / 订阅）
+type ProConfig struct {
+	Tokens         []string `json:"tokens"`
+	MaxUploadBytes int64    `json:"maxUploadBytes"`
 }
 
 // Load 从路径加载配置
@@ -63,5 +71,8 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Limits.JobTimeoutSeconds == 0 {
 		c.Limits.JobTimeoutSeconds = 300
+	}
+	if c.Pro.MaxUploadBytes == 0 {
+		c.Pro.MaxUploadBytes = 200 << 20 // Pro 用户默认 200MB
 	}
 }

@@ -129,6 +129,46 @@ func init() {
 
 推荐组合：自售广告位 + Pro 订阅（去广告 / 大文件 / 高并发）+ API 计费。
 
+## 变现方式
+
+### 广告位（配置化，改广告无需重新部署）
+
+`config.json` 的 `ads` 段配置广告位，支持按位置投放（`top` / `bottom` / `sidebar`），前端运行时拉取 `/api/ads` 渲染：
+
+```json
+{
+  "ads": {
+    "enabled": true,
+    "slots": [
+      { "id": "top", "position": "top", "html": "<!-- AdSense / 自售赞助 -->" },
+      { "id": "side", "position": "sidebar", "html": "<!-- 侧边 -->" }
+    ]
+  }
+}
+```
+
+自售广告位收益高于 AdSense（用户画像精准：开发者）。接入 AdSense 时把对应 `html` 换成 AdSense 代码片段，并按需放宽 CSP（`script-src` 允许 `googlesyndication.com`）。
+
+### Pro 付费层（API token / 订阅）
+
+售卖 `X-Pro-Token`，持有者享：**绕过上传限流** + **更大上传配额**（默认 200MB）。token 常数时间校验，防时序攻击。
+
+```json
+{
+  "pro": { "tokens": [" issued-token-1", "issued-token-2"], "maxUploadBytes": 209715200 }
+}
+```
+
+调用示例：
+
+```bash
+curl -X POST -H "X-Pro-Token: issued-token-1" \
+  -F "file=@big.mp4" -F "format=mp4" \
+  http://your-host/api/tools/video_convert
+```
+
+发卡方式：手工生成随机 token 填入配置 + 重启，或对接支付回调自动写入。这是可售卖的 API 计费层，无需引入支付 SDK 即可起步。
+
 ## 配置说明
 
 | 字段 | 说明 | 默认值 |
@@ -137,6 +177,8 @@ func init() {
 | `limits.maxUploadBytes` | 上传上限 | 52428800 (50MB) |
 | `limits.videoConcurrency` | 重型任务并发数 | 1 |
 | `limits.jobTimeoutSeconds` | 任务超时 | 300 |
+| `pro.tokens` | Pro token 列表 | `[]` |
+| `pro.maxUploadBytes` | Pro 上传上限 | 209715200 (200MB) |
 
 ## 中英文切换
 

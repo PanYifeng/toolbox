@@ -14,6 +14,7 @@ function shell() {
       </div>
       <input id="search" placeholder="${t('app.search')}" />
       <nav id="nav"></nav>
+      <div class="ad" id="ad-side"></div>
     </aside>
     <main class="main">
       <div class="ad" id="ad-top"></div>
@@ -67,16 +68,21 @@ async function select(id) {
   loadAds();
 }
 
-// loadAds 拉取广告配置并投放
+// loadAds 拉取广告配置并按位置投放
 function loadAds() {
   fetch('/api/ads')
     .then((r) => r.json())
     .then((cfg) => {
       if (!cfg.enabled || !cfg.slots || !cfg.slots.length) return;
-      const html = cfg.slots.map((s) => s.html).join('');
-      ['ad-top', 'ad-bottom'].forEach((id) => {
+      // 先清空广告位
+      ['ad-top', 'ad-bottom', 'ad-side'].forEach((id) => {
         const e = app.querySelector('#' + id);
-        if (e) e.innerHTML = html;
+        if (e) e.innerHTML = '';
+      });
+      cfg.slots.forEach((s) => {
+        const id = 'ad-' + (s.position || 'top');
+        const e = app.querySelector('#' + id) || app.querySelector('#ad-top');
+        if (e) e.innerHTML += s.html;
       });
     })
     .catch(() => {});

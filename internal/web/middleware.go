@@ -71,12 +71,14 @@ func (rl *rateLimiter) gc() {
 	}
 }
 
-// middleware 超限返回 429
-func (rl *rateLimiter) middleware(next http.Handler) http.Handler {
+// middleware 超限返回 429；isPro 为真时旁路限流（付费用户）
+func (rl *rateLimiter) middleware(next http.Handler, isPro func(*http.Request) bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !rl.allow(clientIP(r)) {
-			http.Error(w, "too many requests", http.StatusTooManyRequests)
-			return
+		if isPro == nil || !isPro(r) {
+			if !rl.allow(clientIP(r)) {
+				http.Error(w, "too many requests", http.StatusTooManyRequests)
+				return
+			}
 		}
 		next.ServeHTTP(w, r)
 	})

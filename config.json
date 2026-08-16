@@ -7,12 +7,27 @@
     "videoConcurrency": 1,
     "jobTimeoutSeconds": 300
   },
+  "pro": {
+    "tokens": [],
+    "maxUploadBytes": 209715200
+  },
   "ads": {
     "enabled": true,
     "slots": [
       {
+        "id": "top",
+        "position": "top",
+        "html": "<!-- 顶部广告位：替换为 AdSense / 自售赞助内容 -->"
+      },
+      {
         "id": "sidebar",
-        "html": "<!-- 广告位：可在 config.json 中替换为 AdSense / 自售赞助内容 -->"
+        "position": "sidebar",
+        "html": "<!-- 侧边广告位 -->"
+      },
+      {
+        "id": "bottom",
+        "position": "bottom",
+        "html": "<!-- 底部广告位 -->"
       }
     ]
   }
