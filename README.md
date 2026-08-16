@@ -68,9 +68,13 @@ docker run -d -p 80:8080 --restart=always --name toolbox toolbox
 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o toolbox ./cmd/server
 # 上传（服务器需安装 ffmpeg）
 scp toolbox config.json root@server:/opt/toolbox/
-# 运行
-ssh root@server "cd /opt/toolbox && nohup ./toolbox > app.log 2>&1 &"
+# 启动（仓库自带 start.sh / stop.sh）
+ssh root@server "cd /opt/toolbox && chmod +x toolbox start.sh stop.sh && ./start.sh"
+# 停止 / 重启
+ssh root@server "cd /opt/toolbox && ./stop.sh && ./start.sh"
 ```
+
+> 生产建议用 systemd 或 cgroup 做硬性内存/CPU 上限。容器环境无 systemd 时，用仓库的 `start.sh`（nohup + pidfile）即可。
 
 ## 新增工具
 
