@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { bindSwipe } from '/core/swipe.js';
 
 // render 2048 小游戏（方向键移动合并）
 export default function (el) {
@@ -8,7 +9,7 @@ export default function (el) {
       <span>${t('game.best')}: <b id="f-best">0</b></span>
       <button id="f-new">${t('game.newgame')}</button>
     </div>
-    <p class="muted">${t('g2048.howto')}</p>
+    <p class="rules">${t('g2048.howto')}</p>
     <div id="f-board" class="board-2048" tabindex="0"></div>`;
 
   const SIZE = 4;
@@ -19,6 +20,8 @@ export default function (el) {
 
   el.querySelector('#f-new').onclick = newGame;
   $board.onkeydown = onKey;
+  // 移动端滑动操作
+  bindSwipe($board, (d) => { if (move(d)) { addTile(); draw(); saveBest(); } });
   newGame();
 
   function newGame() {
@@ -59,7 +62,16 @@ export default function (el) {
     if (!move(dir)) return;
     addTile();
     draw();
-    if (score > best) { best = score; localStorage.setItem('tb2048best', best); $best.textContent = best; }
+    saveBest();
+  }
+
+  // saveBest 更新并持久化最高分
+  function saveBest() {
+    if (score > best) {
+      best = score;
+      localStorage.setItem('tb2048best', best);
+      $best.textContent = best;
+    }
   }
 
   // move 执行一步移动，返回是否有变化

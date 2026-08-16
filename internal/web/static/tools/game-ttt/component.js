@@ -10,6 +10,7 @@ export default function (el) {
       <span id="tt-status" class="muted"></span>
       <button id="tt-reset">${t('ttt.reset')}</button>
     </div>
+    <p class="rules">${t('ttt.howto')}</p>
     <div id="tt-board" class="ttt-board"></div>`;
 
   let board;

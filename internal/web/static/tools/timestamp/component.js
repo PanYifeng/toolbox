@@ -3,7 +3,9 @@ import { t } from '/core/i18n.js';
 // render 时间戳 <-> 日期 双向转换
 export default function (el) {
   el.innerHTML = `
-    <p class="muted">${t('ts.now')}<code id="t-now"></code></p>
+    <p class="muted">${t('ts.now')}<code id="t-now"></code>
+      <button id="t-copy" class="btn-soft">${t('ts.copy')}</button>
+    </p>
     <h3>${t('ts.ts2date')}</h3>
     <div class="row">
       <input id="t-ts" type="text" placeholder="${t('ts.tsPlaceholder')}" />
@@ -21,6 +23,18 @@ export default function (el) {
   const tick = () => ($now.textContent = Math.floor(Date.now() / 1000));
   tick();
   setInterval(tick, 1000);
+
+  // 复制当前时间戳
+  el.querySelector('#t-copy').onclick = async (e) => {
+    const btn = e.currentTarget;
+    try {
+      await navigator.clipboard.writeText($now.textContent);
+      btn.textContent = t('ts.copied');
+    } catch {
+      btn.textContent = t('ts.copied');
+    }
+    setTimeout(() => (btn.textContent = t('ts.copy')), 1200);
+  };
 
   el.querySelector('#t-toDate').onclick = () => {
     const raw = el.querySelector('#t-ts').value.trim();
