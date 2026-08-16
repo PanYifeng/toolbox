@@ -27,7 +27,7 @@ JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站
 | 生成 | UUID、密码、Lorem ipsum |
 | 数学/设计 | 进制转换、颜色转换 |
 | 网络 | URL 解析 |
-| 视频 | 视频转码（ffmpeg） |
+| 视频 | 视频转码（ffmpeg）、视频截断（ffmpeg 流复制，无损不重编码） |
 | 音频 | 音频转换（ffmpeg：mp3/wav/flac/ogg/m4a） |
 | 文档 | 文档转换（docx↔pdf 等） |
 | 游戏 | 2048、贪吃蛇、井字棋（纯前端，零负载） |
@@ -127,13 +127,14 @@ func init() {
 }
 ```
 
-## 视频转码在 1C2G 上的保护策略
+## 视频处理在 1C2G 上的保护策略
 
-- 文件大小硬限（默认 50MB，见 `config.json`）
-- 全局单并发（`heavyConcurrency: 1`），其余排队
-- ffmpeg `-threads 1` 限制 CPU
+- 文件大小硬限（默认 1GB，见 `config.json`）
+- 全局最多 3 个视频/重型任务并发（`heavyConcurrency: 3`），其余排队
+- ffmpeg `-threads 1` 限制 CPU；视频截断用 `-c copy` 流复制，不重编码
 - 单任务超时熔断（默认 300s）
 - 产物 1 小时后自动清理，防磁盘打满
+- 上传走流式落盘，1GB 文件不会全量缓冲进内存
 
 ## 变现方式
 
@@ -172,11 +173,11 @@ func init() {
 
 ### Pro 付费层（API token / 订阅）
 
-售卖 `X-Pro-Token`，持有者享：**绕过上传限流** + **更大上传配额**（默认 200MB）。token 常数时间校验，防时序攻击。
+售卖 `X-Pro-Token`，持有者享：**绕过上传限流** + **更大上传配额**（默认 2GB）。token 常数时间校验，防时序攻击。
 
 ```json
 {
-  "pro": { "tokens": [" issued-token-1", "issued-token-2"], "maxUploadBytes": 209715200 }
+  "pro": { "tokens": ["issued-token-1", "issued-token-2"], "maxUploadBytes": 2147483648 }
 }
 ```
 
@@ -195,11 +196,11 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 | 字段 | 说明 | 默认值 |
 |------|------|--------|
 | `server.addr` | 监听地址 | `:8080` |
-| `limits.maxUploadBytes` | 上传上限 | 52428800 (50MB) |
-| `limits.heavyConcurrency` | 重型任务并发数（视频/文档） | 1 |
+| `limits.maxUploadBytes` | 上传上限 | 1073741824 (1GB) |
+| `limits.heavyConcurrency` | 重型任务并发数（视频/音频/文档，其余排队） | 3 |
 | `limits.jobTimeoutSeconds` | 任务超时 | 300 |
 | `pro.tokens` | Pro token 列表 | `[]` |
-| `pro.maxUploadBytes` | Pro 上传上限 | 209715200 (200MB) |
+| `pro.maxUploadBytes` | Pro 上传上限 | 2147483648 (2GB) |
 
 ## 中英文切换
 
@@ -211,7 +212,7 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 公开文件上传 + ffmpeg 服务的攻击面已做防护：
 
 - **ffmpeg SSRF 阻断**：`-protocol_whitelist file`，恶意媒体文件无法触发 `http/rtmp/data` 等网络或越权读取。
-- **资源限制**：上传大小硬限、ffmpeg `-threads 1`、输出时长 `-t 600`、输出体积 `-fs 200M`、单任务超时熔断、单并发队列。
+- **资源限制**：上传大小硬限（流式落盘，1GB 不爆内存）、ffmpeg `-threads 1`、输出时长 `-t 600`、输出体积 `-fs 200M`/`-fs 500M`、单任务超时熔断、3 并发队列。
 - **限流**：上传接口每 IP 每分钟 20 次，超限 429。
 - **路径穿越防护**：下载产物路径校验绝对路径 + `..` 段拒绝。
 - **HTTP 加固**：`ReadHeaderTimeout` 防 slowloris、`MaxHeaderBytes` 限制、安全响应头（CSP / X-Frame-Options / nosniff / Referrer-Policy）。

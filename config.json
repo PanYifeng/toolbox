@@ -3,13 +3,13 @@
     "addr": ":8080"
   },
   "limits": {
-    "maxUploadBytes": 52428800,
-    "heavyConcurrency": 1,
+    "maxUploadBytes": 1073741824,
+    "heavyConcurrency": 3,
     "jobTimeoutSeconds": 300
   },
   "pro": {
     "tokens": [],
-    "maxUploadBytes": 209715200
+    "maxUploadBytes": 2147483648
   },
   "ads": {
     "enabled": true,

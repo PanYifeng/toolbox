@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -106,6 +107,7 @@ func (s *Server) handleListTools(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleSubmitTool 接收文件并提交到队列
+// 流式落盘：通过 MultipartReader 边读边写临时文件，避免大文件（默认 1GB）全量缓冲进内存。
 func (s *Server) handleSubmitTool(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	tool, ok := tools.Get(id)
@@ -115,35 +117,23 @@ func (s *Server) handleSubmitTool(w http.ResponseWriter, r *http.Request) {
 	}
 	limit := s.effectiveUploadLimit(r)
 	r.Body = http.MaxBytesReader(w, r.Body, limit)
-	if err := r.ParseMultipartForm(limit); err != nil {
-		http.Error(w, "file too large or invalid: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-	f, header, err := r.FormFile("file")
+	reader, err := r.MultipartReader()
 	if err != nil {
-		http.Error(w, "no file: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "invalid multipart: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	defer f.Close()
-
-	// 保留原始扩展名落盘：LibreOffice 等工具靠扩展名选导入过滤器
-	ext := strings.ToLower(filepath.Ext(header.Filename))
-	tmp, err := os.CreateTemp("", "toolbox-in-*"+ext)
+	params, fileInput, inputPath, err := readUpload(reader)
 	if err != nil {
-		http.Error(w, "server error", http.StatusInternalServerError)
+		if inputPath != "" {
+			_ = os.Remove(inputPath)
+		}
+		http.Error(w, "upload failed: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	if _, err := io.Copy(tmp, f); err != nil {
-		_ = tmp.Close()
-		_ = os.Remove(tmp.Name())
-		http.Error(w, "save failed", http.StatusInternalServerError)
+	if fileInput == nil {
+		http.Error(w, "no file", http.StatusBadRequest)
 		return
 	}
-	_ = tmp.Close()
-
-	params := extractParams(r)
-	fileInput := &tools.FileInput{Path: tmp.Name(), FileName: header.Filename, Size: header.Size}
-	inputPath := tmp.Name()
 	jobID := queue.NewID()
 	s.queue.Submit(jobID, func(ctx context.Context) (string, error) {
 		result, err := tool.Submit(ctx, tools.SubmitParams{Params: params, File: fileInput})
@@ -153,15 +143,49 @@ func (s *Server) handleSubmitTool(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]string{"jobId": jobID})
 }
 
-// extractParams 从 PostForm 提取单值参数
-func extractParams(r *http.Request) map[string]string {
-	params := map[string]string{}
-	for k, v := range r.PostForm {
-		if len(v) > 0 {
-			params[k] = v[0]
+// readUpload 流式读取 multipart：文件段写入临时文件（保留扩展名），其余段作为单值参数
+func readUpload(reader *multipart.Reader) (params map[string]string, fi *tools.FileInput, path string, err error) {
+	params = map[string]string{}
+	for {
+		part, e := reader.NextPart()
+		if e == io.EOF {
+			break
+		}
+		if e != nil {
+			return nil, nil, path, e
+		}
+		if part.FileName() != "" {
+			p, n, e := savePartToTemp(part)
+			if e != nil {
+				return nil, nil, p, e
+			}
+			fi = &tools.FileInput{Path: p, FileName: part.FileName(), Size: n}
+			path = p
+		} else {
+			b, e := io.ReadAll(io.LimitReader(part, 1<<20)) // 单个字段至多 1MB
+			if e != nil {
+				return nil, nil, path, e
+			}
+			params[part.FormName()] = string(b)
 		}
 	}
-	return params
+	return params, fi, path, nil
+}
+
+// savePartToTemp 把一个文件段流式写入临时文件，返回路径与字节数
+func savePartToTemp(part *multipart.Part) (string, int64, error) {
+	ext := strings.ToLower(filepath.Ext(part.FileName()))
+	tmp, err := os.CreateTemp("", "toolbox-in-*"+ext)
+	if err != nil {
+		return "", 0, err
+	}
+	n, err := io.Copy(tmp, part)
+	_ = tmp.Close()
+	if err != nil {
+		_ = os.Remove(tmp.Name())
+		return tmp.Name(), 0, err
+	}
+	return tmp.Name(), n, nil
 }
 
 // isProRequest 判断请求是否携带有效 Pro token

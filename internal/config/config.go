@@ -64,7 +64,7 @@ func (c *Config) applyDefaults() {
 		c.Server.Addr = ":8080"
 	}
 	if c.Limits.MaxUploadBytes == 0 {
-		c.Limits.MaxUploadBytes = 50 << 20
+		c.Limits.MaxUploadBytes = 1 << 30 // 默认 1GB
 	}
 	if c.Limits.HeavyConcurrency == 0 {
 		c.Limits.HeavyConcurrency = 1
@@ -73,6 +73,6 @@ func (c *Config) applyDefaults() {
 		c.Limits.JobTimeoutSeconds = 300
 	}
 	if c.Pro.MaxUploadBytes == 0 {
-		c.Pro.MaxUploadBytes = 200 << 20 // Pro 用户默认 200MB
+		c.Pro.MaxUploadBytes = 2 << 30 // Pro 用户默认 2GB
 	}
 }

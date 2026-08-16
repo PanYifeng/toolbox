@@ -25,5 +25,6 @@ import url_encode from './url-encode/manifest.js';
 import url_parse from './url-parse/manifest.js';
 import uuid from './uuid/manifest.js';
 import video_convert from './video_convert/manifest.js';
+import video_cut from './video_cut/manifest.js';
 
-export const registry = [audio_convert, base64, color, doc_convert, game_2048, game_snake, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert];
+export const registry = [audio_convert, base64, color, doc_convert, game_2048, game_snake, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];

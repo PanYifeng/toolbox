@@ -14,6 +14,7 @@ import (
 	_ "toolbox/internal/tools/server/audio_convert"
 	_ "toolbox/internal/tools/server/doc_convert"
 	_ "toolbox/internal/tools/server/video_convert"
+	_ "toolbox/internal/tools/server/video_cut"
 )
 
 // main 启动 HTTP 服务
