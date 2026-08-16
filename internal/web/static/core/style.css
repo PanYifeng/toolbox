@@ -83,6 +83,15 @@ html, body {
   color: var(--fg);
 }
 
+#c-swatch {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: inline-block;
+}
+
 .sidebar input {
   margin: 12px;
   padding: 8px 10px;
