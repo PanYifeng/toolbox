@@ -57,7 +57,14 @@ pullLatest() {
   gitBin=$(resolveBin git) || { echo "git not found" >&2; exit 1; }
   goBin=$(resolveBin go)  || { echo "go not found (install Go toolchain, e.g. to /usr/local/go)" >&2; exit 1; }
   echo "pulling latest code in $src ..."
-  "$gitBin" -C "$src" pull --ff-only
+  # 低速超时 + 重试，避免 GitHub 网络抖动时长时间挂起；
+  # 拉取失败也不中断：用现有源码继续编译启动，保证服务在线（只是未更新到最新）。
+  local ok=0
+  for i in 1 2 3; do
+    if "$gitBin" -C "$src" -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=20 pull --ff-only; then ok=1; break; fi
+    echo "git pull attempt $i failed, retrying..." >&2
+  done
+  [ "$ok" = "1" ] || echo "WARN: git pull failed after retries, continuing with existing source" >&2
   echo "building binary ..."
   "$goBin" -C "$src" build -o "$src/toolbox" ./cmd/server
   echo "built $src/toolbox"
