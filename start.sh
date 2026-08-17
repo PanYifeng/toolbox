@@ -30,6 +30,22 @@ for arg in "$@"; do
 done
 [ "$TOOLBOX_FOREGROUND" = "1" ] && FOREGROUND=1
 
+# resolveBin 在 PATH 及常见安装路径中定位可执行文件，避免非交互部署环境
+# （systemd / 容器，不读 ~/.bashrc）PATH 不含 /usr/local/go/bin 时找不到 go。
+resolveBin() {
+  local name="$1" candidates
+  command -v "$name" >/dev/null 2>&1 && { command -v "$name"; return 0; }
+  case "$name" in
+    go) candidates="/usr/local/go/bin/go /usr/lib/go/bin/go /usr/lib/go-*/bin/go ${GOROOT:+$GOROOT/bin/go} $HOME/go/bin/go" ;;
+    git) candidates="/usr/bin/git /usr/local/bin/git" ;;
+    *) candidates="" ;;
+  esac
+  for c in $candidates; do
+    [ -x "$c" ] && { echo "$c"; return 0; }
+  done
+  return 1
+}
+
 # pullLatest 从 GitHub 拉取最新代码并编译二进制，返回产物路径
 pullLatest() {
   local src="${TOOLBOX_SRC:-$(pwd)}"
@@ -37,12 +53,13 @@ pullLatest() {
     echo "--pull needs a git source checkout: set TOOLBOX_SRC or run start.sh from the source dir" >&2
     exit 1
   fi
-  command -v git >/dev/null 2>&1 || { echo "git not found" >&2; exit 1; }
-  command -v go  >/dev/null 2>&1 || { echo "go not found (install Go toolchain)" >&2; exit 1; }
+  local gitBin goBin
+  gitBin=$(resolveBin git) || { echo "git not found" >&2; exit 1; }
+  goBin=$(resolveBin go)  || { echo "go not found (install Go toolchain, e.g. to /usr/local/go)" >&2; exit 1; }
   echo "pulling latest code in $src ..."
-  git -C "$src" pull --ff-only
+  "$gitBin" -C "$src" pull --ff-only
   echo "building binary ..."
-  go -C "$src" build -o "$src/toolbox" ./cmd/server
+  "$goBin" -C "$src" build -o "$src/toolbox" ./cmd/server
   echo "built $src/toolbox"
 }
 
