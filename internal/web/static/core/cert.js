@@ -9,36 +9,49 @@ const THEMES = {
     primary: '#C9A227', secondary: '#8C6D1F', bg: '#FBF7EC', symbol: '☸', auspicious: '🪷', pattern: 'lotus',
     title: { zh: '佛法文化结业纪念卡', en: 'Buddhist Culture Memorial Card' },
     message: { zh: '慈悲喜舍，愿正法常明于心。', en: 'May loving-kindness and compassion illuminate your heart.' },
+    // 样例完成时间：佛诞日（日本传统花祭，定为公历 4 月 8 日）
+    sampleDate: '2025-04-08',
   },
   islam: {
     primary: '#1F8A4C', secondary: '#0F5C30', bg: '#F1F8F3', symbol: '☪', auspicious: '☪', pattern: 'star',
     title: { zh: '伊斯兰文化结业纪念卡', en: 'Islamic Culture Memorial Card' },
     message: { zh: '求知乃信士之担当，愿平安伴随你。', en: 'To seek knowledge is a duty; may peace be with you.' },
+    // 样例完成时间：开斋节 Eid al-Fitr（2025 年 3 月 30 日，沙特公布）
+    sampleDate: '2025-03-30',
   },
   christianity: {
     primary: '#2A5DB0', secondary: '#163C7A', bg: '#F2F6FC', symbol: '✝', auspicious: '🕊', pattern: 'arch',
     title: { zh: '基督文化结业纪念卡', en: 'Christian Culture Memorial Card' },
     message: { zh: '施比受更为有福，愿爱与和平同在。', en: 'It is more blessed to give than to receive; may love and peace abide.' },
+    // 样例完成时间：圣诞节 Christmas（12 月 25 日）
+    sampleDate: '2025-12-25',
   },
   'game-2048': {
     primary: '#E67E22', secondary: '#A8541A', bg: '#FFF6EE', symbol: '▦', auspicious: '★', pattern: 'grid4',
     title: { zh: '2048 通关纪念卡', en: '2048 Clear-Stage Memorial Card' },
     message: { zh: '方寸之间运筹帷幄，愿你于生活中亦能合二为一。', en: 'Strategy within a small grid; may you merge what matters in life.' },
+    // 样例完成时间：2048 首次发布日（Cirulli，2014 年 3 月 9 日）
+    sampleDate: '2014-03-09',
   },
   'game-snake': {
     primary: '#2E8B57', secondary: '#1E6B40', bg: '#F0FBF3', symbol: '🐍', auspicious: '★', pattern: 'wave',
     title: { zh: '贪吃蛇 通关纪念卡', en: 'Snake Clear-Stage Memorial Card' },
     message: { zh: '步步为营，生生不息，愿你越行越远。', en: 'Step by step, endless growth; may you go ever farther.' },
+    // 样例完成时间：贪吃蛇类街机鼻祖 Blockade 上市（Gremlin，1976 年 10 月）
+    sampleDate: '1976-10-01',
   },
   'game-ttt': {
     primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '#', auspicious: '★', pattern: 'grid3',
     title: { zh: '井字棋 通关纪念卡', en: 'Tic-Tac-Toe Memorial Card' },
     message: { zh: '攻守相宜，落子无悔，愿你常保从容。', en: 'Balance attack and defense; may you stay composed.' },
+    // 样例完成时间：最早的井字棋电子游戏之一 OXO（A.S. Douglas，EDSAC，1952 年）
+    sampleDate: '1952-01-01',
   },
   game: {
     primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', pattern: 'grid4',
     title: { zh: '通关纪念卡', en: 'Clear Stage Memorial Card' },
     message: { zh: '玩得开心，愿你常保欢喜之心。', en: 'Well played — may you keep a joyful heart.' },
+    sampleDate: '2025-01-01',
   },
 };
 
@@ -143,7 +156,14 @@ export async function renderMemorialCard(opts) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  const iso = opts.completedAt || new Date().toISOString();
+  // 完成时间：显式传入优先；否则预览样例用主题的喜庆/纪念日，正式卡用当前时间。
+  // 日期串按本地时间解析再转 ISO，保证样例日期在各时区显示一致。
+  let iso = opts.completedAt;
+  if (!iso) {
+    iso = opts.preview && theme.sampleDate
+      ? new Date(`${theme.sampleDate}T00:00:00`).toISOString()
+      : new Date().toISOString();
+  }
   const code = fmtCode(await shaHex(`${opts.name}|${opts.themeKey}|${opts.score}|${iso}`));
 
   drawBackground(ctx, W, H, theme);
