@@ -414,8 +414,11 @@ pre {
 
 /* ===== 宗教文化 / 测验 / 纪念卡 ===== */
 .rel-tabs { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-.rel-tab { padding: 8px 18px; border: 1px solid var(--border, #ddd); background: transparent; border-radius: 8px; cursor: pointer; font-size: 14px; }
-.rel-tab.active { background: var(--accent, #2A5DB0); color: #fff; border-color: var(--accent, #2A5DB0); }
+.rel-reward { color: var(--accent, #2563eb); font-size: 14px; font-weight: 600; margin: 8px 0 12px; }
+.rel-tab { padding: 8px 18px; border: 1px solid var(--border, #ddd); background: transparent; color: var(--fg, #1f2328); border-radius: 8px; cursor: pointer; font-size: 14px; transition: background .15s, border-color .15s; }
+.rel-tab:hover { background: var(--bg-soft, #f6f7f9); border-color: var(--accent, #2563eb); color: var(--fg, #1f2328); }
+.rel-tab.active { background: var(--accent, #2563eb); color: var(--bg, #ffffff); border-color: var(--accent, #2563eb); font-weight: 600; }
+.rel-tab.active:hover { background: var(--accent, #2563eb); color: var(--bg, #ffffff); }
 .rel-source { font-size: 12px; opacity: .7; }
 .rel-section { margin: 18px 0; padding: 14px 16px; border-left: 3px solid var(--accent, #2A5DB0); background: var(--card, #f7f8fa); border-radius: 6px; }
 .rel-section h3 { margin: 0 0 8px; }
@@ -435,3 +438,4 @@ pre {
 .rel-form label { display: grid; gap: 4px; font-size: 13px; }
 .rel-form input { padding: 8px 10px; border: 1px solid var(--border, #ccc); border-radius: 6px; }
 .rc-preview { max-width: 100%; max-height: 80vh; border: 1px solid var(--border, #ddd); border-radius: 8px; margin: 12px 0; }
+.rel-card-form { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border, #ddd); }

@@ -1,16 +1,18 @@
-// renderMemorialCard 在 canvas 上绘制纪念卡（宗教结业 / 游戏通关），返回 PNG dataURL。
+// renderMemorialCard 在 canvas 上绘制纪念卡（宗教结业 / 游戏通关 / 样例预览），返回 PNG dataURL。
 // 防伪码由 (姓名+主题键+分数+完成时间) 经 SHA-256 派生，可复算校验，为项目自有防伪标识。
-// 二维码图片同源加载，不会污染 canvas。
+// 二维码图片同源加载，不会污染 canvas；吉祥符号作为独立徽章绘制在二维码旁边，绝不覆盖码图。
 
 import { t, getLang } from '/core/i18n.js';
 
-// THEMES 三教 + 通用主题：主色 / 辅色 / 符号 / 标题
+// THEMES 各宗教 + 各游戏独立主题：主色 / 辅色 / 底色 / 主符号 / 吉祥符号 / 标题 / 纹样类型
 const THEMES = {
-  // auspicious: 二维码中心头像位替换为的吉祥符号（莲/新月/十字/星），寓意美好
-  buddhism: { primary: '#C9A227', secondary: '#8C6D1F', bg: '#FBF7EC', symbol: '☸', auspicious: '🪷', title: { zh: '佛法文化结业纪念卡', en: 'Buddhist Culture Memorial Card' } },
-  islam: { primary: '#1F8A4C', secondary: '#0F5C30', bg: '#F1F8F3', symbol: '☪', auspicious: '☪', title: { zh: '伊斯兰文化结业纪念卡', en: 'Islamic Culture Memorial Card' } },
-  christianity: { primary: '#2A5DB0', secondary: '#163C7A', bg: '#F2F6FC', symbol: '✝', auspicious: '🕊', title: { zh: '基督文化结业纪念卡', en: 'Christian Culture Memorial Card' } },
-  game: { primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', title: { zh: '通关纪念卡', en: 'Clear Stage Memorial Card' } },
+  buddhism: { primary: '#C9A227', secondary: '#8C6D1F', bg: '#FBF7EC', symbol: '☸', auspicious: '🪷', title: { zh: '佛法文化结业纪念卡', en: 'Buddhist Culture Memorial Card' }, pattern: 'lotus' },
+  islam: { primary: '#1F8A4C', secondary: '#0F5C30', bg: '#F1F8F3', symbol: '☪', auspicious: '☪', title: { zh: '伊斯兰文化结业纪念卡', en: 'Islamic Culture Memorial Card' }, pattern: 'star' },
+  christianity: { primary: '#2A5DB0', secondary: '#163C7A', bg: '#F2F6FC', symbol: '✝', auspicious: '🕊', title: { zh: '基督文化结业纪念卡', en: 'Christian Culture Memorial Card' }, pattern: 'arch' },
+  'game-2048': { primary: '#E67E22', secondary: '#A8541A', bg: '#FFF6EE', symbol: '▦', auspicious: '★', title: { zh: '2048 通关纪念卡', en: '2048 Clear-Stage Memorial Card' }, pattern: 'grid4' },
+  'game-snake': { primary: '#2E8B57', secondary: '#1E6B40', bg: '#F0FBF3', symbol: '🐍', auspicious: '★', title: { zh: '贪吃蛇 通关纪念卡', en: 'Snake Clear-Stage Memorial Card' }, pattern: 'wave' },
+  'game-ttt': { primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '#', auspicious: '★', title: { zh: '井字棋 通关纪念卡', en: 'Tic-Tac-Toe Memorial Card' }, pattern: 'grid3' },
+  game: { primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', title: { zh: '通关纪念卡', en: 'Clear Stage Memorial Card' }, pattern: 'grid4' },
 };
 
 // loadImage 同源加载图片，失败返回 null
@@ -49,18 +51,19 @@ export async function renderMemorialCard(opts) {
 
   drawBackground(ctx, W, H, theme);
   drawHeader(ctx, W, theme, lang);
-  drawSymbol(ctx, W, theme);
   drawBody(ctx, W, opts, theme, lang, iso);
   await drawFooter(ctx, W, H, theme, lang, opts.showDonate);
   drawAntiFake(ctx, W, H, code, lang);
+  if (opts.preview) drawPreviewWatermark(ctx, W, H, lang);
 
   return { dataUrl: canvas.toDataURL('image/png'), code };
 }
 
-// drawBackground 背景 + 双层装饰边框
+// drawBackground 底色 + 主题专属纹样 + 双层装饰边框
 function drawBackground(ctx, W, H, theme) {
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, W, H);
+  drawThemePattern(ctx, W, H, theme);
   ctx.strokeStyle = theme.primary;
   ctx.lineWidth = 10;
   ctx.strokeRect(36, 36, W - 72, H - 72);
@@ -69,62 +72,167 @@ function drawBackground(ctx, W, H, theme) {
   ctx.strokeRect(56, 56, W - 112, H - 112);
 }
 
-// drawHeader 顶部标题
-function drawHeader(ctx, W, theme, lang) {
-  ctx.fillStyle = theme.secondary;
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 52px "PingFang SC","Microsoft YaHei",serif';
-  ctx.fillText(theme.title[lang] || theme.title.zh, W / 2, 150);
-  ctx.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+// drawThemePattern 按主题绘制淡色装饰纹样，使每款背景各具特色
+function drawThemePattern(ctx, W, H, theme) {
+  ctx.save();
+  ctx.globalAlpha = 0.13;
+  ctx.strokeStyle = theme.primary;
   ctx.fillStyle = theme.primary;
-  ctx.fillText('Toolbox · Memorial Card', W / 2, 188);
+  ctx.lineWidth = 3;
+  const pat = theme.pattern;
+  if (pat === 'lotus') drawLotusPattern(ctx, W, H);
+  else if (pat === 'star') drawStarPattern(ctx, W, H);
+  else if (pat === 'arch') drawArchPattern(ctx, W, H);
+  else if (pat === 'grid4') drawGridPattern(ctx, W, H, 4);
+  else if (pat === 'grid3') drawGridPattern(ctx, W, H, 3);
+  else if (pat === 'wave') drawWavePattern(ctx, W, H);
+  ctx.restore();
 }
 
-// drawSymbol 大号宗教 / 游戏符号
-function drawSymbol(ctx, W, theme) {
-  ctx.fillStyle = theme.primary;
-  ctx.globalAlpha = 0.18;
-  ctx.font = '360px serif';
+// drawLotusPattern 佛教：中部法轮同心圆 + 莲瓣环（居中，不侵入底部二维码区）
+function drawLotusPattern(ctx, W, H) {
+  const cx = W / 2, cy = 720;
+  for (let r = 50; r <= 250; r += 50) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  }
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.ellipse(cx + Math.cos(a) * 150, cy + Math.sin(a) * 150, 24, 54, a, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+// drawStarPattern 伊斯兰：中部八角星几何簇（居中，不侵入底部）
+function drawStarPattern(ctx, W, H) {
+  const cx = W / 2, cy = 720;
+  drawEightStar(ctx, cx, cy, 120);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    drawEightStar(ctx, cx + Math.cos(a) * 220, cy + Math.sin(a) * 220, 48);
+  }
+}
+
+// drawEightStar 绘制八角星
+function drawEightStar(ctx, cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 - Math.PI / 2;
+    const rr = i % 2 === 0 ? r : r * 0.45;
+    const px = cx + Math.cos(a) * rr, py = cy + Math.sin(a) * rr;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.closePath(); ctx.stroke();
+}
+
+// drawArchPattern 基督教：哥特拱轮廓 + 十字
+function drawArchPattern(ctx, W, H) {
+  for (let i = 0; i < 5; i++) {
+    const cx = 140 + i * 180;
+    const cy = 760;
+    ctx.beginPath();
+    ctx.moveTo(cx - 70, cy + 120);
+    ctx.lineTo(cx - 70, cy);
+    ctx.arc(cx, cy, 70, Math.PI, 0, false);
+    ctx.lineTo(cx + 70, cy + 120);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 540); ctx.lineTo(W / 2, 660);
+  ctx.moveTo(W / 2 - 50, 580); ctx.lineTo(W / 2 + 50, 580);
+  ctx.stroke();
+}
+
+// drawGridPattern 游戏方格纹样（2048 用 4×4，井字棋用 3×3）
+function drawGridPattern(ctx, W, H, n) {
+  const size = 460, x0 = (W - size) / 2, y0 = 560, cell = size / n;
+  ctx.strokeRect(x0, y0, size, size);
+  for (let i = 1; i < n; i++) {
+    ctx.beginPath(); ctx.moveTo(x0 + i * cell, y0); ctx.lineTo(x0 + i * cell, y0 + size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0 + i * cell); ctx.lineTo(x0 + size, y0 + i * cell); ctx.stroke();
+  }
+}
+
+// drawWavePattern 贪吃蛇：折线蛇形路径
+function drawWavePattern(ctx, W, H) {
+  ctx.beginPath();
+  let x = 120, y = 600, dir = 1;
+  ctx.moveTo(x, y);
+  while (x < W - 120) {
+    x += 90; y += dir * 70; ctx.lineTo(x, y);
+    dir *= -1;
+  }
+  ctx.lineWidth = 26;
+  ctx.stroke();
+}
+
+// drawHeader 顶部圆形徽章 + 标题 + 副标题 + 分隔线
+function drawHeader(ctx, W, theme, lang) {
   ctx.textAlign = 'center';
-  ctx.fillText(theme.symbol, W / 2, 720);
+  ctx.save();
+  ctx.beginPath(); ctx.arc(W / 2, 96, 46, 0, Math.PI * 2);
+  ctx.fillStyle = theme.primary; ctx.fill();
+  ctx.strokeStyle = theme.bg; ctx.lineWidth = 4; ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.textBaseline = 'middle';
+  ctx.font = '44px serif';
+  ctx.fillText(theme.symbol, W / 2, 98);
+  ctx.restore();
+
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = theme.secondary;
+  ctx.font = 'bold 50px "PingFang SC","Microsoft YaHei",serif';
+  ctx.fillText(theme.title[lang] || theme.title.zh, W / 2, 200);
+  ctx.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = theme.primary;
+  ctx.fillText('Toolbox · Memorial Card', W / 2, 232);
+
+  ctx.strokeStyle = theme.primary;
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(180, 254); ctx.lineTo(W - 180, 254); ctx.stroke();
   ctx.globalAlpha = 1;
 }
 
-// drawBody 中部信息：姓名 / 分数 / 完成时间 / 寄语
+// drawBody 中部信息：姓名 / 分数 / 完成时间（左标签右对齐 + 右值左对齐，留足间距）
 function drawBody(ctx, W, opts, theme, lang, iso) {
-  ctx.textAlign = 'center';
-  ctx.fillStyle = theme.secondary;
-  const lines = [
+  const labelX = 410, valueX = 450;
+  const rows = [
     { label: lang === 'en' ? 'Name' : '姓名', value: opts.name || (lang === 'en' ? 'Anonymous' : '佚名') },
     { label: opts.scoreLabel || (lang === 'en' ? 'Score' : '分数'), value: String(opts.score) },
     { label: lang === 'en' ? 'Completed' : '完成时间', value: fmtTime(iso, lang) },
   ];
-  let y = 300;
-  ctx.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
-  lines.forEach((ln) => {
+  let y = 330;
+  ctx.textBaseline = 'middle';
+  rows.forEach((ln) => {
+    ctx.textAlign = 'right';
     ctx.fillStyle = theme.primary;
-    ctx.fillText(ln.label, W / 2 - 120, y);
+    ctx.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(ln.label, labelX, y);
+    ctx.textAlign = 'left';
     ctx.fillStyle = theme.secondary;
     ctx.font = 'bold 30px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText(ln.value, W / 2 + 60, y);
-    ctx.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
-    y += 64;
+    ctx.fillText(ln.value, valueX, y);
+    y += 62;
   });
-  drawMessage(ctx, W, theme, opts, lang, y + 30);
+  ctx.textBaseline = 'alphabetic';
+  drawMessage(ctx, W, theme, opts, lang, y + 24);
 }
 
 // drawMessage 寄语区：尊重信仰 / 通关祝贺
 function drawMessage(ctx, W, theme, opts, lang, y) {
+  ctx.textAlign = 'center';
   ctx.fillStyle = theme.secondary;
   ctx.font = 'italic 24px "PingFang SC","Microsoft YaHei",serif';
   const msg = opts.message || (lang === 'en'
     ? 'Respect for faith matters more than any score.'
     : '尊重每一种信仰，比分数更重要。');
-  wrapText(ctx, msg, W / 2, y, W - 220, 36);
+  wrapText(ctx, msg, W / 2, y, W - 240, 36);
 }
 
 // drawFooter 底部二维码（通用项目支持，非宗教募捐）。
-// 关键：二维码图片保持原样不动（保证可正常扫码支付），吉祥符号作为独立徽章绘制在二维码旁边。
+// 二维码图片保持原样不动（保证可正常扫码支付），吉祥符号作为独立徽章绘制在两码之间。
 async function drawFooter(ctx, W, H, theme, lang, showDonate) {
   if (!showDonate) return;
   const items = [
@@ -132,23 +240,26 @@ async function drawFooter(ctx, W, H, theme, lang, showDonate) {
     { src: '/img/donate-wechat.png', label: lang === 'en' ? 'WeChat' : '微信' },
   ];
   const qrSize = 150;
-  const gap = 360;
+  const gap = 380;
   const startX = W / 2 - gap / 2 - qrSize / 2;
+  const topY = 1075;
   ctx.textAlign = 'center';
-  ctx.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.fillStyle = theme.secondary;
-  ctx.fillText(lang === 'en' ? 'Support this project (optional)' : '支持本项目（自愿）', W / 2, H - 260);
+  ctx.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(lang === 'en' ? 'Support this project (optional)' : '支持本项目（自愿）', W / 2, topY - 24);
 
-  // 居中吉祥徽章（宗教寓意符号，纯装饰，不覆盖二维码）
-  drawAuspiciousMedallion(ctx, W / 2, H - 165, 42, theme);
+  drawAuspiciousMedallion(ctx, W / 2, topY + qrSize / 2, 38, theme);
 
   for (let i = 0; i < items.length; i++) {
     const img = await loadImage(items[i].src);
     const x = startX + i * gap;
-    if (img) ctx.drawImage(img, x, H - 240, qrSize, qrSize); // 原样绘制，保证可扫码
+    if (img) ctx.drawImage(img, x, topY, qrSize, qrSize); // 原样绘制，保证可扫码
+    ctx.strokeStyle = theme.primary;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 4, topY - 4, qrSize + 8, qrSize + 8);
     ctx.fillStyle = theme.primary;
     ctx.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText(items[i].label, x + qrSize / 2, H - 70);
+    ctx.fillText(items[i].label, x + qrSize / 2, topY + qrSize + 28);
   }
 }
 
@@ -159,26 +270,43 @@ function drawAuspiciousMedallion(ctx, cx, cy, r, theme) {
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.fillStyle = theme.primary;
   ctx.fill();
-  ctx.strokeStyle = theme.bg;
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 3;
   ctx.stroke();
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '40px serif';
+  ctx.font = '36px serif';
   ctx.fillText(theme.auspicious || theme.symbol, cx, cy + 2);
   ctx.restore();
 }
 
-// drawAntiFake 左下角防伪码
+// drawAntiFake 底部居中防伪码（与边框留足间距）
 function drawAntiFake(ctx, W, H, code, lang) {
-  ctx.textAlign = 'left';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#888';
-  ctx.font = '16px "PingFang SC","Microsoft YaHei",monospace';
-  ctx.fillText(lang === 'en' ? 'Anti-counterfeit' : '项目防伪码', 90, H - 90);
+  ctx.font = '15px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(lang === 'en' ? 'Anti-counterfeit' : '项目防伪码', W / 2, H - 116);
   ctx.fillStyle = '#444';
   ctx.font = 'bold 22px monospace';
-  ctx.fillText(code, 90, H - 62);
+  ctx.fillText(code, W / 2, H - 84);
+}
+
+// drawPreviewWatermark 样例预览水印，防止样例被当作正式纪念卡
+function drawPreviewWatermark(ctx, W, H, lang) {
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-Math.PI / 6);
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 90px "PingFang SC","Microsoft YaHei",serif';
+  const txt = lang === 'en' ? 'SAMPLE' : '样例';
+  for (let i = -2; i <= 2; i++) {
+    ctx.fillText(txt, 0, i * 160);
+  }
+  ctx.restore();
 }
 
 // wrapText 简单中文换行
@@ -195,11 +323,10 @@ function wrapText(ctx, text, x, y, maxW, lh) {
 }
 
 // fmtTime ISO 时间转可读
-function fmtTime(iso, lang) {
+function fmtTime(iso) {
   const d = new Date(iso);
   const p = (n) => String(n).padStart(2, '0');
-  const s = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-  return lang === 'en' ? s : s;
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 // downloadPng 触发下载

@@ -31,7 +31,7 @@ export function mountGameCard(container, getScore, gameName) {
     const lang = getLang();
     const msg = lang === 'en' ? 'Well played — may you keep a joyful heart.' : '玩得开心，愿你常保欢喜之心。';
     const { dataUrl } = await renderMemorialCard({
-      themeKey: 'game', name, score, showDonate: false, message: msg,
+      themeKey: `game-${gameName}`, name, score, showDonate: false, message: msg,
     });
     $out.innerHTML = `
       <img class="rc-preview" src="${dataUrl}" alt="memorial card">
