@@ -30,7 +30,14 @@ function esc(s) {
 // renderQuiz 渲染测验到 el
 export function renderQuiz(el, bank, opts, onFinish) {
   const lang = getLang();
-  const picked = shuffle(bank).slice(0, Math.min(opts.count, bank.length));
+  // 抽题后对每题选项单独洗牌，并重定位正确答案索引，
+  // 避免题库中正确答案恒为某一位（如恒为首位）导致可被猜测。
+  const raw = shuffle(bank).slice(0, Math.min(opts.count, bank.length));
+  const picked = raw.map((item) => {
+    const correct = item.options[item.answer];
+    const options = shuffle(item.options);
+    return { q: item.q, options, answer: options.indexOf(correct) };
+  });
   const answers = new Array(picked.length).fill(-1);
   let submitted = false;
   let timeLeft = opts.minutes * 60;
