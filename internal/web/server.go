@@ -52,6 +52,7 @@ func (s *Server) routes() {
 	mux.HandleFunc("GET /api/jobs/{id}", s.handleGetJob)
 	mux.HandleFunc("GET /api/jobs/{id}/download", s.handleDownload)
 	mux.HandleFunc("GET /api/ads", s.handleAds)
+	mux.HandleFunc("POST /api/cert/send", s.handleCertSend)
 	mux.Handle("/", http.FileServer(http.FS(mustSub())))
 	s.mux = mux
 }

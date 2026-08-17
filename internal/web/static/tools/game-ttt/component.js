@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { mountGameCard } from '/core/game-card.js';
 
 const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
@@ -14,10 +15,13 @@ export default function (el) {
     <div id="tt-board" class="ttt-board"></div>`;
 
   let board;
+  let wins = Number(localStorage.getItem('tttwins') || 0);
   const $board = el.querySelector('#tt-board');
   const $status = el.querySelector('#tt-status');
   el.querySelector('#tt-reset').onclick = newGame;
   newGame();
+  // 通关纪念卡入口（按累计胜场生成）
+  mountGameCard(el, () => wins, 'ttt');
 
   function newGame() {
     board = Array(9).fill('');
@@ -48,7 +52,7 @@ export default function (el) {
 
   function afterMove(p) {
     const w = winner(board);
-    if (w === 'X') { $status.textContent = t('ttt.win'); $status.className = 'ok'; draw(); return true; }
+    if (w === 'X') { $status.textContent = t('ttt.win'); $status.className = 'ok'; wins++; localStorage.setItem('tttwins', wins); draw(); return true; }
     if (w === 'O') { $status.textContent = t('ttt.lose'); $status.className = 'err'; draw(); return true; }
     if (board.every(Boolean)) { $status.textContent = t('ttt.draw'); $status.className = 'muted'; draw(); return true; }
     draw();

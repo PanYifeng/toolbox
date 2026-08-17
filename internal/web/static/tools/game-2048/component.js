@@ -1,5 +1,6 @@
 import { t } from '/core/i18n.js';
 import { bindSwipe } from '/core/swipe.js';
+import { mountGameCard } from '/core/game-card.js';
 
 // render 2048 小游戏（方向键移动合并）
 export default function (el) {
@@ -23,6 +24,8 @@ export default function (el) {
   // 移动端滑动操作
   bindSwipe($board, (d) => { if (move(d)) { addTile(); draw(); saveBest(); } });
   newGame();
+  // 通关纪念卡入口
+  mountGameCard(el, () => score, '2048');
 
   function newGame() {
     grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));

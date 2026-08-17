@@ -11,6 +11,13 @@
     "tokens": [],
     "maxUploadBytes": 2147483648
   },
+  "mail": {
+    "host": "",
+    "port": 465,
+    "user": "",
+    "pass": "",
+    "from": ""
+  },
   "ads": {
     "enabled": true,
     "slots": [

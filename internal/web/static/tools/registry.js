@@ -16,6 +16,9 @@ import markdown from './markdown/manifest.js';
 import password from './password/manifest.js';
 import radix from './radix/manifest.js';
 import regex from './regex/manifest.js';
+import religion_buddhism from './religion-buddhism/manifest.js';
+import religion_christianity from './religion-christianity/manifest.js';
+import religion_islam from './religion-islam/manifest.js';
 import slugify from './slugify/manifest.js';
 import text_case from './text-case/manifest.js';
 import text_diff from './text-diff/manifest.js';
@@ -28,4 +31,4 @@ import uuid from './uuid/manifest.js';
 import video_convert from './video_convert/manifest.js';
 import video_cut from './video_cut/manifest.js';
 
-export const registry = [audio_convert, base64, color, doc_convert, duration, game_2048, game_snake, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];
+export const registry = [audio_convert, base64, color, doc_convert, duration, game_2048, game_snake, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, religion_buddhism, religion_christianity, religion_islam, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];

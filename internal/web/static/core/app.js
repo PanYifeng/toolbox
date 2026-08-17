@@ -18,6 +18,7 @@ const CAT_ORDER = [
   { zh: '视频', en: 'Video' },
   { zh: '音频', en: 'Audio' },
   { zh: '文档', en: 'Document' },
+  { zh: '宗教文化', en: 'Religion & Culture' },
   { zh: '游戏', en: 'Games' },
 ];
 

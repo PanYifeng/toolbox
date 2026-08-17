@@ -11,6 +11,7 @@ type Config struct {
 	Limits LimitsConfig `json:"limits"`
 	Ads    AdsConfig    `json:"ads"`
 	Pro    ProConfig    `json:"pro"`
+	Mail   MailConfig   `json:"mail"`
 }
 
 // ServerConfig 服务配置
@@ -44,6 +45,20 @@ type ProConfig struct {
 	MaxUploadBytes int64    `json:"maxUploadBytes"`
 }
 
+// MailConfig 邮件发送配置（纪念卡发送到邮箱，需 SMTP 授权码）
+type MailConfig struct {
+	Host     string `json:"host"`     // SMTP 主机，如 smtp.qq.com
+	Port     int    `json:"port"`     // SMTP 端口，如 465 / 587
+	User     string `json:"user"`     // 发件账号
+	Pass     string `json:"pass"`     // SMTP 授权码（非登录密码）
+	From     string `json:"from"`     // 发件人地址，通常同 User
+}
+
+// Configured 是否已配置可用
+func (m MailConfig) Configured() bool {
+	return m.Host != "" && m.User != "" && m.Pass != "" && m.From != ""
+}
+
 // Load 从路径加载配置
 func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
@@ -74,5 +89,8 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Pro.MaxUploadBytes == 0 {
 		c.Pro.MaxUploadBytes = 2 << 30 // Pro 用户默认 2GB
+	}
+	if c.Mail.Configured() && c.Mail.Port == 0 {
+		c.Mail.Port = 587
 	}
 }

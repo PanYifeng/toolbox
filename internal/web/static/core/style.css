@@ -411,3 +411,27 @@ pre {
   .cards { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
   .lined-row { flex-direction: column; }
 }
+
+/* ===== 宗教文化 / 测验 / 纪念卡 ===== */
+.rel-tabs { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.rel-tab { padding: 8px 18px; border: 1px solid var(--border, #ddd); background: transparent; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.rel-tab.active { background: var(--accent, #2A5DB0); color: #fff; border-color: var(--accent, #2A5DB0); }
+.rel-source { font-size: 12px; opacity: .7; }
+.rel-section { margin: 18px 0; padding: 14px 16px; border-left: 3px solid var(--accent, #2A5DB0); background: var(--card, #f7f8fa); border-radius: 6px; }
+.rel-section h3 { margin: 0 0 8px; }
+.rel-section p { margin: 0; line-height: 1.8; white-space: pre-wrap; }
+.quiz-bar { position: sticky; top: 0; display: flex; gap: 16px; align-items: center; padding: 10px 12px; background: var(--card, #fff); border: 1px solid var(--border, #ddd); border-radius: 8px; margin-bottom: 12px; z-index: 5; }
+#q-timer { font-weight: bold; font-variant-numeric: tabular-nums; }
+.quiz-q { padding: 12px 14px; margin: 10px 0; border: 1px solid var(--border, #eee); border-radius: 8px; }
+.quiz-stem { margin: 0 0 8px; font-weight: 500; }
+.quiz-opts { display: grid; gap: 6px; }
+.quiz-opt { padding: 8px 10px; border: 1px solid var(--border, #eee); border-radius: 6px; cursor: pointer; }
+.quiz-opt:has(input:checked) { border-color: var(--accent, #2A5DB0); background: var(--card, #eef3fc); }
+.quiz-result { text-align: center; padding: 28px; border-radius: 10px; margin: 18px 0; }
+.quiz-result.ok { background: #eafaf0; }
+.quiz-result.warn { background: #fff5f0; }
+.quiz-score { font-size: 20px; }
+.rel-form { display: grid; gap: 10px; max-width: 420px; margin: 14px 0; }
+.rel-form label { display: grid; gap: 4px; font-size: 13px; }
+.rel-form input { padding: 8px 10px; border: 1px solid var(--border, #ccc); border-radius: 6px; }
+.rc-preview { max-width: 100%; max-height: 80vh; border: 1px solid var(--border, #ddd); border-radius: 8px; margin: 12px 0; }
