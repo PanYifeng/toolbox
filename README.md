@@ -138,21 +138,6 @@ func init() {
 
 ## 变现方式
 
-`config.json` 的 `ads` 段配置广告位，前端运行时拉取，**改广告无需重新部署**：
-
-```json
-{
-  "ads": {
-    "enabled": true,
-    "slots": [{ "id": "sidebar", "html": "<!-- AdSense / 自售赞助 -->" }]
-  }
-}
-```
-
-推荐组合：自售广告位 + Pro 订阅（去广告 / 大文件 / 高并发）+ API 计费。
-
-## 变现方式
-
 ### 广告位（配置化，改广告无需重新部署）
 
 `config.json` 的 `ads` 段配置广告位，支持按位置投放（`top` / `bottom` / `sidebar`），前端运行时拉取 `/api/ads` 渲染：
@@ -220,6 +205,18 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 - **LibreOffice 隔离**：文档转换每任务独立输出目录 + 独立 UserInstallation profile（防锁冲突与 profile 污染），`--headless --norestore --nologo` 不执行宏；输入/输出格式白名单。
 
 > 生产建议：在 ffmpeg/LibreOffice 进程外用 cgroup 限制内存上限（如 1G），并用反代（Nginx/Caddy）做 TLS 与连接级限流。**建议在主机防火墙屏蔽全部出站网络**——本服务无需出站，可直接消除 ffmpeg/LibreOffice 处理恶意文件时的 SSRF 面。
+
+## 延伸文档
+
+`docs/` 目录下的深度文档：
+
+| 文档 | 内容 |
+|------|------|
+| [腾讯云域名部署](docs/deployment-tencent-cloud.md) | 服务器/域名/备案/DNS/Nginx/HTTPS/安全/成本，让服务通过域名对外访问 |
+| [微信小程序方案](docs/wechat-miniprogram.md) | web-view 内嵌 vs 原生两条路径、平台约束、落地步骤 |
+
+- **想让别人用域名访问** → 看部署文档，约 ¥66/月，备案 7~20 天。
+- **想做微信小程序** → 看小程序文档：有企业/个体主体走 web-view 内嵌（1~2 天上线）；只有个人主体走原生纯前端工具（小程序单文件 10MB 上限，1GB 视频做不了，引导网页版）。
 
 ## 许可证
 
