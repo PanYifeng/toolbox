@@ -69,16 +69,21 @@ function renderQuizTab(el, data, lang) {
 async function renderPreview(el, data, lang) {
   const $q = el.querySelector('#rel-quiz');
   $q.innerHTML = `<p class="muted">${t('rel.gening')}</p>`;
-  const { dataUrl } = await renderMemorialCard({
-    themeKey: data.meta.themeKey,
-    name: lang === 'en' ? 'Sample' : '样例',
-    score: 88,
-    showDonate: true,
-    preview: true,
-  });
-  $q.innerHTML = `
+  try {
+    const { dataUrl } = await renderMemorialCard({
+      themeKey: data.meta.themeKey,
+      name: lang === 'en' ? 'Sample' : '样例',
+      score: 88,
+      showDonate: true,
+      preview: true,
+    });
+    $q.innerHTML = `
     <p class="muted">${t('rel.previewNote')}</p>
     <img class="rc-preview" src="${dataUrl}" alt="sample memorial card">`;
+  } catch (err) {
+    console.error(err);
+    $q.innerHTML = `<p class="err">${t('rel.genFail')}</p>`;
+  }
 }
 
 // renderCardForm 纪念卡表单：仅在测验及格后调用，score 为真实成绩且只读
@@ -102,19 +107,24 @@ function renderCardForm(el, data, lang, score) {
     if (!name) { alert(t('rel.needName')); return; }
     const $out = box.querySelector('#rc-out');
     $out.innerHTML = `<p class="muted">${t('rel.gening')}</p>`;
-    const { dataUrl, code } = await renderMemorialCard({
-      themeKey: data.meta.themeKey,
-      name, score, showDonate: true,
-    });
-    $out.innerHTML = `
+    try {
+      const { dataUrl, code } = await renderMemorialCard({
+        themeKey: data.meta.themeKey,
+        name, score, showDonate: true,
+      });
+      $out.innerHTML = `
       <img class="rc-preview" src="${dataUrl}" alt="memorial card">
       <p class="muted">${t('rel.antiFake')}: <code>${code}</code></p>
       <div class="row">
         <button id="rc-dl" class="btn">${t('rel.download')}</button>
         <button id="rc-mail" class="btn-soft">${t('rel.sendMail')}</button>
       </div>`;
-    $out.querySelector('#rc-dl').onclick = () => downloadPng(dataUrl, `${data.meta.themeKey}-memorial.png`);
-    $out.querySelector('#rc-mail').onclick = () => sendMail(data.meta.themeKey, $email.value, name, score, code, dataUrl, $out);
+      $out.querySelector('#rc-dl').onclick = () => downloadPng(dataUrl, `${data.meta.themeKey}-memorial.png`);
+      $out.querySelector('#rc-mail').onclick = () => sendMail(data.meta.themeKey, $email.value, name, score, code, dataUrl, $out);
+    } catch (err) {
+      console.error(err);
+      $out.innerHTML = `<p class="err">${t('rel.genFail')}</p>`;
+    }
   };
 }
 

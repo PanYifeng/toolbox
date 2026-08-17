@@ -28,13 +28,18 @@ export function mountGameCard(container, getScore, gameName) {
     const score = getScore();
     const $out = wrap.querySelector('#gc-out');
     $out.innerHTML = `<p class="muted">${t('rel.gening')}</p>`;
-    // 游戏纪念卡同样展示支付码；寄语由主题（game-${gameName}）提供，契合各游戏风格。
-    const { dataUrl } = await renderMemorialCard({
-      themeKey: `game-${gameName}`, name, score, showDonate: true,
-    });
-    $out.innerHTML = `
+    try {
+      // 游戏纪念卡同样展示支付码；寄语由主题（game-${gameName}）提供，契合各游戏风格。
+      const { dataUrl } = await renderMemorialCard({
+        themeKey: `game-${gameName}`, name, score, showDonate: true,
+      });
+      $out.innerHTML = `
       <img class="rc-preview" src="${dataUrl}" alt="memorial card">
       <button id="gc-dl" class="btn">${t('rel.download')}</button>`;
-    $out.querySelector('#gc-dl').onclick = () => downloadPng(dataUrl, `${gameName}-memorial.png`);
+      $out.querySelector('#gc-dl').onclick = () => downloadPng(dataUrl, `${gameName}-memorial.png`);
+    } catch (err) {
+      console.error(err);
+      $out.innerHTML = `<p class="err">${t('rel.genFail')}</p>`;
+    }
   };
 }
