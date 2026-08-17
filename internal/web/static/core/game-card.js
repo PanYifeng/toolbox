@@ -1,7 +1,7 @@
 // mountGameCard 为小游戏挂载"通关纪念卡"入口：按钮 + 内联表单（姓名 + 生成 + 下载）。
 // container: 挂载点；getScore: 返回当前成绩的函数；gameName: 文件名标识。
 
-import { t, getLang } from '/core/i18n.js';
+import { t } from '/core/i18n.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
 
 // mountGameCard 挂载通关纪念卡入口
@@ -28,10 +28,9 @@ export function mountGameCard(container, getScore, gameName) {
     const score = getScore();
     const $out = wrap.querySelector('#gc-out');
     $out.innerHTML = `<p class="muted">${t('rel.gening')}</p>`;
-    const lang = getLang();
-    const msg = lang === 'en' ? 'Well played — may you keep a joyful heart.' : '玩得开心，愿你常保欢喜之心。';
+    // 游戏纪念卡同样展示支付码；寄语由主题（game-${gameName}）提供，契合各游戏风格。
     const { dataUrl } = await renderMemorialCard({
-      themeKey: `game-${gameName}`, name, score, showDonate: false, message: msg,
+      themeKey: `game-${gameName}`, name, score, showDonate: true,
     });
     $out.innerHTML = `
       <img class="rc-preview" src="${dataUrl}" alt="memorial card">
