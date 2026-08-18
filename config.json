@@ -4,12 +4,12 @@
   },
   "limits": {
     "maxUploadBytes": 1073741824,
-    "heavyConcurrency": 3,
+    "heavyConcurrency": 1,
     "jobTimeoutSeconds": 300
   },
   "pro": {
     "enabled": true,
-    "maxUploadBytes": 2147483648,
+    "maxUploadBytes": 1073741824,
     "tokensFile": "/opt/toolbox/pro-tokens.json",
     "requestsFile": "/opt/toolbox/pro-requests.json",
     "adminSecret": "",
@@ -56,7 +56,9 @@
   "seo": {
     "robotsAllow": true
   },
-  "siteVerification": [],
+  "siteVerification": [
+    { "filename": "googlef98eaf30ff3c8b45.html", "content": "google-site-verification: googlef98eaf30ff3c8b45.html" }
+  ],
   "ads": {
     "enabled": true,
     "slots": [

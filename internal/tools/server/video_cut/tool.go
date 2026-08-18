@@ -63,8 +63,8 @@ func (t *Tool) Submit(ctx context.Context, p tools.SubmitParams) (string, error)
 	//   -nostdin                    禁止读取 stdin
 	//   -protocol_whitelist file    仅允许 file 协议，阻断 ffmpeg SSRF
 	//   -ss（输入定位）+ -t（输出时长） 秒数计算，避免 -to 版本歧义
-	//   重编码（libx264 ultrafast + aac）保证截断点帧级精确；-c copy 只能关键帧对齐且时间戳易错乱
-	//   -threads 1                  限制 CPU，配合全局 3 并发不超载
+	//   -c copy 流复制：不重编码，内存极低，2GB 文件也能处理；截断点对齐到最近关键帧（误差数秒）
+	//   -ss 输入定位 + -t 输出时长   秒数计算，避免 -to 版本歧义
 	//   -fs 500M                    限制输出体积
 	cmd := exec.CommandContext(ctx, "ffmpeg", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -89,11 +89,8 @@ func buildArgs(startSec, endSec float64, inPath, outPath string) []string {
 		}
 		args = append(args, "-t", strconv.FormatFloat(dur, 'f', 3, 64))
 	}
-	args = append(args,
-		"-threads", "1",
-		"-c:v", "libx264", "-preset", "ultrafast",
-		"-c:a", "aac",
-		"-fs", "500M", outPath)
+	// -c copy 流复制：不重编码，内存极低、速度近文件复制，适合 1GB 小内存机器
+	args = append(args, "-c", "copy", "-fs", "500M", outPath)
 	return args
 }
 

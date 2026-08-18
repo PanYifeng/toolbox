@@ -67,7 +67,7 @@ func (t *Tool) Submit(ctx context.Context, p tools.SubmitParams) (string, error)
 		"-i", p.File.Path,
 		"-threads", "1",
 		"-map", "0:v?", "-map", "0:a?",
-		"-c:v", "libx264", "-preset", "fast",
+		"-c:v", "libx264", "-preset", "ultrafast",
 		"-c:a", "aac",
 		"-t", "600", "-fs", "200M",
 		outPath)
