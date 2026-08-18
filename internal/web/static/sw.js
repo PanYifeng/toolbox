@@ -1,6 +1,6 @@
 // service worker：app shell cache-first + 导航 network-first。
 // 发布时 bump VER 触发自更新与旧缓存清理。
-const VER = 'toolbox-v1';
+const VER = 'toolbox-v2';
 const SHELL = [
   '/',
   '/core/app.js',
@@ -43,11 +43,10 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // 静态资源：cache-first，回退网络并缓存
+  // 静态资源：network-first（确保拿到最新改动，CF 缓存兜底速度），离线回退缓存
   e.respondWith(
-    caches.match(req).then((c) => c || fetch(req).then((r) => {
-      if (r.ok) caches.open(VER).then((cac) => cac.put(req, r.clone()));
-      return r;
-    })),
+    fetch(req)
+      .then((r) => { if (r.ok) caches.open(VER).then((c) => c.put(req, r.clone())); return r; })
+      .catch(() => caches.match(req).then((c) => c || new Response('', { status: 504 }))),
   );
 });
