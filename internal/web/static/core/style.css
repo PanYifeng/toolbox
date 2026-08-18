@@ -567,10 +567,14 @@ pre {
   border-radius: 10px;
   background: var(--bg-soft);
 }
-.donate-card .dc-close {
-  position: absolute;
-  top: 8px;
-  right: 10px;
+.donate-card .dc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.donate-card .dc-title { font-weight: 600; font-size: 15px; }
+.donate-card .dc-toggle {
   margin: 0;
   padding: 2px 8px;
   background: transparent;
@@ -580,7 +584,9 @@ pre {
   cursor: pointer;
   line-height: 1;
 }
-.donate-card .dc-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.donate-card .dc-toggle:hover { color: var(--accent); }
+.donate-card .dc-body { margin-top: 4px; }
+.donate-card.collapsed .dc-body { display: none; }
 .donate-card .dc-desc { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
 .donate-methods { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; }
 .dm-item { margin: 0; text-align: center; }

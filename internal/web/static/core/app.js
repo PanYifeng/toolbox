@@ -163,10 +163,9 @@ function renderHome() {
   bindDonateCard();
 }
 
-// donateCardHTML 赞助卡片（可关闭）
+// donateCardHTML 赞助卡片（可折叠，不可关闭——关闭后顶栏/底栏入口无法再展开）
 function donateCardHTML() {
   const d = BOOT.donation;
-  const lang = getLang();
   const methods = (d.methods || [])
     .map((m) => {
       if (m.type === 'image') {
@@ -180,36 +179,45 @@ function donateCardHTML() {
     .join('');
   return `
     <section class="donate-card" id="donate-card">
-      <button class="dc-close" id="dc-close" aria-label="close">✕</button>
-      <div class="dc-title">${d.title || t('footer.sponsor')}</div>
-      <div class="dc-desc">${d.desc || ''}</div>
-      <div class="donate-methods">${methods}</div>
+      <div class="dc-head">
+        <div class="dc-title">${d.title || t('footer.sponsor')}</div>
+        <button class="dc-toggle" id="dc-toggle" aria-expanded="true" aria-label="collapse">▾</button>
+      </div>
+      <div class="dc-body" id="dc-body">
+        <div class="dc-desc">${d.desc || ''}</div>
+        <div class="donate-methods">${methods}</div>
+      </div>
     </section>`;
 }
 
-// bindDonateCard 绑定赞助卡关闭
+// bindDonateCard 绑定赞助卡折叠切换
 function bindDonateCard() {
   const card = app.querySelector('#donate-card');
   if (!card) return;
-  const close = card.querySelector('#dc-close');
-  if (close) close.onclick = () => (card.style.display = 'none');
+  const toggle = card.querySelector('#dc-toggle');
+  if (!toggle) return;
+  toggle.onclick = () => {
+    const collapsed = card.classList.toggle('collapsed');
+    toggle.textContent = collapsed ? '▸' : '▾';
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+  };
 }
 
-// openDonation 滚动到赞助卡（首页）或跳回首页并定位
+// openDonation 展开赞助卡并滚动定位（首页）或跳回首页并定位
 function openDonation() {
-  if (!currentId) {
-    const card = app.querySelector('#donate-card');
-    if (card) card.scrollIntoView({ behavior: 'smooth' });
-    return;
-  }
+  const show = (card) => {
+    if (!card) return;
+    card.classList.remove('collapsed');
+    const t = card.querySelector('#dc-toggle');
+    if (t) { t.textContent = '▾'; t.setAttribute('aria-expanded', 'true'); }
+    card.scrollIntoView({ behavior: 'smooth' });
+  };
+  if (!currentId) { show(app.querySelector('#donate-card')); return; }
   currentId = null;
   query = '';
   history.pushState({}, '', '/');
   render();
-  setTimeout(() => {
-    const card = app.querySelector('#donate-card');
-    if (card) card.scrollIntoView({ behavior: 'smooth' });
-  }, 50);
+  setTimeout(() => show(app.querySelector('#donate-card')), 50);
 }
 
 // cardHtml 单个工具卡片
