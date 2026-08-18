@@ -1,5 +1,6 @@
 import { t } from '/core/i18n.js';
 import { bindSwipe } from '/core/swipe.js';
+import { mountDpad } from '/core/dpad.js';
 import { mountGameCard } from '/core/game-card.js';
 
 // render 2048 小游戏（方向键移动合并）
@@ -22,7 +23,10 @@ export default function (el) {
   el.querySelector('#f-new').onclick = newGame;
   $board.onkeydown = onKey;
   // 移动端滑动操作
-  bindSwipe($board, (d) => { if (move(d)) { addTile(); draw(); saveBest(); } });
+  const handleDir = (d) => { if (move(d)) { addTile(); draw(); saveBest(); } };
+  bindSwipe($board, handleDir);
+  // 屏上方向键（触屏/窄屏显示）
+  mountDpad(el, handleDir);
   newGame();
   // 通关纪念卡入口
   mountGameCard(el, () => score, '2048');

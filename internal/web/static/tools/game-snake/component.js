@@ -1,5 +1,6 @@
 import { t } from '/core/i18n.js';
 import { bindSwipe } from '/core/swipe.js';
+import { mountDpad } from '/core/dpad.js';
 import { mountGameCard } from '/core/game-card.js';
 
 const N = 18, CELL = 18; // 网格大小与单格像素
@@ -28,7 +29,10 @@ export default function (el) {
   $cv.onkeydown = onKey;
   // 移动端滑动操作：U/D/L/R → 方向向量
   const swipeMap = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] };
-  bindSwipe($cv, (d) => { if (setDir(swipeMap[d])) start(); });
+  const handleDir = (d) => { if (setDir(swipeMap[d])) start(); };
+  bindSwipe($cv, handleDir);
+  // 屏上方向键（触屏/窄屏显示）
+  mountDpad(el, handleDir);
   newGame();
   // 通关纪念卡入口
   mountGameCard(el, () => score, 'snake');
