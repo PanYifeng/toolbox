@@ -21,6 +21,7 @@ const CAT_ORDER = [
   { zh: '文档', en: 'Document' },
   { zh: '宗教文化', en: 'Religion & Culture' },
   { zh: '游戏', en: 'Games' },
+  { zh: '纪念卡', en: 'Memorial' },
 ];
 
 // init 启动：拉取 bootstrap 配置后再渲染
