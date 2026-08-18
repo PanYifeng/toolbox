@@ -17,7 +17,8 @@ type Config struct {
 	Features   FeaturesConfig   `json:"features"`
 	Compliance ComplianceConfig `json:"compliance"`
 	Donation   DonationConfig   `json:"donation"`
-	SEO        SEOConfig        `json:"seo"`
+	SEO              SEOConfig          `json:"seo"`
+	SiteVerification []VerificationFile `json:"siteVerification"`
 }
 
 // ServerConfig 服务配置
@@ -148,6 +149,12 @@ type DonationMethod struct {
 // SEOConfig SEO 相关开关
 type SEOConfig struct {
 	RobotsAllow *bool `json:"robotsAllow"` // robots.txt 是否允许抓取；nil=按默认(true，strict 下为 false)
+}
+
+// VerificationFile 第三方平台（微信/QQ浏览器/360 等）的站点归属验证文件
+type VerificationFile struct {
+	Filename string `json:"filename"` // 验证文件名，如 6a4a07bf2b0173fbc3dd5727997d2638.txt
+	Content  string `json:"content"`  // 文件内容（原样返回，不加换行）
 }
 
 // RobotsAllowed 返回是否允许抓取：显式设置优先，否则默认允许（strict 模式默认禁止）

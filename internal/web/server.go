@@ -70,6 +70,13 @@ func (s *Server) routes() {
 	}
 	mux.HandleFunc("GET /robots.txt", s.handleRobots)
 	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
+	// 第三方平台站点验证文件（微信/QQ浏览器等）：精确路由原样返回固定内容
+	for _, v := range s.cfg.SiteVerification {
+		if v.Filename == "" || strings.ContainsAny(v.Filename, "/\\") {
+			continue // 跳过空名或含路径分隔的非法条目
+		}
+		mux.HandleFunc("GET /"+v.Filename, s.serveVerification(v.Content))
+	}
 	if s.cfg.EffectiveFeatures().Analytics {
 		mux.HandleFunc("POST /api/track", s.handleTrack)
 	}
@@ -336,6 +343,15 @@ func containsDotDot(p string) bool {
 // handleAds 返回广告配置
 func (s *Server) handleAds(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, s.cfg.Ads)
+}
+
+// serveVerification 返回第三方平台验证文件的固定内容（text/plain，不缓存）
+func (s *Server) serveVerification(content string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		_, _ = io.WriteString(w, content)
+	}
 }
 
 // writeJSON 写 JSON 响应
