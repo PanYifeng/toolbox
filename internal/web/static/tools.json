@@ -17,9 +17,17 @@
       "flac",
       "ffmpeg",
       "音频",
-      "转码"
+      "转码",
+      "m4a",
+      "ogg",
+      "aac",
+      "格式转换"
     ],
-    "desc": ""
+    "desc": "在线音频格式转换工具，支持 MP3、WAV、FLAC、OGG、M4A 互转，服务端 ffmpeg 处理。",
+    "guide": {
+      "zh": "## 功能\n\n上传音频文件，选择目标格式（MP3 / WAV / FLAC / OGG / M4A），由服务端 ffmpeg 转码后返回下载链接。\n\n## 使用场景\n\n- 把录音转成 MP3 方便分享和播放\n- 将无损 FLAC 转为体积更小的 OGG 或 M4A\n- 把各种格式统一转成 WAV 用于二次剪辑\n\n## 常见问题\n\n- **处理耗时**：大文件转码需要时间，提交后页面会自动轮询任务状态，完成后自动开始下载\n- **支持格式**：输入支持常见音频格式，输出可选 MP3、WAV、FLAC、OGG、M4A（AAC）\n- **文件大小**：受服务端处理能力限制，超大文件可能转换失败",
+      "en": "## Features\n\nUpload an audio file, pick a target format (MP3 / WAV / FLAC / OGG / M4A), and the server-side ffmpeg transcodes it and returns a download link.\n\n## Use cases\n\n- Convert recordings to MP3 for easy sharing and playback\n- Shrink lossless FLAC into smaller OGG or M4A\n- Normalize various formats into WAV for further editing\n\n## FAQ\n\n- **Processing time**: large files take longer; the page polls the job status and auto-downloads once done\n- **Supported formats**: common audio inputs accepted; outputs include MP3, WAV, FLAC, OGG, M4A (AAC)\n- **File size**: very large files may fail due to server-side limits"
+    }
   },
   {
     "id": "base64",
@@ -36,9 +44,17 @@
       "base64",
       "encode",
       "decode",
-      "编码"
+      "编码",
+      "解码",
+      "utf-8",
+      "字符串",
+      "加密"
     ],
-    "desc": ""
+    "desc": "在线 Base64 编码解码工具，兼容 UTF-8 中文，纯浏览器本地处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n将文本编码为 Base64 字符串，或将 Base64 字符串解码回原文，完整兼容 UTF-8（含中文）。\n\n## 使用场景\n\n- 在 HTTP、URL 或 JSON 中传递二进制或特殊字符\n- 解码 Data URI 中的图片、字体等内嵌资源\n- 排查接口返回的 Base64 字段内容\n\n## 常见问题\n\n- **中文乱码**：本工具使用 UTF-8 安全的编解码方式，中文不会被替换成问号\n- **解码失败**：输入包含非法字符或长度不正确时会提示错误，请检查是否完整复制\n- **数据安全**：编解码完全在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nEncode text to a Base64 string or decode it back, with full UTF-8 support including CJK characters.\n\n## Use cases\n\n- Transport binary or special characters over HTTP, URL, or JSON\n- Decode embedded images and fonts in Data URIs\n- Inspect Base64 fields returned by APIs\n\n## FAQ\n\n- **Chinese garbled**: this tool uses a UTF-8-safe routine, so CJK text never turns into question marks\n- **Decode error**: illegal characters or wrong length trigger an error; check that the input is fully copied\n- **Privacy**: encoding and decoding run locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "cert-verify",
@@ -59,9 +75,15 @@
       "验真",
       "防伪",
       "纪念卡",
-      "anti-counterfeit"
+      "anti-counterfeit",
+      "找回",
+      "复算"
     ],
-    "desc": ""
+    "desc": "纪念卡验真工具，输入卡面四要素与防伪码复算比对，纯前端验真并重新渲染原卡。",
+    "guide": {
+      "zh": "## 功能\n\n输入卡面四要素（姓名、主题、分数、完成时间）和防伪码，前端用与生成时相同的算法复算并比对，通过后重新渲染原纪念卡供下载。\n\n## 使用场景\n\n- 校验一张纪念卡是否被篡改或伪造\n- 找回并重新下载之前生成的纪念卡\n- 确认卡面信息与防伪码一致后再分享\n\n## 常见问题\n\n- **防伪码原理**：防伪码是卡面内容的内容指纹而非秘密，纯前端复算即可验真，无需服务端存储\n- **验真失败**：请逐项核对姓名、主题、分数和完成时间是否与卡面完全一致，时间格式为「YYYY-MM-DD HH:MM」\n- **数据安全**：所有计算在浏览器本地完成，卡面信息不上传服务器",
+      "en": "## Features\n\nEnter the four card fields (name, theme, score, completion time) plus the anti-counterfeit code; the page recomputes it with the same algorithm used at generation and compares, then re-renders the original card for download on match.\n\n## Use cases\n\n- Verify a memorial card has not been tampered with or forged\n- Recover and re-download a previously generated card\n- Confirm the card fields and anti-counterfeit code match before sharing\n\n## FAQ\n\n- **How the code works**: it is a content fingerprint, not a secret — recomputation runs purely client-side, no server storage needed\n- **Verification failed**: double-check that name, theme, score and completion time exactly match the card; time format is YYYY-MM-DD HH:MM\n- **Privacy**: all computation runs locally in your browser, card data is never uploaded"
+    }
   },
   {
     "id": "color",
@@ -79,9 +101,16 @@
       "hex",
       "rgb",
       "hsl",
-      "颜色"
+      "颜色",
+      "颜色值",
+      "色值转换",
+      "配色"
     ],
-    "desc": ""
+    "desc": "在线颜色转换工具，输入 HEX 实时输出 RGB 与 HSL，附色块预览，纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n输入 HEX 颜色值，实时换算并展示对应的 RGB 与 HSL 表示，同时显示色块预览。\n\n## 使用场景\n\n- 在 CSS、设计稿之间统一颜色格式\n- 快速查看某个 HEX 色值的 RGB 分量用于调色\n- 把屏幕取色结果换算成 HSL 方便调整色相和饱和度\n\n## 常见问题\n\n- **输入格式**：支持带或不带「#」前缀的 6 位 HEX，例如「2563eb」或「#2563eb」\n- **格式无效**：输入非 6 位十六进制字符时会提示错误\n- **数据安全**：换算在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nEnter a HEX color and instantly get the equivalent RGB and HSL values, with a live swatch preview.\n\n## Use cases\n\n- Unify color formats between CSS and design mockups\n- Inspect the RGB components of a HEX value for fine-tuning\n- Convert a picked screen color into HSL to adjust hue and saturation\n\n## FAQ\n\n- **Input format**: accepts 6-digit HEX with or without a # prefix, e.g. 2563eb or #2563eb\n- **Invalid format**: non-6-digit hex input triggers an error\n- **Privacy**: conversion runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "doc_convert",
@@ -101,9 +130,17 @@
       "libreoffice",
       "文档",
       "转换",
-      "word"
+      "word",
+      "odt",
+      "rtf",
+      "txt",
+      "html"
     ],
-    "desc": ""
+    "desc": "在线文档格式转换工具，支持 Word、PDF、TXT、ODT、RTF、HTML 互转，服务端 LibreOffice 处理。",
+    "guide": {
+      "zh": "## 功能\n\n上传文档文件，选择目标格式（PDF / DOCX / TXT / ODT / RTF / HTML），由服务端 LibreOffice 转换后返回下载链接。\n\n## 使用场景\n\n- 把 Word 文档转成 PDF 方便分发和打印\n- 将 PDF 或 ODT 文档转成 DOCX 以便编辑\n- 把各种格式统一转成 TXT 或 HTML 用于内容提取\n\n## 常见问题\n\n- **处理耗时**：大文件或复杂排版转换需要时间，页面会自动轮询任务状态，完成后自动开始下载\n- **支持格式**：输入支持 DOCX、DOC、PDF、ODT、RTF、TXT，输出可选 PDF、DOCX、TXT、ODT、RTF、HTML\n- **排版差异**：跨格式转换可能存在字体或排版差异，建议转换后检查关键页面",
+      "en": "## Features\n\nUpload a document and pick a target format (PDF / DOCX / TXT / ODT / RTF / HTML); the server-side LibreOffice converts it and returns a download link.\n\n## Use cases\n\n- Turn Word documents into PDF for distribution and printing\n- Convert PDF or ODT into DOCX for editing\n- Normalize various formats into TXT or HTML for content extraction\n\n## FAQ\n\n- **Processing time**: large or complex files take longer; the page polls the job status and auto-downloads once done\n- **Supported formats**: inputs include DOCX, DOC, PDF, ODT, RTF, TXT; outputs include PDF, DOCX, TXT, ODT, RTF, HTML\n- **Layout drift**: cross-format conversion may differ in fonts or layout; review key pages afterwards"
+    }
   },
   {
     "id": "duration",
@@ -123,9 +160,15 @@
       "时间",
       "时长",
       "换算",
-      "年月日时分秒"
+      "年月日时分秒",
+      "毫秒",
+      "ms"
     ],
-    "desc": ""
+    "desc": "在线时间长度换算工具，输入数值与单位输出复合分解及各单位等价，纯前端计算。",
+    "guide": {
+      "zh": "## 功能\n\n输入一个数值并选择单位（年 / 月 / 周 / 天 / 时 / 分 / 秒 / 毫秒），输出复合分解形式（如 31 年 251 天 7 小时 46 分 40 秒）以及换算到各单位的等价值。\n\n## 使用场景\n\n- 计算一段总时长（毫秒或秒）对应多少天多少小时\n- 把年、月单位换算成更细的小时或秒用于排期\n- 验证时间戳或定时器间隔的单位换算结果\n\n## 常见问题\n\n- **年月近似**：年为 365.25 天，月为 30.4375 天，复合分解时跳过月和周以保证确定性\n- **超大数值**：当数值过大或过小时自动用科学计数法展示，避免显示一长串零\n- **数据安全**：换算在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nEnter a value and a unit (year / month / week / day / hour / minute / second / millisecond) to get a compound breakdown (e.g. 31 years 251 days 7 hours 46 minutes 40 seconds) plus the equivalent in every unit.\n\n## Use cases\n\n- Convert a total duration (ms or seconds) into days and hours\n- Break year or month values into finer hours or seconds for scheduling\n- Verify unit conversions for timestamps or timer intervals\n\n## FAQ\n\n- **Year and month are approximate**: a year is 365.25 days and a month is 30.4375 days; compound breakdown skips month and week for determinism\n- **Very large values**: extremely large or small numbers are shown in scientific notation to avoid long strings of zeros\n- **Privacy**: conversion runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "game_2048",
@@ -143,9 +186,16 @@
       "game",
       "puzzle",
       "游戏",
-      "益智"
+      "益智",
+      "合并",
+      "数字",
+      "休闲"
     ],
-    "desc": ""
+    "desc": "经典 2048 小游戏，方向键或滑动合并相同数字，冲分通关可获纪念卡，纯前端运行。",
+    "guide": {
+      "zh": "## 功能\n\n4x4 网格上通过方向键或屏幕滑动移动所有方块，相同数字合并并相加，每次移动随机生成一个新方块，目标是拼出 2048。\n\n## 使用场景\n\n- 休闲碎片时间玩两把数字合并益智\n- 挑战最高分，刷新本地记录\n- 通关后领取专属纪念卡收藏或分享\n\n## 常见问题\n\n- **操作方式**：键盘方向键移动，移动端可滑动屏幕或使用屏上方向键\n- **最高分保存**：最高分存储在浏览器本地，清除站点数据会重置\n- **无法移动**：当所有方向都无法合并且无空格时游戏结束",
+      "en": "## Features\n\nOn a 4x4 grid, move all tiles with arrow keys or swipes; equal numbers merge and add up, a new tile spawns each move, and the goal is to reach 2048.\n\n## Use cases\n\n- Kill time with a number-merging puzzle\n- Chase a higher score and beat your local best\n- Earn an exclusive memorial card on completion to collect or share\n\n## FAQ\n\n- **Controls**: arrow keys on desktop, swipe or on-screen D-pad on touch devices\n- **Best score**: stored locally in the browser; clearing site data resets it\n- **No moves left**: the game ends when no direction can merge and no empty cell remains"
+    }
   },
   {
     "id": "game-minesweeper",
@@ -163,9 +213,16 @@
       "mine",
       "扫雷",
       "puzzle",
-      "logic"
+      "logic",
+      "益智",
+      "逻辑",
+      "排雷"
     ],
-    "desc": ""
+    "desc": "经典扫雷小游戏，9x9 网格 10 颗雷，左键揭开右键插旗，首点击安全，纯前端运行。",
+    "guide": {
+      "zh": "## 功能\n\n9x9 网格、10 颗雷的经典扫雷。左键揭开格子，右键或手机长按插旗；揭开 0 时自动展开相邻空格，揭开全部非雷格即获胜。\n\n## 使用场景\n\n- 碎片时间玩一局经典逻辑推理\n- 通过数字提示推断雷的位置锻炼推理能力\n- 通关后累计胜场解锁纪念卡\n\n## 常见问题\n\n- **首点击安全**：第一次点击后才布雷，保证起手不会踩雷\n- **插旗方式**：桌面端右键插旗，移动端长按格子约 0.4 秒插旗\n- **胜场保存**：累计胜场存储在浏览器本地，清除站点数据会重置",
+      "en": "## Features\n\nClassic minesweeper on a 9x9 grid with 10 mines. Left-click to reveal, right-click or long-press to flag; revealing a 0 auto-expands connected empty cells, and revealing every non-mine cell wins.\n\n## Use cases\n\n- Squeeze in a round of classic logic deduction\n- Train reasoning by inferring mine locations from number hints\n- Stack wins to unlock a memorial card\n\n## FAQ\n\n- **First click is safe**: mines are placed only after the first click, so you never start on a mine\n- **Flagging**: right-click on desktop, long-press (~0.4s) on touch devices\n- **Win count**: stored locally in the browser; clearing site data resets it"
+    }
   },
   {
     "id": "game_snake",
@@ -182,9 +239,16 @@
       "snake",
       "game",
       "游戏",
-      "贪吃蛇"
+      "贪吃蛇",
+      "经典",
+      "休闲",
+      "街机"
     ],
-    "desc": ""
+    "desc": "经典贪吃蛇小游戏，方向键或滑动控制蛇身吃食物，撞墙或自身即结束，纯前端运行。",
+    "guide": {
+      "zh": "## 功能\n\n在 18x18 网格上控制蛇移动吃食物，每吃一个食物蛇身加长一节并得分，撞墙或撞到自身即游戏结束。\n\n## 使用场景\n\n- 碎片时间玩一局经典贪吃蛇\n- 挑战最长蛇身和最高分，刷新本地记录\n- 通关后领取专属纪念卡收藏或分享\n\n## 常见问题\n\n- **操作方式**：键盘方向键控制方向，移动端可滑动屏幕或使用屏上方向键\n- **反向限制**：不能 180 度反向掉头，按反向键会被忽略\n- **最高分保存**：最高分存储在浏览器本地，清除站点数据会重置",
+      "en": "## Features\n\nSteer the snake on an 18x18 grid to eat food; each food lengthens the snake by one and scores a point; hitting a wall or yourself ends the game.\n\n## Use cases\n\n- Play a quick round of classic snake in spare moments\n- Chase the longest body and highest score, beating your local best\n- Earn an exclusive memorial card on completion to collect or share\n\n## FAQ\n\n- **Controls**: arrow keys on desktop, swipe or on-screen D-pad on touch devices\n- **No reverse**: 180-degree turns are ignored to prevent instant self-collision\n- **Best score**: stored locally in the browser; clearing site data resets it"
+    }
   },
   {
     "id": "game-spider",
@@ -203,9 +267,17 @@
       "纸牌",
       "蜘蛛",
       "card",
-      "扑克"
+      "扑克",
+      "蜘蛛纸牌",
+      "single suit",
+      "单花色",
+      "在线纸牌"
     ],
-    "desc": ""
+    "desc": "在线蜘蛛纸牌（单花色 ♠）小游戏，浏览器直接玩无需登录，支持同色降序移动、自动收牌、累计胜场记录。",
+    "guide": {
+      "zh": "## 功能\n\n经典蜘蛛纸牌的单花色版本：104 张全部为 ♠，10 列发牌加 5 次发牌堆，凑齐 8 组 K..A 降序序列即通关。\n\n## 使用场景\n\n- 上班摸鱼或午休解压，开一局轻松的纸牌\n- 熟悉蜘蛛纸牌规则后再去挑战多花色版本\n- 浏览器即开即玩，无需下载安装客户端\n\n## 常见问题\n\n- **怎么移动多张牌**：点击同色降序连续序列的起始牌选中，再点目标列顶牌需比选中顶牌大 1\n- **什么时候能发牌**：发牌堆剩余时点击发牌，但所有列都不能为空\n- **进度保存吗**：胜场数保存在浏览器本地，刷新不会丢失",
+      "en": "## Features\n\nThe single-suit variant of Spider Solitaire: all 104 cards are ♠, dealt across 10 columns with 5 stock deals. Collect 8 complete K..A descending runs to win.\n\n## Use cases\n\n- A relaxing card game for breaks or downtime\n- Learn Spider rules on the easier single-suit mode before trying multi-suit\n- Play instantly in the browser, no download or login needed\n\n## FAQ\n\n- **Move multiple cards**: click the start of a same-suit descending run to select it, then click the target column whose top card must be one rank higher\n- **When to deal stock**: click the stock while it has cards left, but no column may be empty\n- **Is progress saved**: win count is stored locally in the browser and survives refresh"
+    }
   },
   {
     "id": "game_ttt",
@@ -223,9 +295,16 @@
       "game",
       "游戏",
       "井字棋",
-      "oxo"
+      "oxo",
+      "圈叉棋",
+      "井字游戏",
+      "三连棋"
     ],
-    "desc": ""
+    "desc": "在线井字棋（Tic-Tac-Toe）小游戏，玩家对战 minimax AI，浏览器直接玩，胜负与累计胜场本地记录。",
+    "guide": {
+      "zh": "## 功能\n\n3x3 棋盘的井字棋，玩家执 X，电脑执 O 并使用 minimax 算法走最佳一步，几乎无法被击败，最多只能逼平。\n\n## 使用场景\n\n- 碎片时间杀时间的经典小游戏\n- 体验 minimax 博弈算法的实际效果\n- 给小朋友讲解棋类 AI 的入门示例\n\n## 常见问题\n\n- **能赢电脑吗**：minimax 永远选最优解，你最多只能平局\n- **怎么重开**：点击「重新开始」按钮即可清空棋盘\n- **胜场记录在哪**：保存在浏览器本地存储，清缓存会丢失",
+      "en": "## Features\n\nClassic 3x3 Tic-Tac-Toe. You play X and the computer plays O using the minimax algorithm to always pick the optimal move, making it nearly unbeatable — at best you force a draw.\n\n## Use cases\n\n- A quick classic game for spare moments\n- See the minimax game-playing algorithm in action\n- A simple demo for teaching board-game AI to kids\n\n## FAQ\n\n- **Can I beat the AI**: minimax always plays optimally, so the best you can do is draw\n- **How to restart**: click the reset button to clear the board\n- **Where are wins saved**: stored in browser local storage and lost if you clear cache"
+    }
   },
   {
     "id": "hash",
@@ -244,9 +323,17 @@
       "sha256",
       "sha512",
       "摘要",
-      "digest"
+      "digest",
+      "sha1",
+      "sha384",
+      "散列",
+      "指纹"
     ],
-    "desc": ""
+    "desc": "在线哈希计算工具，基于 Web Crypto 计算 SHA-1/256/384/512 摘要，纯前端本地运算不上传文本。",
+    "guide": {
+      "zh": "## 功能\n\n输入任意文本，调用浏览器原生 Web Crypto API 计算 SHA-1、SHA-256、SHA-384、SHA-512 摘要，输出十六进制字符串并支持一键复制。\n\n## 使用场景\n\n- 校验文件或文本的完整性、比对内容是否一致\n- 生成接口签名所需的摘要值\n- 验证密码哈希、数据指纹等场景\n\n## 常见问题\n\n- **支持 MD5 吗**：不支持，Web Crypto 不提供 MD5，且 MD5 已不安全\n- **数据会上传吗**：不会，全部在浏览器本地计算\n- **大文本会卡吗**：Web Crypto 异步执行，常规文本秒级出结果",
+      "en": "## Features\n\nCompute SHA-1, SHA-256, SHA-384 and SHA-512 digests of any text using the browser's native Web Crypto API, output as a hex string with one-click copy.\n\n## Use cases\n\n- Verify text or file integrity and compare content\n- Generate digest values for API signatures\n- Hash passwords or data fingerprints\n\n## FAQ\n\n- **Is MD5 supported**: no, Web Crypto does not provide MD5 and it is insecure\n- **Is data uploaded**: no, all computation runs locally in your browser\n- **Will large text freeze**: Web Crypto is asynchronous, normal text finishes in milliseconds"
+    }
   },
   {
     "id": "html_entity",
@@ -265,9 +352,17 @@
       "escape",
       "unescape",
       "实体",
-      "转义"
+      "转义",
+      "编码",
+      "解码",
+      "htmlentities",
+      "special chars"
     ],
-    "desc": ""
+    "desc": "在线 HTML 实体编解码工具，支持 & < > \" ' 等特殊字符转义与反转义，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n将文本中的 &、<、>、\"、' 等特殊字符转义为 HTML 实体（如 &lt; &gt; &amp;），也可把含实体的字符串反向还原为原始字符。\n\n## 使用场景\n\n- 在 HTML 中显示代码片段或标签时避免被解析\n- 处理用户输入、防止 XSS 注入的快速转义\n- 还原从接口拿到的含 HTML 实体的字符串\n\n## 常见问题\n\n- **支持哪些字符**：& < > \" ' 五种最常见的需要转义的字符\n- **解码安全吗**：使用 DOM 原生解析，仅做实体还原不执行脚本\n- **数据上传吗**：纯前端处理，不发送到服务器",
+      "en": "## Features\n\nEscape special characters like & < > \" ' into HTML entities (e.g. &lt; &gt; &amp;) or reverse entity-laden strings back to their original characters.\n\n## Use cases\n\n- Display code snippets or tags in HTML without them being parsed\n- Quickly escape user input to help prevent XSS injection\n- Decode strings containing HTML entities returned from APIs\n\n## FAQ\n\n- **Which characters are supported**: the five most common ones — & < > \" '\n- **Is decoding safe**: it uses native DOM parsing to restore entities without executing scripts\n- **Is data uploaded**: processing is fully client-side, nothing is sent to a server"
+    }
   },
   {
     "id": "json_format",
@@ -285,9 +380,15 @@
       "format",
       "格式化",
       "校验",
-      "beautify"
+      "beautify",
+      "压缩",
+      "转义"
     ],
-    "desc": ""
+    "desc": "在线 JSON 格式化与校验工具，支持美化、压缩、错误定位，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n将杂乱或压缩的 JSON 字符串美化成带缩进的可读格式，同时校验语法并定位错误位置。\n\n## 使用场景\n\n- 调试 API 返回的 JSON，快速看清嵌套结构\n- 检查 JSON 配置文件语法是否正确\n- 压缩 JSON 去除空白，减小传输体积\n\n## 常见问题\n\n- **解析报错**：错误信息会指出行号与原因，常见是多余逗号、引号未闭合或键名缺引号\n- **数据安全**：所有解析在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nBeautify compact JSON into indented readable form, validate syntax and pinpoint errors.\n\n## Use cases\n\n- Debug API responses and inspect nested structure\n- Validate JSON config files\n- Minify JSON by stripping whitespace\n\n## FAQ\n\n- **Parse error**: the message points to the line and cause — usually a trailing comma, unclosed quote, or unquoted key\n- **Privacy**: parsing runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "jwt",
@@ -305,9 +406,18 @@
       "json",
       "token",
       "解码",
-      "decode"
+      "decode",
+      "json web token",
+      "base64url",
+      "header",
+      "payload",
+      "调试"
     ],
-    "desc": ""
+    "desc": "在线 JWT 解码工具，解析 token 的 header 与 payload 为可读 JSON，不验证签名，纯前端本地解析不上传。",
+    "guide": {
+      "zh": "## 功能\n\n粘贴 JWT 字符串后，按点号切分出 header 和 payload 两段，对 base64url 部分解码并以缩进 JSON 展示，方便查看其中的算法、过期时间、用户声明等字段。\n\n## 使用场景\n\n- 调试登录态 token，查看 sub、exp、iat 等声明是否正确\n- 排查接口鉴权失败，确认 token 内容是否被篡改\n- 学习 JWT 三段式结构与 base64url 编码\n\n## 常见问题\n\n- **会验证签名吗**：不会，本工具只解码不验签，不能据此信任 token 内容\n- **数据安全吗**：解析完全在浏览器本地完成，token 不会上传服务器\n- **解析报错**：token 格式不正确（少于两段或非合法 base64url）会给出错误提示",
+      "en": "## Features\n\nPaste a JWT and the tool splits it on dots, decodes the base64url header and payload segments, and displays them as indented JSON so you can inspect the algorithm, expiry, user claims and other fields.\n\n## Use cases\n\n- Debug login tokens by checking sub, exp, iat and other claims\n- Troubleshoot auth failures by confirming token contents\n- Learn the three-segment JWT structure and base64url encoding\n\n## FAQ\n\n- **Does it verify the signature**: no, this tool only decodes and never verifies — do not trust token contents based on it\n- **Is it safe**: decoding runs fully in your browser and the token is never uploaded\n- **Parse errors**: malformed tokens (fewer than two segments or invalid base64url) show an error message"
+    }
   },
   {
     "id": "lorem",
@@ -325,9 +435,17 @@
       "ipsum",
       "placeholder",
       "占位",
-      "文本"
+      "文本",
+      "dummy text",
+      "填充",
+      "假文本",
+      "排版样稿"
     ],
-    "desc": ""
+    "desc": "在线 Lorem ipsum 占位文本生成器，自定义段落数与每段词数，一键复制，纯前端随机生成。",
+    "guide": {
+      "zh": "## 功能\n\n按设定的段落数（1-20）和每段词数（5-200），从内置拉丁词库随机抽取拼成 Lorem ipsum 风格的占位文本，首字母大写、句末加句号，可一键复制。\n\n## 使用场景\n\n- 设计稿、原型图填充占位文字，专注版式而非内容\n- 测试长文本在布局、分页、滚动下的表现\n- 写示例接口返回数据时填充假文本\n\n## 常见问题\n\n- **生成的是真拉丁文吗**：不是，是拉丁词库随机组合，无实际语义\n- **每次结果一样吗**：不一样，每次随机生成\n- **能复制吗**：点「复制」按钮即可复制到剪贴板",
+      "en": "## Features\n\nGenerate Lorem ipsum style placeholder text from a built-in Latin word pool, with configurable paragraph count (1-20) and words per paragraph (5-200). First letter capitalized, period at the end, one-click copy.\n\n## Use cases\n\n- Fill design mockups and prototypes with dummy text so you focus on layout\n- Test how long text behaves in pagination, scrolling or responsive layouts\n- Populate sample API responses with fake text\n\n## FAQ\n\n- **Is it real Latin**: no, it is randomly assembled from a Latin word pool with no real meaning\n- **Is the result the same each time**: no, it is regenerated randomly every time\n- **Can I copy it**: click the copy button to copy to the clipboard"
+    }
   },
   {
     "id": "markdown",
@@ -344,9 +462,18 @@
       "markdown",
       "md",
       "preview",
-      "预览"
+      "预览",
+      "实时",
+      "render",
+      "渲染",
+      "编辑器",
+      "md to html"
     ],
-    "desc": ""
+    "desc": "在线 Markdown 实时预览工具，左侧编辑右侧即时渲染 HTML，纯前端解析不上传文档。",
+    "guide": {
+      "zh": "## 功能\n\n左侧输入 Markdown 文本，右侧通过内置渲染器实时输出 HTML 预览，输入即渲染，无需点击按钮。\n\n## 使用场景\n\n- 写文档时即时查看 Markdown 排版效果\n- 复制一段 Markdown 快速确认渲染样式\n- 在不支持 MD 的地方粘贴前先转成预览效果\n\n## 常见问题\n\n- **支持哪些语法**：标题、列表、代码、引用、链接、图片、表格等常见语法\n- **内容会上传吗**：不会，渲染完全在浏览器本地完成\n- **能导出 HTML 吗**：本工具只做预览，不提供导出文件",
+      "en": "## Features\n\nType Markdown on the left and get real-time HTML preview on the right via the built-in renderer — rendering happens on every keystroke with no button to click.\n\n## Use cases\n\n- Instantly check Markdown formatting while writing docs\n- Paste a Markdown snippet to quickly verify the rendered look\n- Preview before pasting into a place that does not support MD\n\n## FAQ\n\n- **Which syntax is supported**: headings, lists, code, quotes, links, images, tables and other common syntax\n- **Is content uploaded**: no, rendering runs entirely in your browser\n- **Can I export HTML**: this tool only previews and does not export files"
+    }
   },
   {
     "id": "password",
@@ -364,9 +491,16 @@
       "随机",
       "random",
       "密码",
-      "generator"
+      "generator",
+      "强密码",
+      "secure",
+      "crypto"
     ],
-    "desc": ""
+    "desc": "在线密码生成器，自定义长度与大小写、数字、符号字符集，基于 crypto.getRandomValues 真随机，纯前端生成不上传。",
+    "guide": {
+      "zh": "## 功能\n\n按设定长度（4-128）和勾选的字符集（大写、小写、数字、符号、是否排除易混淆字符）生成随机密码，使用浏览器原生 crypto.getRandomValues 保证真随机性，可一键复制。\n\n## 使用场景\n\n- 注册新账号时生成高强度不可猜测的密码\n- 为数据库、API Key、服务令牌生成随机串\n- 演示密码强度与字符集、长度之间的关系\n\n## 常见问题\n\n- **安全吗**：使用 crypto.getRandomValues 真随机，比 Math.random 安全得多\n- **默认排除哪些字符**：勾选「排除易混淆」后会去掉 O 0 I l 1 等形似字符\n- **会上传吗**：不会，密码在浏览器本地生成后不发送任何地方",
+      "en": "## Features\n\nGenerate random passwords with configurable length (4-128) and selectable character sets — uppercase, lowercase, digits, symbols, and whether to exclude ambiguous characters. Uses the browser's native crypto.getRandomValues for true randomness, with one-click copy.\n\n## Use cases\n\n- Generate strong, unguessable passwords when registering new accounts\n- Create random strings for databases, API keys and service tokens\n- Demonstrate how password strength relates to length and character set\n\n## FAQ\n\n- **Is it secure**: it uses crypto.getRandomValues for true randomness, far safer than Math.random\n- **Which characters are excluded by default**: enabling exclude-ambiguous removes look-alike characters like O 0 I l 1\n- **Is it uploaded**: no, the password is generated locally and never sent anywhere"
+    }
   },
   {
     "id": "radix",
@@ -386,9 +520,16 @@
       "oct",
       "dec",
       "进制",
-      "binary"
+      "binary",
+      "十进制",
+      "十六进制",
+      "进制转换"
     ],
-    "desc": ""
+    "desc": "在线进制转换工具，支持二进制、八进制、十进制、十六进制互转，实时计算纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n输入任一进制的数字，自动换算出 BIN、OCT、DEC、HEX 四种进制表示。\n\n## 使用场景\n\n- 调试代码时查看颜色值或位掩码的十六进制与十进制对照\n- 阅读网络协议字段、内存地址时快速换算\n- 学习计算机基础时验证手工转换结果\n\n## 常见问题\n\n- **解析失败**：输入与所选进制不符会提示无效，例如 HEX 下出现 G\n- **负数与小数**：仅支持非负整数，小数与负号会被判为无效\n- **大小写**：十六进制字母不区分大小写",
+      "en": "## Features\n\nEnter a number in any base and instantly get its BIN, OCT, DEC and HEX forms.\n\n## Use cases\n\n- Inspect color values or bitmasks while debugging\n- Convert network protocol fields and memory addresses\n- Verify manual conversions when learning computer science\n\n## FAQ\n\n- **Parse error**: input must match the chosen base, e.g. G is invalid under HEX\n- **Negatives and decimals**: only non-negative integers are supported\n- **Letter case**: hex letters are case-insensitive"
+    }
   },
   {
     "id": "regex",
@@ -405,9 +546,17 @@
       "regex",
       "regexp",
       "正则",
-      "pattern"
+      "pattern",
+      "正则表达式",
+      "匹配",
+      "test",
+      "flags"
     ],
-    "desc": ""
+    "desc": "在线正则表达式测试工具，实时匹配并高亮所有结果，支持标志位与错误提示，纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n输入正则表达式与待匹配文本，列出全部匹配项并标注序号；支持 g、i、m 等标志位。\n\n## 使用场景\n\n- 编写表单校验规则时快速验证\n- 提取日志或文本中的关键片段\n- 学习正则语法时即时观察匹配效果\n\n## 常见问题\n\n- **无匹配**：返回提示无结果，可尝试调整标志位或边界符\n- **语法错误**：错误信息会显示具体原因，如未闭合的括号\n- **标志位**：默认 g 全局匹配，去掉 g 仅返回首个匹配",
+      "en": "## Features\n\nEnter a pattern and target text to list all matches with index; supports g, i, m flags.\n\n## Use cases\n\n- Validate form input rules quickly\n- Extract key fragments from logs or text\n- Learn regex syntax with instant feedback\n\n## FAQ\n\n- **No match**: returns a no-match hint — try adjusting flags or anchors\n- **Syntax error**: the message shows the cause, e.g. unclosed parenthesis\n- **Flags**: defaults to g for global; remove g to return the first match only"
+    }
   },
   {
     "id": "religion-buddhism",
@@ -425,9 +574,17 @@
       "佛教",
       "buddha",
       "religion",
-      "宗教"
+      "宗教",
+      "佛陀",
+      "佛法",
+      "禅",
+      "佛经"
     ],
-    "desc": ""
+    "desc": "佛教文化知识介绍与测验工具，含历史、教义、节庆等知识卡片与趣味问答，纯前端展示。",
+    "guide": {
+      "zh": "## 功能\n\n以知识卡片形式介绍佛教的起源、核心教义、主要节日与象征符号，并提供趣味测验检验了解程度。\n\n## 使用场景\n\n- 了解佛教文化背景，如四圣谛、八正道等基本概念\n- 比较 东南亚、汉传、藏传佛教的差别\n- 通过测验巩固对佛教节日与象征的认识\n\n## 常见问题\n\n- **内容立场**：仅作文化与历史介绍，不宣扬信仰或评判教义\n- **测验用途**：用于知识自测，不作为评价标准\n- **信息来源**：以通识材料为基础，深入学习请参阅专门典籍",
+      "en": "## Features\n\nPresents Buddhist origin, core teachings, major festivals and symbols as knowledge cards, with a quiz to self-check.\n\n## Use cases\n\n- Learn basic concepts like the Four Noble Truths and the Eightfold Path\n- Compare Theravada, Mahayana and Vajrayana traditions\n- Reinforce knowledge of Buddhist festivals and symbols through a quiz\n\n## FAQ\n\n- **Stance**: introduces culture and history only; it does not preach or judge doctrine\n- **Quiz purpose**: for self-testing, not an evaluation criterion\n- **Sources**: based on general references; consult specialist texts for deeper study"
+    }
   },
   {
     "id": "religion-christianity",
@@ -446,9 +603,17 @@
       "jesus",
       "bible",
       "religion",
-      "宗教"
+      "宗教",
+      "基督教",
+      "圣经",
+      "天主教",
+      "新教"
     ],
-    "desc": ""
+    "desc": "基督教文化知识介绍与测验工具，含历史、教义、节庆等知识卡片与趣味问答，纯前端展示。",
+    "guide": {
+      "zh": "## 功能\n\n以知识卡片形式介绍基督教的起源、核心教义、主要节日（如圣诞节、复活节）与象征符号，并附趣味测验。\n\n## 使用场景\n\n- 了解基督教基本概念，如三位一体、救赎、教会等\n- 区分 天主教、东正教、新教 的历史脉络\n- 通过测验加深对节日与象征意义的理解\n\n## 常见问题\n\n- **内容立场**：仅作文化与历史介绍，不宣扬信仰或评判教派\n- **测验用途**：用于知识自测，不作为信仰评价标准\n- **信息来源**：以通识材料为基础，深入研究请参阅专门典籍",
+      "en": "## Features\n\nPresents Christian origin, core teachings, major festivals (e.g. Christmas, Easter) and symbols as knowledge cards, with a quiz.\n\n## Use cases\n\n- Learn basic concepts such as the Trinity, salvation and the Church\n- Trace the historical split among Catholicism, Orthodoxy and Protestantism\n- Deepen understanding of festivals and symbols through a quiz\n\n## FAQ\n\n- **Stance**: introduces culture and history only; it does not preach or judge denominations\n- **Quiz purpose**: for self-testing, not an evaluation of faith\n- **Sources**: based on general references; consult specialist texts for deeper study"
+    }
   },
   {
     "id": "religion-islam",
@@ -467,9 +632,17 @@
       "muslim",
       "quran",
       "religion",
-      "宗教"
+      "宗教",
+      "穆斯林",
+      "古兰经",
+      "清真",
+      "五功"
     ],
-    "desc": ""
+    "desc": "伊斯兰文化知识介绍与测验工具，含历史、教义、节庆等知识卡片与趣味问答，纯前端展示。",
+    "guide": {
+      "zh": "## 功能\n\n以知识卡片形式介绍伊斯兰教的起源、五功、主要节日（如开斋节、古尔邦节）与象征符号，并附趣味测验。\n\n## 使用场景\n\n- 了解伊斯兰基本概念，如五功、清真、清真寺等\n- 认识 逊尼派 与 什叶派 的历史渊源\n- 通过测验加深对节日与日常礼仪的理解\n\n## 常见问题\n\n- **内容立场**：仅作文化与历史介绍，不宣扬信仰或评判教派\n- **测验用途**：用于知识自测，不作为信仰评价标准\n- **信息来源**：以通识材料为基础，深入研究请参阅专门典籍",
+      "en": "## Features\n\nPresents Islamic origin, the Five Pillars, major festivals (e.g. Eid al-Fitr, Eid al-Adha) and symbols as knowledge cards, with a quiz.\n\n## Use cases\n\n- Learn basic concepts such as the Five Pillars, halal and the mosque\n- Understand the historical origins of Sunni and Shia traditions\n- Deepen understanding of festivals and daily etiquette through a quiz\n\n## FAQ\n\n- **Stance**: introduces culture and history only; it does not preach or judge sects\n- **Quiz purpose**: for self-testing, not an evaluation of faith\n- **Sources**: based on general references; consult specialist texts for deeper study"
+    }
   },
   {
     "id": "slugify",
@@ -486,9 +659,17 @@
       "slug",
       "url",
       "permalink",
-      "slugify"
+      "slugify",
+      "slug 生成",
+      "链接",
+      "SEO",
+      "中文转拼音"
     ],
-    "desc": ""
+    "desc": "在线 URL Slug 生成工具，实时将标题转成小写连字符格式，去变音符号，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n将输入文本实时转换成 URL 友好的 slug：转小写、去除变音符号与特殊字符、空格与下划线统一为连字符。\n\n## 使用场景\n\n- 生成博客或文档站点的 permalink\n- 将商品或文章标题转成 SEO 友好的 URL 片段\n- 规范化文件名、目录名\n\n## 常见问题\n\n- **非拉丁字符**：会被过滤，建议先用拼音工具转换中文\n- **连续连字符**：会自动合并为单个，首尾连字符会去除\n- **空输入**：输出占位符「-」，便于复制判断",
+      "en": "## Features\n\nConverts text in real time into a URL-friendly slug: lowercases, strips diacritics and special characters, joins words with hyphens.\n\n## Use cases\n\n- Generate permalinks for blogs or documentation sites\n- Turn article or product titles into SEO-friendly URL segments\n- Normalize file and directory names\n\n## FAQ\n\n- **Non-latin characters**: filtered out; convert Chinese to pinyin first\n- **Consecutive hyphens**: collapsed into one; leading and trailing hyphens trimmed\n- **Empty input**: outputs a placeholder \"-\" so you can tell at a glance"
+    }
   },
   {
     "id": "text_case",
@@ -508,9 +689,16 @@
       "kebab",
       "upper",
       "lower",
-      "大小写"
+      "大小写",
+      "转换",
+      "title",
+      "pascal"
     ],
-    "desc": ""
+    "desc": "在线文本大小写转换工具，支持 camelCase、snake_case、kebab-case、UPPER、lower、Title 互转，纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n一键将文本在六种命名风格之间转换：camelCase、snake_case、kebab-case、UPPER、lower、Title Case。\n\n## 使用场景\n\n- 编程时在变量、常量、文件名风格间切换\n- 统一文档标题或按钮文案的大小写\n- 清洗导入数据中的字段名\n\n## 常见问题\n\n- **分词规则**：按空格、下划线、连字符切分单词，连续大小写视为一个整体\n- **空文本**：输出为空，需先输入内容\n- **保留原文本**：UPPER 与 lower 直接转换原文本，不重新分词",
+      "en": "## Features\n\nConvert text between six naming styles with one click: camelCase, snake_case, kebab-case, UPPER, lower and Title Case.\n\n## Use cases\n\n- Switch between variable, constant and filename conventions while coding\n- Unify casing for document titles or button labels\n- Clean up field names from imported data\n\n## FAQ\n\n- **Tokenization**: splits on spaces, underscores and hyphens; consecutive case changes are treated as one token\n- **Empty input**: outputs nothing; enter text first\n- **Original preserved**: UPPER and lower convert the raw text without re-tokenizing"
+    }
   },
   {
     "id": "text_diff",
@@ -527,9 +715,17 @@
       "diff",
       "compare",
       "差异",
-      "对比"
+      "对比",
+      "文本比较",
+      "行级 diff",
+      "代码对比",
+      "merge"
     ],
-    "desc": ""
+    "desc": "在线文本差异对比工具，行级 diff 高亮新增与删除行，带行号与一键复制，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n左右两栏输入文本，按行计算差异，新增行绿色、删除行红色、上下文行灰色，并显示新旧行号；结果可一键复制。\n\n## 使用场景\n\n- 比较两版配置文件或代码片段的改动\n- 核对文档修订前后的差异\n- 检查数据导出是否一致\n\n## 常见问题\n\n- **完全相同**：返回「内容一致」提示\n- **行级对比**：按整行比较，不做字符级 diff\n- **数据安全**：所有比较在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nPaste text into two panes to get a line-level diff: added lines in green, removed in red, context in grey, with old and new line numbers; results can be copied.\n\n## Use cases\n\n- Compare two versions of a config file or code snippet\n- Review document revisions\n- Verify data export consistency\n\n## FAQ\n\n- **Identical input**: returns an \"identical\" hint\n- **Granularity**: compares whole lines, not characters\n- **Privacy**: diffing runs locally in the browser; nothing is uploaded"
+    }
   },
   {
     "id": "text_lines",
@@ -550,9 +746,15 @@
       "trim",
       "行",
       "去重",
-      "排序"
+      "排序",
+      "反转",
+      "去空行"
     ],
-    "desc": ""
+    "desc": "在线文本行处理工具，支持排序、去重、去空白、删空行、反转，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n对多行文本按行进行排序、去重、去首尾空白、删除空行或反转顺序，一键得到处理结果。\n\n## 使用场景\n\n- 清理日志或数据导出中的重复行\n- 对配置项、ID 列表进行排序和去重\n- 去除复制粘贴带来的多余空行\n\n## 常见问题\n\n- **区分大小写**：排序与去重均区分大小写，大写字母排在小写之前\n- **原顺序丢失**：去重保留首次出现的行，排序后原始顺序会被覆盖\n- **数据安全**：所有处理在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nProcess multi-line text per line: sort, dedupe, trim whitespace, drop empty lines, or reverse order.\n\n## Use cases\n\n- Clean duplicate lines from logs or data exports\n- Sort and dedupe config items or ID lists\n- Strip extra blank lines from pasted content\n\n## FAQ\n\n- **Case sensitivity**: sort and dedupe are case-sensitive, uppercase comes first\n- **Original order**: dedupe keeps the first occurrence; sorting overwrites the original order\n- **Privacy**: all processing runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "text_stats",
@@ -571,9 +773,16 @@
       "chars",
       "lines",
       "统计",
-      "字数"
+      "字数",
+      "字符数",
+      "字节",
+      "阅读时间"
     ],
-    "desc": ""
+    "desc": "在线文本统计工具，实时计算字符数、单词数、行数、字节数与预估阅读时间，纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n输入文本即可实时统计字符数、单词数、行数、字节数，并按 200 词/分钟估算阅读时间。\n\n## 使用场景\n\n- 撰写文章、推文时控制字数\n- 检查字符串长度是否符合接口字段限制\n- 估算博客或文档的阅读时长\n\n## 常见问题\n\n- **单词计数规则**：以连续非空白字符作为一个单词，中文按字符显示而非分词\n- **字节数**：按 UTF-8 编码计算，中文一个字符占 3 字节\n- **数据安全**：统计在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nType to get live counts of characters, words, lines, and bytes, plus an estimated read time at 200 wpm.\n\n## Use cases\n\n- Keep word count within limits while writing posts or tweets\n- Check string length against API field limits\n- Estimate reading time for blogs or docs\n\n## FAQ\n\n- **Word counting**: a word is a run of non-whitespace characters; Chinese is counted by character, not segmented\n- **Bytes**: UTF-8 encoded size; a Chinese character takes 3 bytes\n- **Privacy**: counting runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "timestamp",
@@ -591,9 +800,16 @@
       "unix",
       "时间戳",
       "date",
-      "时间"
+      "时间",
+      "epoch",
+      "日期转换",
+      "UTC"
     ],
-    "desc": ""
+    "desc": "在线 Unix 时间戳转换工具，支持时间戳转日期、日期转时间戳，秒级与毫秒级自动识别，纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n实时显示当前 Unix 时间戳，并支持时间戳与日期字符串双向转换，自动识别秒级和毫秒级。\n\n## 使用场景\n\n- 调试接口中时间戳字段的实际日期\n- 数据库或日志中 Unix 时间戳与可读时间互转\n- 快速复制当前时间戳用于请求签名\n\n## 常见问题\n\n- **秒与毫秒**：输入 13 位按毫秒处理，10 位按秒处理\n- **时区**：同时输出本地时间与 UTC 时间，便于跨时区对照\n- **日期格式**：日期转时间戳支持 「2024-01-01 12:00:00」 或 ISO 8601 格式",
+      "en": "## Features\n\nShow the current Unix timestamp live, and convert between timestamps and date strings in both directions, auto-detecting seconds vs milliseconds.\n\n## Use cases\n\n- Debug the actual date behind a timestamp field in an API\n- Convert Unix timestamps in databases or logs to readable time and back\n- Copy the current timestamp for request signing\n\n## FAQ\n\n- **Seconds vs milliseconds**: 13-digit input is treated as ms, 10-digit as seconds\n- **Timezone**: outputs both local and UTC time for cross-zone comparison\n- **Date format**: date-to-timestamp accepts \"2024-01-01 12:00:00\" or ISO 8601"
+    }
   },
   {
     "id": "url_encode",
@@ -611,9 +827,17 @@
       "uri",
       "encode",
       "decode",
-      "percent"
+      "percent",
+      "编码",
+      "解码",
+      "百分号",
+      "转义"
     ],
-    "desc": ""
+    "desc": "在线 URL 编解码工具，支持百分号编码与解码，处理特殊字符与中文，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n对文本进行 URL 百分号编码（encodeURIComponent）或解码（decodeURIComponent），处理空格、中文及特殊符号。\n\n## 使用场景\n\n- 拼接带查询参数的 URL，避免中文或符号破坏结构\n- 解码被编码的 URL 参数查看原始内容\n- 处理接口返回的编码字符串\n\n## 常见问题\n\n- **解码报错**：常见于序列中存在非法百分号编码，如残缺的 「%2」\n- **与 encodeURI 区别**：本工具使用 encodeURIComponent，会编码 「:」「/」「?」 等分隔符，适合查询参数\n- **数据安全**：编解码在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nEncode text with URL percent-encoding (encodeURIComponent) or decode it, handling spaces, Chinese, and special symbols.\n\n## Use cases\n\n- Build URLs with query params without breaking them on Chinese or symbols\n- Decode encoded URL params to inspect the original content\n- Process encoded strings returned by APIs\n\n## FAQ\n\n- **Decode error**: usually caused by an illegal percent-encoding sequence such as a truncated \"%2\"\n- **vs encodeURI**: this tool uses encodeURIComponent, which also encodes \":\", \"/\", \"?\" and is suited for query params\n- **Privacy**: encoding and decoding run locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "url_parse",
@@ -630,9 +854,17 @@
       "url",
       "parse",
       "uri",
-      "解析"
+      "解析",
+      "query",
+      "参数",
+      "pathname",
+      "拆解"
     ],
-    "desc": ""
+    "desc": "在线 URL 解析工具，实时拆解协议、主机、路径、查询参数和锚点，纯前端处理不上传。",
+    "guide": {
+      "zh": "## 功能\n\n输入 URL 即可实时解析出协议、主机、端口、路径、查询参数、锚点及身份信息等组成部分。\n\n## 使用场景\n\n- 排查 URL 拼接错误，确认参数是否正确传递\n- 提取并核对查询字符串中的键值对\n- 分析带认证信息的 URL 结构\n\n## 常见问题\n\n- **解析失败**：URL 必须包含协议（http 或 https），否则浏览器无法识别\n- **查询参数**：自动解码已编码的参数值，逐行展示键值对\n- **数据安全**：解析在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nType a URL to instantly break it down into protocol, host, port, path, query params, hash, and credentials.\n\n## Use cases\n\n- Debug URL construction and verify that params are passed correctly\n- Extract and inspect key-value pairs in the query string\n- Analyze URLs that carry authentication info\n\n## FAQ\n\n- **Parse failure**: the URL must include a protocol (http or https) or the browser cannot parse it\n- **Query params**: encoded values are auto-decoded and shown line by line\n- **Privacy**: parsing runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "uuid",
@@ -650,9 +882,16 @@
       "guid",
       "唯一",
       "unique",
-      "v4"
+      "v4",
+      "生成",
+      "identifier",
+      "随机"
     ],
-    "desc": ""
+    "desc": "在线 UUID v4 生成工具，一键产生随机唯一标识符并复制，基于浏览器原生 crypto.randomUUID，纯前端处理。",
+    "guide": {
+      "zh": "## 功能\n\n调用浏览器原生 crypto.randomUUID 生成符合 RFC 4122 的 UUID v4 随机唯一标识符，支持一键复制。\n\n## 使用场景\n\n- 为新建数据记录生成唯一主键\n- 前端调试时为请求生成追踪 ID\n- 给文件、会话分配不重复标识\n\n## 常见问题\n\n- **版本说明**：仅生成 v4（随机）版本，不提供 v1 时间序或 v5 命名空间版本\n- **唯一性**：v4 随机碰撞概率极低，可放心用于绝大多数业务场景\n- **数据安全**：生成过程在浏览器本地完成，不上传服务器",
+      "en": "## Features\n\nGenerate RFC 4122 UUID v4 random unique identifiers via the native crypto.randomUUID, with one-click copy.\n\n## Use cases\n\n- Generate unique primary keys for new records\n- Create trace IDs for requests during front-end debugging\n- Assign non-duplicate identifiers to files or sessions\n\n## FAQ\n\n- **Versions**: only v4 (random) is generated; v1 time-based or v5 namespace versions are not provided\n- **Uniqueness**: v4 collision probability is negligible and safe for most use cases\n- **Privacy**: generation runs locally in your browser, nothing is uploaded"
+    }
   },
   {
     "id": "video_convert",
@@ -670,9 +909,16 @@
       "ffmpeg",
       "视频",
       "转码",
-      "mp4"
+      "mp4",
+      "webm",
+      "mkv",
+      "mov"
     ],
-    "desc": ""
+    "desc": "在线视频转码工具，基于服务端 ffmpeg 将视频转换为 MP4、WebM、MKV、MOV 格式，免费 1GB，Pro 2GB。",
+    "guide": {
+      "zh": "## 功能\n\n上传视频文件，由服务端 ffmpeg 转码为目标格式（MP4 H.264、WebM、MKV、MOV），任务完成后自动下载结果。\n\n## 使用场景\n\n- 将手机拍摄的 MOV 视频转为 MP4 便于分享\n- 把视频转成 WebM 以适配网页内嵌播放\n- 统一素材格式方便后续剪辑\n\n## 常见问题\n\n- **上传额度**：免费用户单文件上限 1GB，Pro 用户 2GB\n- **转码耗时**：取决于视频时长与服务器负载，页面会实时轮询任务状态\n- **格式支持**：输出格式固定为 MP4、WebM、MKV、MOV 四种，输入可为常见视频格式",
+      "en": "## Features\n\nUpload a video and transcode it on the server with ffmpeg into MP4, WebM, MKV, or MOV; the result auto-downloads when done.\n\n## Use cases\n\n- Convert MOV from a phone to MP4 for easier sharing\n- Transcode to WebM for web-embedded playback\n- Normalize footage formats before editing\n\n## FAQ\n\n- **Upload quota**: free users up to 1GB per file, Pro users up to 2GB\n- **Duration**: depends on video length and server load; the page polls the job status live\n- **Formats**: output is limited to MP4, WebM, MKV, MOV; input can be any common video format"
+    }
   },
   {
     "id": "video_cut",
@@ -693,8 +939,13 @@
       "视频",
       "截断",
       "裁剪",
-      "剪辑"
+      "剪辑",
+      "ffmpeg"
     ],
-    "desc": ""
+    "desc": "在线视频截断工具，按起止时间裁剪视频片段，服务端 ffmpeg 流复制无需重编码，免费 1GB，Pro 2GB。",
+    "guide": {
+      "zh": "## 功能\n\n指定起止时间，由服务端 ffmpeg 通过流复制（-ss/-to）快速裁剪视频片段，无需重新编码，完成后自动下载。\n\n## 使用场景\n\n- 截取视频中的精彩片段用于分享\n- 去掉片头片尾冗余部分\n- 从长视频中切出教学或演示片段\n\n## 常见问题\n\n- **上传额度**：免费用户单文件上限 1GB，Pro 用户 2GB\n- **时间格式**：支持 「00:00:10」 或秒数（如 10）两种写法\n- **画质无损**：采用流复制方式，裁剪过程不重新编码，画质与原片一致",
+      "en": "## Features\n\nSet start and end times to quickly cut a video clip on the server via ffmpeg stream copy (-ss/-to) without re-encoding; the result auto-downloads when done.\n\n## Use cases\n\n- Extract highlight clips from a video for sharing\n- Trim redundant intros and outros\n- Cut teaching or demo segments out of a long video\n\n## FAQ\n\n- **Upload quota**: free users up to 1GB per file, Pro users up to 2GB\n- **Time format**: accepts \"00:00:10\" or seconds (e.g. 10)\n- **Lossless**: uses stream copy, no re-encoding, so quality matches the source"
+    }
   }
 ]

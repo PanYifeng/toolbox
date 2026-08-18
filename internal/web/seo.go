@@ -25,6 +25,7 @@ type toolMeta struct {
 	Icon     string   `json:"icon"`
 	Keywords []string `json:"keywords"`
 	Desc     string   `json:"desc"`
+	Guide    i18nText `json:"guide"`
 }
 
 // i18nText 中英文文案
@@ -183,7 +184,7 @@ func (s *Server) renderIndex(w http.ResponseWriter, r *http.Request, id string) 
 		data.Description = desc
 		data.Keywords = strings.Join(m.Keywords, ", ")
 		data.Canonical = data.SiteURL + "/t/" + id
-		data.NoscriptHTML = template.HTML(fmt.Sprintf(`<p><a href="%s/">%s</a></p>`, data.SiteURL, s.cfg.Site.Name))
+		data.NoscriptHTML = s.toolNoscript(m, data.SiteURL, lang)
 		data.JSONLD = s.toolJSONLD(m, data.SiteURL, lang)
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -227,6 +228,43 @@ func (s *Server) toolJSONLD(m toolMeta, base, lang string) template.HTML {
 	ld := fmt.Sprintf(`{"@context":"https://schema.org","@type":"SoftwareApplication","name":%q,"applicationCategory":"DeveloperApplication","operatingSystem":"All","url":%q,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}`,
 		name, url)
 	return template.HTML("<script type=\"application/ld+json\">" + ld + "</script>")
+}
+
+// toolNoscript 生成工具页 noscript 内容：返回首页链接 + guide 纯文本（爬虫无需 JS 即可索引深度内容）
+func (s *Server) toolNoscript(m toolMeta, base, lang string) template.HTML {
+	html := fmt.Sprintf(`<p><a href="%s/">%s</a></p>`, base, s.cfg.Site.Name)
+	guide := m.Guide.ZH
+	if lang == "en" && m.Guide.EN != "" {
+		guide = m.Guide.EN
+	}
+	if t := mdToText(guide); t != "" {
+		html += "<div>" + template.HTMLEscapeString(t) + "</div>"
+	}
+	return template.HTML(html)
+}
+
+// mdToText 极简 markdown → 纯文本：去代码块、行首标题/列表/引用标记、行内 ** 与 `，供 noscript 注入
+func mdToText(md string) string {
+	var b strings.Builder
+	inCode := false
+	for _, line := range strings.Split(md, "\n") {
+		if strings.HasPrefix(line, "```") {
+			inCode = !inCode
+			continue
+		}
+		if inCode {
+			continue
+		}
+		line = strings.TrimSpace(strings.TrimLeft(line, "#*- >"))
+		if line == "" {
+			continue
+		}
+		line = strings.ReplaceAll(line, "**", "")
+		line = strings.ReplaceAll(line, "`", "")
+		b.WriteString(line)
+		b.WriteByte('\n')
+	}
+	return strings.TrimSpace(b.String())
 }
 
 // toolAllowed 工具是否在当前功能开关下可见

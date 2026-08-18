@@ -1,6 +1,7 @@
 import { registry } from '/tools/registry.js';
 import { t, tr, getLang, setLang } from '/core/i18n.js';
 import { enhanceLined } from '/core/lined.js';
+import { renderMarkdown } from '/core/md.js';
 
 const app = document.getElementById('app');
 let currentId = null;
@@ -36,6 +37,8 @@ async function init() {
   track();
   shell();
   route();
+  // 注册 service worker（PWA：离线可用、可安装到桌面）
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
 // featureEnabled 取功能开关
@@ -275,17 +278,44 @@ function renderTool() {
     return;
   }
   const view = app.querySelector('#view');
+  const guideMd = tr(m.guide);
+  const guideHtml = guideMd ? `<div class="tool-guide">${renderMarkdown(guideMd)}</div>` : '';
   view.innerHTML = `
     <div class="tool">
       <a class="back" href="/">&larr; ${t('app.back')}</a>
-      <h2>${m.icon || ''} ${tr(m.name)}</h2>
+      <div class="tool-head">
+        <h2>${m.icon || ''} ${tr(m.name)}</h2>
+        <button id="tool-share" class="tool-share-btn" title="${t('share.title')}">🔗 ${t('share.title')}</button>
+      </div>
+      ${guideHtml}
       <div id="tool-body"></div>
     </div>`;
   view.querySelector('.back').onclick = (e) => {
     e.preventDefault();
     navigate(null);
   };
+  const shareBtn = view.querySelector('#tool-share');
+  if (shareBtn) shareBtn.onclick = onShare;
   loadComponent(m, view.querySelector('#tool-body'));
+}
+
+// onShare 分享当前工具：移动端调原生分享面板，桌面端复制链接
+function onShare() {
+  const url = location.href;
+  const title = document.title;
+  if (navigator.share) {
+    navigator.share({ title, url }).catch(() => {});
+    return;
+  }
+  if (!navigator.clipboard) return;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = app.querySelector('#tool-share');
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = '✓ ' + t('share.copied');
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
 }
 
 // loadComponent 异步加载并渲染工具组件

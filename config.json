@@ -31,7 +31,7 @@
     "name": "Toolbox",
     "url": "http://localhost:8080",
     "description": "JSON 格式化、时间戳转换、视频转码等常用开发者工具，纯前端零成本，轻量高性能。",
-    "ogImage": ""
+    "ogImage": "/img/og.png"
   },
   "features": {
     "ads": true,

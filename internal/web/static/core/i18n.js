@@ -6,6 +6,9 @@ const dict = {
     'app.tagline': '一站式开发者工具',
     'app.back': '返回首页',
     'app.noResult': '没有匹配的工具',
+    'share.title': '分享',
+    'share.copy': '复制链接',
+    'share.copied': '已复制链接 ✓',
     'footer.coop': '合作 / 反馈',
     'footer.sponsor': '赞助',
     'common.encode': '编码',
@@ -493,6 +496,9 @@ const dict = {
     'pro.invalidEmail': 'Invalid email address',
     'pro.needPlan': 'Please select a plan',
     'pro.needOrder': 'Order ID required',
+    'share.title': 'Share',
+    'share.copy': 'Copy link',
+    'share.copied': 'Link copied ✓',
   },
 };
 

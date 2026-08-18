@@ -28,6 +28,7 @@ for (const d of dirs) {
     icon: m.icon || '',
     keywords: m.keywords || [],
     desc: m.desc || '',  // 可选 SEO 描述，留空则后端按模板生成
+    guide: m.guide || { zh: '', en: '' }, // 可选中英双语使用说明（markdown），注入 noscript + 工具页渲染
   });
 }
 

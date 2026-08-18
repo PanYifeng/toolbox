@@ -200,6 +200,43 @@ html, body {
 }
 .md-preview a { color: var(--accent); }
 
+/* 工具页头部 / 分享按钮 / guide 说明区 */
+.tool-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tool-head h2 { margin: 8px 0; flex: 1; }
+.tool-share-btn {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 14px;
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.tool-share-btn:hover { background: var(--border); }
+.tool-share-btn.copied { color: var(--ok); border-color: var(--ok); }
+.tool-guide {
+  margin: 8px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg-soft);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--fg);
+}
+.tool-guide h1, .tool-guide h2, .tool-guide h3 { margin: 0.5em 0 0.2em; }
+.tool-guide h1 { font-size: 16px; }
+.tool-guide h2 { font-size: 15px; }
+.tool-guide h3 { font-size: 14px; }
+.tool-guide p { margin: 0.4em 0; }
+.tool-guide code { background: var(--bg); padding: 1px 4px; border-radius: 3px; font-family: ui-monospace, monospace; }
+.tool-guide pre { background: var(--bg); padding: 8px; border-radius: 4px; overflow: auto; }
+.tool-guide a { color: var(--accent); }
+.tool-guide ul { margin: 0.4em 0; padding-left: 1.4em; }
+
 /* 游戏 */
 .game-bar {
   display: flex;
