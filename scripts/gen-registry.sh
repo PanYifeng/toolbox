@@ -33,3 +33,6 @@ done < <(find "$TOOLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 } > "$OUT"
 
 echo "generated $OUT"
+
+# 同步生成 tools.json（供后端 SEO：sitemap / per-tool meta）
+node "$SCRIPT_DIR/gen-meta.js"

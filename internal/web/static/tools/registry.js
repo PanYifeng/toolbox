@@ -1,11 +1,14 @@
 // 自动生成，请勿手动编辑。运行 scripts/gen-registry.sh 重新生成。
 import audio_convert from './audio_convert/manifest.js';
 import base64 from './base64/manifest.js';
+import cert_verify from './cert-verify/manifest.js';
 import color from './color/manifest.js';
 import doc_convert from './doc_convert/manifest.js';
 import duration from './duration/manifest.js';
 import game_2048 from './game-2048/manifest.js';
+import game_minesweeper from './game-minesweeper/manifest.js';
 import game_snake from './game-snake/manifest.js';
+import game_spider from './game-spider/manifest.js';
 import game_ttt from './game-ttt/manifest.js';
 import hash from './hash/manifest.js';
 import html_entity from './html-entity/manifest.js';
@@ -31,4 +34,4 @@ import uuid from './uuid/manifest.js';
 import video_convert from './video_convert/manifest.js';
 import video_cut from './video_cut/manifest.js';
 
-export const registry = [audio_convert, base64, color, doc_convert, duration, game_2048, game_snake, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, religion_buddhism, religion_christianity, religion_islam, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];
+export const registry = [audio_convert, base64, cert_verify, color, doc_convert, duration, game_2048, game_minesweeper, game_snake, game_spider, game_ttt, hash, html_entity, json_format, jwt, lorem, markdown, password, radix, regex, religion_buddhism, religion_christianity, religion_islam, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];

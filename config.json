@@ -18,13 +18,44 @@
     "pass": "",
     "from": ""
   },
+  "site": {
+    "name": "Toolbox",
+    "url": "http://localhost:8080",
+    "description": "JSON 格式化、时间戳转换、视频转码等常用开发者工具，纯前端零成本，轻量高性能。",
+    "ogImage": ""
+  },
+  "features": {
+    "ads": true,
+    "donation": true,
+    "signature": true,
+    "religion": true,
+    "memorialCard": true,
+    "analytics": false
+  },
+  "compliance": {
+    "strict": false
+  },
+  "donation": {
+    "enabled": true,
+    "title": "支持本项目",
+    "desc": "这些工具对你有帮助？欢迎请作者喝杯咖啡 ☕",
+    "methods": [
+      { "type": "image", "label": "支付宝", "src": "/img/donate-alipay.jpg" },
+      { "type": "image", "label": "微信", "src": "/img/donate-wechat.png" },
+      { "type": "link", "label": "爱发电", "url": "https://afdian.com/a/your-id" }
+    ],
+    "proHint": "赞助后可获取 Pro Token，享 2GB 上传额度与更高并发"
+  },
+  "seo": {
+    "robotsAllow": true
+  },
   "ads": {
     "enabled": true,
     "slots": [
       {
         "id": "top",
         "position": "top",
-        "html": "<!-- 顶部广告位：替换为 AdSense / 自售赞助内容 -->"
+        "html": "<!-- 顶部广告位：替换为自售赞助 banner / 二维码（不走外部脚本，合规友好） -->"
       },
       {
         "id": "sidebar",

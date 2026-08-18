@@ -25,19 +25,24 @@ var staticFS embed.FS
 
 // Server HTTP 服务
 type Server struct {
-	cfg      *config.Config
-	queue    *queue.Queue
-	mux      *http.ServeMux
-	uploadRL *rateLimiter
+	cfg        *config.Config
+	queue      *queue.Queue
+	mux        *http.ServeMux
+	uploadRL   *rateLimiter
+	seo        *seoStore
+	fileServer http.Handler
+	track      *trackStore
 }
 
 // NewServer 创建服务
 func NewServer(cfg *config.Config) *Server {
 	s := &Server{
-		cfg:      cfg,
-		queue:    queue.New(cfg.Limits.HeavyConcurrency, cfg.Limits.JobTimeoutSeconds),
-		// 上传接口每 IP 每分钟最多 20 次，防滥用
-		uploadRL: newRateLimiter(20, time.Minute),
+		cfg:        cfg,
+		queue:      queue.New(cfg.Limits.HeavyConcurrency, cfg.Limits.JobTimeoutSeconds),
+		uploadRL:   newRateLimiter(20, time.Minute), // 上传接口每 IP 每分钟最多 20 次，防滥用
+		seo:        newSEOStore(),
+		fileServer: http.FileServer(http.FS(mustSub())),
+		track:      newTrackStore(),
 	}
 	s.routes()
 	return s
@@ -53,8 +58,35 @@ func (s *Server) routes() {
 	mux.HandleFunc("GET /api/jobs/{id}/download", s.handleDownload)
 	mux.HandleFunc("GET /api/ads", s.handleAds)
 	mux.HandleFunc("POST /api/cert/send", s.handleCertSend)
-	mux.Handle("/", http.FileServer(http.FS(mustSub())))
+	mux.HandleFunc("GET /api/bootstrap", s.handleBootstrap)
+	mux.HandleFunc("GET /robots.txt", s.handleRobots)
+	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
+	if s.cfg.EffectiveFeatures().Analytics {
+		mux.HandleFunc("POST /api/track", s.handleTrack)
+	}
+	// SPA 入口与静态资源统一分发：/ 与 /t/{id} 走模板渲染，其余走静态文件
+	mux.HandleFunc("/", s.handleSPA)
 	s.mux = mux
+}
+
+// handleSPA 分发：首页/工具页渲染模板，其余交给静态文件服务
+func (s *Server) handleSPA(w http.ResponseWriter, r *http.Request) {
+	p := r.URL.Path
+	if p == "/" || p == "/index.html" {
+		s.renderIndex(w, r, "")
+		return
+	}
+	if strings.HasPrefix(p, "/t/") {
+		id := strings.TrimPrefix(p, "/t/")
+		id = strings.TrimSuffix(id, "/")
+		if id == "" {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		s.renderIndex(w, r, id)
+		return
+	}
+	s.fileServer.ServeHTTP(w, r)
 }
 
 // mustSub 取静态资源子目录

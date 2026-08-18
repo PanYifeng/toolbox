@@ -4,7 +4,7 @@
 // 二维码图片同源加载，不会污染 canvas；吉祥符号作为独立徽章绘制在二维码旁边，绝不覆盖码图。
 
 // THEMES 各宗教 + 各游戏独立主题：主色 / 辅色 / 底色 / 主符号 / 吉祥符号 / 标题 / 寄语 / 纹样类型
-const THEMES = {
+export const THEMES = {
   buddhism: {
     primary: '#C9A227', secondary: '#8C6D1F', bg: '#FBF7EC', symbol: '☸', auspicious: '🪷', pattern: 'lotus',
     title: { zh: '佛法文化结业纪念卡', en: 'Buddhist Culture Memorial Card' },
@@ -46,6 +46,20 @@ const THEMES = {
     message: { zh: '攻守相宜，落子无悔，愿你常保从容。', en: 'Balance attack and defense; may you stay composed.' },
     // 样例完成时间：最早的井字棋电子游戏之一 OXO（A.S. Douglas，EDSAC，1952 年）
     sampleDate: '1952-01-01',
+  },
+  'game-spider': {
+    primary: '#8B2C5C', secondary: '#5C1D3C', bg: '#FBF2F6', symbol: '♠', auspicious: '★', pattern: 'grid4',
+    title: { zh: '蜘蛛纸牌 通关纪念卡', en: 'Spider Solitaire Memorial Card' },
+    message: { zh: '抽丝剥茧，运筹帷幄，愿你于纷繁中理出头绪。', en: 'Untangle the threads and plan ahead; may you find clarity in complexity.' },
+    // 样例完成时间：蜘蛛纸牌随 Windows 98 Plus! 广泛流传（1998 年 6 月）
+    sampleDate: '1998-06-25',
+  },
+  'game-minesweeper': {
+    primary: '#1F6F8B', secondary: '#134A5E', bg: '#F0F7FA', symbol: '💣', auspicious: '★', pattern: 'grid4',
+    title: { zh: '扫雷 通关纪念卡', en: 'Minesweeper Memorial Card' },
+    message: { zh: '步步推理，谨慎前行，愿你避开暗礁抵达彼岸。', en: 'Reason step by step and proceed with care; may you steer past hidden reefs.' },
+    // 样例完成时间：扫雷随 Windows 3.1 发布（1992 年 4 月）
+    sampleDate: '1992-04-06',
   },
   game: {
     primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', pattern: 'grid4',
@@ -142,10 +156,31 @@ async function shaHex(text) {
   return sha256Bytes(msg).map((x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
 }
 
-// fmtCode 将哈希切成展示用的防伪码 TB-XXXX-XXXX-XXXX
+// ANTI_ALPHABET 防伪码字符表：去掉易混的 0/O/1/I/L，
+// 编码后形如产品序列号而非 hex hash，既可复算校验又不一眼看穿。
+const ANTI_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+// fmtCode 将 SHA-256 hex 编码为 TB-XXXX-XXXX-XXXX 序列号风格防伪码。
+// 每 2 hex 当 1 字节，取前 12 字节，按 ANTI_ALPHABET（31 字符）取模映射。
 function fmtCode(hex) {
-  const s = (hex || '0000').replace(/[^0-9a-f]/gi, '').toUpperCase().padEnd(12, '0').slice(0, 12);
-  return `TB-${s.slice(0, 4)}-${s.slice(4, 8)}-${s.slice(8, 12)}`;
+  const clean = (hex || '').replace(/[^0-9a-f]/gi, '').toLowerCase();
+  let code = '';
+  for (let i = 0; i < 12; i++) {
+    const byte = parseInt(clean.slice(i * 2, i * 2 + 2) || '0', 16) || 0;
+    code += ANTI_ALPHABET[byte % ANTI_ALPHABET.length];
+  }
+  return `TB-${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8, 12)}`;
+}
+
+// computeAntiFake 由卡面四要素（姓名/主题/分数/完成时间到分钟）派生防伪码，生成与验真复用同一逻辑
+export async function computeAntiFake(name, themeKey, score, displayTime) {
+  return fmtCode(await shaHex(`${name}|${themeKey}|${score}|${displayTime}`));
+}
+
+// normalizeCode 规范化防伪码用于比对：去横线/空格/前缀，转大写，取 12 位核心
+export function normalizeCode(input) {
+  const s = (input || '').toUpperCase().replace(/^TB-?/, '').replace(/[^A-Z0-9]/g, '');
+  return s.slice(0, 12);
 }
 
 // renderMemorialCard 绘制纪念卡，返回 { dataUrl, code }
@@ -164,11 +199,14 @@ export async function renderMemorialCard(opts) {
       ? new Date(`${theme.sampleDate}T00:00:00`).toISOString()
       : new Date().toISOString();
   }
-  const code = fmtCode(await shaHex(`${opts.name}|${opts.themeKey}|${opts.score}|${iso}`));
+  // 卡面显示的完成时间字符串（到分钟）。防伪码基于此字符串，
+  // 这样用户凭卡面四要素即可复算验真；找回时可直接传 displayTime 跳过 iso 转换，跨时区一致。
+  const displayTime = opts.displayTime || fmtTime(iso);
+  const code = await computeAntiFake(opts.name, opts.themeKey, opts.score, displayTime);
 
   drawBackground(ctx, W, H, theme);
   drawHeader(ctx, W, theme);
-  drawBody(ctx, W, opts, theme, iso);
+  drawBody(ctx, W, opts, theme, displayTime);
   await drawFooter(ctx, W, H, theme, opts.showDonate);
   drawAntiFake(ctx, W, H, code);
   if (opts.preview) drawPreviewWatermark(ctx, W, H);
@@ -316,12 +354,12 @@ function drawHeader(ctx, W, theme) {
 }
 
 // drawBody 中部信息：姓名 / 分数 / 完成时间（双语标签右对齐 + 值左对齐，留足间距）
-function drawBody(ctx, W, opts, theme, iso) {
+function drawBody(ctx, W, opts, theme, displayTime) {
   const labelX = 420, valueX = 460;
   const rows = [
     { label: `${BILABEL.name.zh} · ${BILABEL.name.en}`, value: opts.name || '佚名 Anonymous' },
     { label: `${BILABEL.score.zh} · ${BILABEL.score.en}`, value: String(opts.score) },
-    { label: `${BILABEL.completed.zh} · ${BILABEL.completed.en}`, value: fmtTime(iso) },
+    { label: `${BILABEL.completed.zh} · ${BILABEL.completed.en}`, value: displayTime },
   ];
   let y = 318;
   ctx.textBaseline = 'middle';

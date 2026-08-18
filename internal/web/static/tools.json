@@ -1,0 +1,700 @@
+[
+  {
+    "id": "audio_convert",
+    "name": {
+      "zh": "音频转换",
+      "en": "Audio Convert"
+    },
+    "category": {
+      "zh": "音频",
+      "en": "Audio"
+    },
+    "icon": "🎵",
+    "keywords": [
+      "audio",
+      "mp3",
+      "wav",
+      "flac",
+      "ffmpeg",
+      "音频",
+      "转码"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "base64",
+    "name": {
+      "zh": "Base64 编解码",
+      "en": "Base64 Encode/Decode"
+    },
+    "category": {
+      "zh": "编码",
+      "en": "Encoding"
+    },
+    "icon": "🔤",
+    "keywords": [
+      "base64",
+      "encode",
+      "decode",
+      "编码"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "cert-verify",
+    "name": {
+      "zh": "纪念卡验真",
+      "en": "Memorial Card Verify"
+    },
+    "category": {
+      "zh": "宗教文化",
+      "en": "Religion & Culture"
+    },
+    "icon": "🛡",
+    "keywords": [
+      "verify",
+      "cert",
+      "memorial",
+      "card",
+      "验真",
+      "防伪",
+      "纪念卡",
+      "anti-counterfeit"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "color",
+    "name": {
+      "zh": "颜色转换",
+      "en": "Color Converter"
+    },
+    "category": {
+      "zh": "设计",
+      "en": "Design"
+    },
+    "icon": "🎨",
+    "keywords": [
+      "color",
+      "hex",
+      "rgb",
+      "hsl",
+      "颜色"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "doc_convert",
+    "name": {
+      "zh": "文档转换",
+      "en": "Document Convert"
+    },
+    "category": {
+      "zh": "文档",
+      "en": "Document"
+    },
+    "icon": "📄",
+    "keywords": [
+      "doc",
+      "docx",
+      "pdf",
+      "libreoffice",
+      "文档",
+      "转换",
+      "word"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "duration",
+    "name": {
+      "zh": "时间长度换算",
+      "en": "Duration Convert"
+    },
+    "category": {
+      "zh": "时间",
+      "en": "Time"
+    },
+    "icon": "⏳",
+    "keywords": [
+      "duration",
+      "time",
+      "convert",
+      "时间",
+      "时长",
+      "换算",
+      "年月日时分秒"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "game_2048",
+    "name": {
+      "zh": "2048",
+      "en": "2048"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🎯",
+    "keywords": [
+      "2048",
+      "game",
+      "puzzle",
+      "游戏",
+      "益智"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "game-minesweeper",
+    "name": {
+      "zh": "扫雷",
+      "en": "Minesweeper"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "💣",
+    "keywords": [
+      "minesweeper",
+      "mine",
+      "扫雷",
+      "puzzle",
+      "logic"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "game_snake",
+    "name": {
+      "zh": "贪吃蛇",
+      "en": "Snake"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🐍",
+    "keywords": [
+      "snake",
+      "game",
+      "游戏",
+      "贪吃蛇"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "game-spider",
+    "name": {
+      "zh": "蜘蛛纸牌",
+      "en": "Spider Solitaire"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🕷",
+    "keywords": [
+      "spider",
+      "solitaire",
+      "纸牌",
+      "蜘蛛",
+      "card",
+      "扑克"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "game_ttt",
+    "name": {
+      "zh": "井字棋",
+      "en": "Tic-Tac-Toe"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "⭕",
+    "keywords": [
+      "tictactoe",
+      "game",
+      "游戏",
+      "井字棋",
+      "oxo"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "hash",
+    "name": {
+      "zh": "哈希计算",
+      "en": "Hash Generator"
+    },
+    "category": {
+      "zh": "编码",
+      "en": "Encoding"
+    },
+    "icon": "#️⃣",
+    "keywords": [
+      "hash",
+      "sha",
+      "sha256",
+      "sha512",
+      "摘要",
+      "digest"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "html_entity",
+    "name": {
+      "zh": "HTML 实体编解码",
+      "en": "HTML Entity Encode/Decode"
+    },
+    "category": {
+      "zh": "编码",
+      "en": "Encoding"
+    },
+    "icon": "&lt;/&gt;",
+    "keywords": [
+      "html",
+      "entity",
+      "escape",
+      "unescape",
+      "实体",
+      "转义"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "json_format",
+    "name": {
+      "zh": "JSON 格式化",
+      "en": "JSON Format"
+    },
+    "category": {
+      "zh": "编码",
+      "en": "Encoding"
+    },
+    "icon": "{ }",
+    "keywords": [
+      "json",
+      "format",
+      "格式化",
+      "校验",
+      "beautify"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "jwt",
+    "name": {
+      "zh": "JWT 解码",
+      "en": "JWT Decoder"
+    },
+    "category": {
+      "zh": "编码",
+      "en": "Encoding"
+    },
+    "icon": "🔑",
+    "keywords": [
+      "jwt",
+      "json",
+      "token",
+      "解码",
+      "decode"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "lorem",
+    "name": {
+      "zh": "Lorem 生成",
+      "en": "Lorem Ipsum"
+    },
+    "category": {
+      "zh": "生成",
+      "en": "Generate"
+    },
+    "icon": "📃",
+    "keywords": [
+      "lorem",
+      "ipsum",
+      "placeholder",
+      "占位",
+      "文本"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "markdown",
+    "name": {
+      "zh": "Markdown 预览",
+      "en": "Markdown Preview"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "📝",
+    "keywords": [
+      "markdown",
+      "md",
+      "preview",
+      "预览"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "password",
+    "name": {
+      "zh": "密码生成",
+      "en": "Password Generator"
+    },
+    "category": {
+      "zh": "生成",
+      "en": "Generate"
+    },
+    "icon": "🔐",
+    "keywords": [
+      "password",
+      "随机",
+      "random",
+      "密码",
+      "generator"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "radix",
+    "name": {
+      "zh": "进制转换",
+      "en": "Radix Converter"
+    },
+    "category": {
+      "zh": "数学",
+      "en": "Math"
+    },
+    "icon": "🔢",
+    "keywords": [
+      "radix",
+      "hex",
+      "bin",
+      "oct",
+      "dec",
+      "进制",
+      "binary"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "regex",
+    "name": {
+      "zh": "正则测试",
+      "en": "Regex Tester"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "🔍",
+    "keywords": [
+      "regex",
+      "regexp",
+      "正则",
+      "pattern"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "religion-buddhism",
+    "name": {
+      "zh": "佛教文化",
+      "en": "Buddhist Culture"
+    },
+    "category": {
+      "zh": "宗教文化",
+      "en": "Religion & Culture"
+    },
+    "icon": "☸",
+    "keywords": [
+      "buddhism",
+      "佛教",
+      "buddha",
+      "religion",
+      "宗教"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "religion-christianity",
+    "name": {
+      "zh": "基督文化",
+      "en": "Christian Culture"
+    },
+    "category": {
+      "zh": "宗教文化",
+      "en": "Religion & Culture"
+    },
+    "icon": "✝",
+    "keywords": [
+      "christianity",
+      "基督",
+      "jesus",
+      "bible",
+      "religion",
+      "宗教"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "religion-islam",
+    "name": {
+      "zh": "伊斯兰文化",
+      "en": "Islamic Culture"
+    },
+    "category": {
+      "zh": "宗教文化",
+      "en": "Religion & Culture"
+    },
+    "icon": "☪",
+    "keywords": [
+      "islam",
+      "伊斯兰",
+      "muslim",
+      "quran",
+      "religion",
+      "宗教"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "slugify",
+    "name": {
+      "zh": "Slug 生成",
+      "en": "Slugify"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "🔗",
+    "keywords": [
+      "slug",
+      "url",
+      "permalink",
+      "slugify"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "text_case",
+    "name": {
+      "zh": "大小写转换",
+      "en": "Case Converter"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "Aa",
+    "keywords": [
+      "case",
+      "camel",
+      "snake",
+      "kebab",
+      "upper",
+      "lower",
+      "大小写"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "text_diff",
+    "name": {
+      "zh": "文本差异",
+      "en": "Text Diff"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "⚖️",
+    "keywords": [
+      "diff",
+      "compare",
+      "差异",
+      "对比"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "text_lines",
+    "name": {
+      "zh": "文本行处理",
+      "en": "Line Tools"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "☰",
+    "keywords": [
+      "lines",
+      "sort",
+      "dedupe",
+      "unique",
+      "trim",
+      "行",
+      "去重",
+      "排序"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "text_stats",
+    "name": {
+      "zh": "文本统计",
+      "en": "Text Stats"
+    },
+    "category": {
+      "zh": "文本",
+      "en": "Text"
+    },
+    "icon": "📊",
+    "keywords": [
+      "count",
+      "words",
+      "chars",
+      "lines",
+      "统计",
+      "字数"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "timestamp",
+    "name": {
+      "zh": "时间戳转换",
+      "en": "Timestamp Converter"
+    },
+    "category": {
+      "zh": "时间",
+      "en": "Time"
+    },
+    "icon": "🕐",
+    "keywords": [
+      "timestamp",
+      "unix",
+      "时间戳",
+      "date",
+      "时间"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "url_encode",
+    "name": {
+      "zh": "URL 编解码",
+      "en": "URL Encode/Decode"
+    },
+    "category": {
+      "zh": "编码",
+      "en": "Encoding"
+    },
+    "icon": "🔗",
+    "keywords": [
+      "url",
+      "uri",
+      "encode",
+      "decode",
+      "percent"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "url_parse",
+    "name": {
+      "zh": "URL 解析",
+      "en": "URL Parser"
+    },
+    "category": {
+      "zh": "网络",
+      "en": "Network"
+    },
+    "icon": "🌐",
+    "keywords": [
+      "url",
+      "parse",
+      "uri",
+      "解析"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "uuid",
+    "name": {
+      "zh": "UUID 生成",
+      "en": "UUID Generator"
+    },
+    "category": {
+      "zh": "生成",
+      "en": "Generate"
+    },
+    "icon": "🆔",
+    "keywords": [
+      "uuid",
+      "guid",
+      "唯一",
+      "unique",
+      "v4"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "video_convert",
+    "name": {
+      "zh": "视频转码",
+      "en": "Video Convert"
+    },
+    "category": {
+      "zh": "视频",
+      "en": "Video"
+    },
+    "icon": "🎬",
+    "keywords": [
+      "video",
+      "ffmpeg",
+      "视频",
+      "转码",
+      "mp4"
+    ],
+    "desc": ""
+  },
+  {
+    "id": "video_cut",
+    "name": {
+      "zh": "视频截断",
+      "en": "Video Cut"
+    },
+    "category": {
+      "zh": "视频",
+      "en": "Video"
+    },
+    "icon": "✂️",
+    "keywords": [
+      "video",
+      "cut",
+      "trim",
+      "clip",
+      "视频",
+      "截断",
+      "裁剪",
+      "剪辑"
+    ],
+    "desc": ""
+  }
+]
