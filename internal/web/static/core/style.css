@@ -235,7 +235,7 @@ html, body {
 .tool-guide code { background: var(--bg); padding: 1px 4px; border-radius: 3px; font-family: ui-monospace, monospace; }
 .tool-guide pre { background: var(--bg); padding: 10px 12px; border-radius: 4px; overflow: auto; }
 .tool-guide a { color: var(--accent); }
-.tool-guide ul, .tool-guide ol { margin: 0.5em 0; padding-left: 0; list-style-position: outside; }
+.tool-guide ul, .tool-guide ol { margin: 0.5em 0; padding-left: 0; list-style-position: inside; }
 .tool-guide li { margin: 0.3em 0; }
 
 /* 游戏 */
