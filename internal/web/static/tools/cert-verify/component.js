@@ -20,7 +20,7 @@ export default function (el) {
         <select id="cv-theme">${themeOpts}</select>
       </label>
       <label>${t('cv.score')} <input id="cv-score" type="number" min="0" max="999999"></label>
-      <label>${t('cv.completed')} <input id="cv-time" type="text" placeholder="2025-04-08 00:00"></label>
+      <label>${t('cv.completed')} <input id="cv-time" type="datetime-local"></label>
       <label>${t('cv.code')} <input id="cv-code" type="text" placeholder="TB-XXXX-XXXX-XXXX"></label>
       <p class="muted cv-hint">${t('cv.timeHint')}</p>
       <button id="cv-go" class="btn">${t('cv.verify')}</button>
@@ -35,7 +35,8 @@ async function onVerify(el) {
   const name = el.querySelector('#cv-name').value.trim();
   const themeKey = el.querySelector('#cv-theme').value;
   const score = el.querySelector('#cv-score').value.trim();
-  const displayTime = el.querySelector('#cv-time').value.trim();
+  // datetime-local 控件值为 YYYY-MM-DDTHH:MM，转换为卡面/哈希所用的 YYYY-MM-DD HH:MM 格式
+  const displayTime = el.querySelector('#cv-time').value.trim().replace('T', ' ');
   const userCode = el.querySelector('#cv-code').value.trim();
   const $out = el.querySelector('#cv-out');
 

@@ -555,6 +555,7 @@ pre {
 .cv-form { display: grid; gap: 12px; max-width: 480px; margin-top: 12px; }
 .cv-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
 .cv-form input, .cv-form select { padding: 8px 10px; border: 1px solid var(--border, #ddd); border-radius: 6px; font-size: 14px; }
+.cv-form input[type="datetime-local"] { width: 100%; color-scheme: light dark; }
 .cv-hint { font-size: 12px; opacity: 0.8; }
 
 /* 赞助卡片 */
