@@ -6,17 +6,26 @@ export function renderMarkdown(md) {
   const lines = md.split('\n');
   const html = [];
   let inCode = false;
+  let inList = false;
+  // closeList 关闭当前列表（遇到非列表项时调用，确保 <li> 始终被 <ul> 包裹）
+  const closeList = () => { if (inList) { html.push('</ul>'); inList = false; } };
   for (const line of lines) {
-    if (line.startsWith('```')) { inCode = !inCode; html.push(inCode ? '<pre>' : '</pre>'); continue; }
+    if (line.startsWith('```')) { closeList(); inCode = !inCode; html.push(inCode ? '<pre>' : '</pre>'); continue; }
     if (inCode) { html.push(esc(line)); continue; }
     let l = esc(line);
     l = l.replace(/^######\s+/, '<h6>').replace(/^#####\s+/, '<h5>')
          .replace(/^####\s+/, '<h4>').replace(/^###\s+/, '<h3>')
          .replace(/^##\s+/, '<h2>').replace(/^#\s+/, '<h1>');
-    if (/^<h[1-6]>/.test(l)) { html.push(l + '</h' + l[2] + '>'); continue; }
-    if (/^\s*[-*]\s+/.test(l)) { html.push('<li>' + inline(l.replace(/^\s*[-*]\s+/, '')) + '</li>'); continue; }
+    if (/^<h[1-6]>/.test(l)) { closeList(); html.push(l + '</h' + l[2] + '>'); continue; }
+    if (/^\s*[-*]\s+/.test(l)) {
+      if (!inList) { html.push('<ul>'); inList = true; }
+      html.push('<li>' + inline(l.replace(/^\s*[-*]\s+/, '')) + '</li>');
+      continue;
+    }
+    closeList();
     html.push(inline(l) || '<br>');
   }
+  closeList();
   return html.join('\n');
 }
 
