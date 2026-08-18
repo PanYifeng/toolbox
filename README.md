@@ -1,6 +1,8 @@
 # Toolbox · 一站式开发者工具站
 
-JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站式网页服务。
+> 在线 demo：部署后替换为正式域名（34 个工具 · 纯前端零成本 · 可安装到桌面）
+
+JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站式网页服务。**纯前端工具文件不上传**，隐私友好；可安装为桌面/移动 PWA 离线使用。
 
 ## 设计原则
 
@@ -15,6 +17,9 @@ JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站
 
 - 后端：Go 1.21+，零第三方依赖
 - 前端：原生 ES Modules，无框架
+- PWA：manifest + service worker，可安装到桌面、离线可用
+- SEO：每工具独立 meta description / canonical / OG 图 / JSON-LD，noscript 注入文案供爬虫索引，自动生成 sitemap.xml
+- 分享：移动端原生分享面板，桌面端复制链接
 - 重型处理：ffmpeg（视频/音频）、LibreOffice（文档→pdf/html）、pdf2docx（PDF→docx）
 
 ## 功能一览
@@ -217,6 +222,12 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 
 - **想让别人用域名访问** → 看部署文档，约 ¥66/月，备案 7~20 天。
 - **想做微信小程序** → 看小程序文档：有企业/个体主体走 web-view 内嵌（1~2 天上线）；只有个人主体走原生纯前端工具（小程序单文件 10MB 上限，1GB 视频做不了，引导网页版）。
+
+## GitHub Topics
+
+为提升可发现性，建议在仓库 About → Topics 添加：
+
+`developer-tools` `online-tools` `json-formatter` `pwa` `go` `ffmpeg` `self-hosted` `privacy-friendly`
 
 ## 许可证
 
