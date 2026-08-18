@@ -187,6 +187,8 @@ func (s *Server) renderIndex(w http.ResponseWriter, r *http.Request, id string) 
 		data.JSONLD = s.toolJSONLD(m, data.SiteURL, lang)
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// HTML shell 含动态 SEO meta，不缓存
+	w.Header().Set("Cache-Control", "no-cache")
 	_ = s.seo.tmpl.Execute(w, data)
 }
 
