@@ -102,7 +102,13 @@ func (s *Server) handleSPA(w http.ResponseWriter, r *http.Request) {
 		s.renderIndex(w, r, id)
 		return
 	}
-	// 静态资源（JS/CSS/图片）：短缓存，便于部署后快速生效（覆盖 CF 默认 4h 边缘缓存）
+	// sw.js 必须不缓存：SW 更新依赖每次请求拿最新版本以检测 VER 变化
+	if p == "/sw.js" {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		s.fileServer.ServeHTTP(w, r)
+		return
+	}
+	// 静态资源（JS/CSS/图片）：短缓存，便于部署后快速生效
 	w.Header().Set("Cache-Control", "public, max-age=120, must-revalidate")
 	s.fileServer.ServeHTTP(w, r)
 }
