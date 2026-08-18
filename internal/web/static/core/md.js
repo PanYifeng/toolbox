@@ -7,25 +7,33 @@ export function renderMarkdown(md) {
   const html = [];
   let inCode = false;
   let inList = false;
-  // closeList 关闭当前列表（遇到非列表项时调用，确保 <li> 始终被 <ul> 包裹）
+  let para = [];
+  // closeList 关闭当前列表
   const closeList = () => { if (inList) { html.push('</ul>'); inList = false; } };
+  // flushPara 把累积的文本行合并成一个 <p>（软换行用 <br>）
+  const flushPara = () => { if (para.length) { html.push('<p>' + para.join('<br>') + '</p>'); para = []; } };
+  // flushBlocks 关闭所有块级上下文（段落 + 列表）
+  const flushBlocks = () => { flushPara(); closeList(); };
   for (const line of lines) {
-    if (line.startsWith('```')) { closeList(); inCode = !inCode; html.push(inCode ? '<pre>' : '</pre>'); continue; }
+    if (line.startsWith('```')) { flushBlocks(); inCode = !inCode; html.push(inCode ? '<pre>' : '</pre>'); continue; }
     if (inCode) { html.push(esc(line)); continue; }
     let l = esc(line);
     l = l.replace(/^######\s+/, '<h6>').replace(/^#####\s+/, '<h5>')
          .replace(/^####\s+/, '<h4>').replace(/^###\s+/, '<h3>')
          .replace(/^##\s+/, '<h2>').replace(/^#\s+/, '<h1>');
-    if (/^<h[1-6]>/.test(l)) { closeList(); html.push(l + '</h' + l[2] + '>'); continue; }
+    if (/^<h[1-6]>/.test(l)) { flushBlocks(); html.push(l + '</h' + l[2] + '>'); continue; }
     if (/^\s*[-*]\s+/.test(l)) {
+      flushPara();
       if (!inList) { html.push('<ul>'); inList = true; }
       html.push('<li>' + inline(l.replace(/^\s*[-*]\s+/, '')) + '</li>');
       continue;
     }
+    // 空行：段落分隔，不渲染 <br>（避免多余间距）
+    if (l.trim() === '') { flushBlocks(); continue; }
     closeList();
-    html.push(inline(l) || '<br>');
+    para.push(inline(l));
   }
-  closeList();
+  flushBlocks();
   return html.join('\n');
 }
 
