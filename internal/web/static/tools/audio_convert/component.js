@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { mountProPanel, proHeaders, refreshProPanel } from '/core/pro.js';
 
 // render 音频转换（服务端 ffmpeg，提交后轮询任务状态）
 export default function (el) {
@@ -15,8 +16,10 @@ export default function (el) {
       </select>
       <button id="a-submit">${t('ac.submit')}</button>
     </div>
+    <div id="a-pro"></div>
     <pre id="a-out" class="muted">${t('ac.waiting')}</pre>`;
 
+  mountProPanel(el.querySelector('#a-pro'));
   const $out = el.querySelector('#a-out');
   let timer = null;
 
@@ -28,10 +31,11 @@ export default function (el) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('format', fmt);
-    const res = await fetch('/api/tools/audio_convert', { method: 'POST', body: fd });
+    const res = await fetch('/api/tools/audio_convert', { method: 'POST', body: fd, headers: proHeaders() });
     if (!res.ok) { show(t('ac.uploadFail') + await res.text(), true); return; }
-    const { jobId } = await res.json();
-    poll(jobId);
+    const data = await res.json();
+    if (data.pro) refreshProPanel();
+    poll(data.jobId);
   };
 
   // poll 轮询任务状态

@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 // Config 全局配置
@@ -44,10 +45,51 @@ type AdSlot struct {
 	HTML     string `json:"html"`
 }
 
-// ProConfig 付费层配置（售卖 API token / 订阅）
+// ProConfig 付费层配置：针对资源消耗大的功能（视频/音频/文档转换等）售卖上传额度。
+// 与首页「赞助」分离——赞助是纯自愿支持，Pro 是按时间或次数计费的功能额度。
 type ProConfig struct {
-	Tokens         []string `json:"tokens"`
-	MaxUploadBytes int64    `json:"maxUploadBytes"`
+	Enabled        bool      `json:"enabled"`
+	MaxUploadBytes int64     `json:"maxUploadBytes"` // Pro 用户上传上限
+	TokensFile     string    `json:"tokensFile"`     // 已签发 token 的 state 文件路径（次数型需运行时改写）
+	Plans          []ProPlan `json:"plans"`          // 定价方案（时间型 / 次数型，仅用于前端展示）
+	RequestsFile   string    `json:"requestsFile"`   // 支付核销请求的 state 文件路径
+	AdminSecret    string    `json:"adminSecret"`    // 确认链接 HMAC 密钥；空则禁用邮件确认（仅 1h 自动通过）
+	AdminEmail     string    `json:"adminEmail"`     // 接收确认邮件的作者邮箱
+	AutoApproveTTL string    `json:"autoApproveTTL"` // 未确认自动通过时限，如 "1h"
+}
+
+// ProPlan 单个定价方案
+type ProPlan struct {
+	ID           string  `json:"id"`
+	Type         string  `json:"type"`         // time / count
+	DurationDays int     `json:"durationDays"` // type=time 时的有效天数
+	Count        int     `json:"count"`        // type=count 时的可用次数
+	Price        float64 `json:"price"`        // 价格（元）
+	Label        Label   `json:"label"`        // 中英双语名称
+}
+
+// Label 中英双语文案（复用于 ProPlan / 等场景）
+type Label struct {
+	ZH string `json:"zh"`
+	EN string `json:"en"`
+}
+
+// AutoApproveDuration 解析 autoApproveTTL；非法时回退 1h
+func (p ProConfig) AutoApproveDuration() time.Duration {
+	if d, err := time.ParseDuration(p.AutoApproveTTL); err == nil && d > 0 {
+		return d
+	}
+	return time.Hour
+}
+
+// Plan 按 ID 查找定价方案
+func (p ProConfig) Plan(id string) (ProPlan, bool) {
+	for _, pl := range p.Plans {
+		if pl.ID == id {
+			return pl, true
+		}
+	}
+	return ProPlan{}, false
 }
 
 // MailConfig 邮件发送配置（纪念卡发送到邮箱，需 SMTP 授权码）
@@ -87,13 +129,12 @@ type ComplianceConfig struct {
 	Strict bool `json:"strict"` // true=大陆合规预设：强制关闭宗教/纪念卡/署名/埋点
 }
 
-// DonationConfig 赞助 / 捐赠配置
+// DonationConfig 赞助 / 捐赠配置（纯自愿支持，不绑定任何 Pro 权益）
 type DonationConfig struct {
 	Enabled bool             `json:"enabled"` // 总开关（同时受 features.donation 控制）
 	Title   string           `json:"title"`
 	Desc    string           `json:"desc"`
 	Methods []DonationMethod `json:"methods"`
-	ProHint string           `json:"proHint"` // 赞助换 Pro 的引导文案
 }
 
 // DonationMethod 单个赞助方式
@@ -160,6 +201,15 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Pro.MaxUploadBytes == 0 {
 		c.Pro.MaxUploadBytes = 2 << 30 // Pro 用户默认 2GB
+	}
+	if c.Pro.TokensFile == "" {
+		c.Pro.TokensFile = "./pro-tokens.json"
+	}
+	if c.Pro.RequestsFile == "" {
+		c.Pro.RequestsFile = "./pro-requests.json"
+	}
+	if c.Pro.AutoApproveTTL == "" {
+		c.Pro.AutoApproveTTL = "1h"
 	}
 	if c.Mail.Configured() && c.Mail.Port == 0 {
 		c.Mail.Port = 587

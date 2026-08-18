@@ -32,6 +32,7 @@ async function init() {
   } catch (e) {
     BOOT = { features: {}, donation: { enabled: false }, ads: { enabled: false } };
   }
+  window.BOOT = BOOT; // 暴露给 pro.js 等核心模块读取 plans
   track();
   shell();
   route();
@@ -183,7 +184,6 @@ function donateCardHTML() {
       <div class="dc-title">${d.title || t('footer.sponsor')}</div>
       <div class="dc-desc">${d.desc || ''}</div>
       <div class="donate-methods">${methods}</div>
-      ${d.proHint ? `<p class="dc-prohint">${d.proHint}</p>` : ''}
     </section>`;
 }
 

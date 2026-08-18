@@ -98,6 +98,11 @@ func (s *Server) handleBootstrap(w http.ResponseWriter, r *http.Request) {
 		"features": f,
 		"donation": s.cfg.Donation,
 		"ads":      s.cfg.Ads,
+		"pro": map[string]any{
+			"enabled":        s.cfg.Pro.Enabled,
+			"maxUploadBytes": s.cfg.Pro.MaxUploadBytes,
+			"plans":          s.cfg.Pro.Plans,
+		},
 	})
 }
 

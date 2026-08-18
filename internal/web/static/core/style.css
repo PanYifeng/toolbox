@@ -588,4 +588,89 @@ pre {
 .dm-item figcaption { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .dm-link { display: inline-block; padding: 8px 16px; border: 1px solid var(--accent); color: var(--accent); border-radius: 6px; text-decoration: none; font-size: 14px; }
 .dm-link:hover { background: var(--accent); color: #fff; }
-.dc-prohint { font-size: 12px; color: var(--muted); margin: 12px 0 0; }
+
+/* Pro 额度面板（仅出现在重转换工具内） */
+.pro-panel {
+  margin: 14px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--bg-soft);
+}
+.pro-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pro-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 4px;
+}
+.pro-title { font-weight: 600; font-size: 14px; }
+.pro-note { font-size: 12px; color: var(--muted); margin: 0 0 10px; line-height: 1.5; }
+.pro-plans-title { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.pro-plans { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.pro-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg, #fff);
+  min-width: 96px;
+}
+.pro-plan-name { font-size: 13px; font-weight: 600; }
+.pro-plan-price { font-size: 13px; color: var(--accent); font-weight: 700; }
+.pro-input-row { display: flex; gap: 8px; margin-bottom: 6px; }
+.pro-input-row input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+}
+.pro-input-row button {
+  padding: 7px 16px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pro-status { font-size: 13px; margin: 0 0 6px; }
+.pro-status.ok { color: var(--ok); font-weight: 600; }
+.pro-howto { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.5; }
+.pro-subsection { font-size: 12px; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.pro-buy-form { display: flex; flex-direction: column; gap: 8px; }
+.pro-buy-form input, .pro-buy-form select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.pro-buy-form button {
+  padding: 8px 16px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pro-buy-form button:disabled { opacity: 0.6; cursor: default; }
+.pro-verify { margin-top: 8px; padding: 10px 12px; border-radius: 6px; background: var(--bg, #fff); border: 1px solid var(--border); font-size: 13px; }
+.pro-verify.err { border-color: var(--err, #e53935); color: var(--err, #e53935); }
+.pro-verify.hidden { display: none; }
+.pro-verifying { font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.pro-verifying .spin { display: inline-block; animation: prospin 1.2s linear infinite; }
+@keyframes prospin { to { transform: rotate(360deg); } }
+.pro-ok { color: var(--ok); font-weight: 600; }
+.pro-verify code { font-size: 12px; word-break: break-all; }
+
+

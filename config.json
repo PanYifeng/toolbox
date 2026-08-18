@@ -8,8 +8,17 @@
     "jobTimeoutSeconds": 300
   },
   "pro": {
-    "tokens": [],
-    "maxUploadBytes": 2147483648
+    "enabled": true,
+    "maxUploadBytes": 2147483648,
+    "tokensFile": "/opt/toolbox/pro-tokens.json",
+    "requestsFile": "/opt/toolbox/pro-requests.json",
+    "adminSecret": "",
+    "adminEmail": "",
+    "autoApproveTTL": "1h",
+    "plans": [
+      { "id": "time-year", "type": "time",  "durationDays": 365, "price": 19,  "label": { "zh": "年度 · 1 年", "en": "Annual · 1 year" } },
+      { "id": "count-20",  "type": "count", "count": 20,         "price": 9.9, "label": { "zh": "次数包 · 20 次", "en": "Pack · 20 uses" } }
+    ]
   },
   "mail": {
     "host": "",
@@ -41,10 +50,8 @@
     "desc": "这些工具对你有帮助？欢迎请作者喝杯咖啡 ☕",
     "methods": [
       { "type": "image", "label": "支付宝", "src": "/img/donate-alipay.jpg" },
-      { "type": "image", "label": "微信", "src": "/img/donate-wechat.png" },
-      { "type": "link", "label": "爱发电", "url": "https://afdian.com/a/your-id" }
-    ],
-    "proHint": "赞助后可获取 Pro Token，享 2GB 上传额度与更高并发"
+      { "type": "image", "label": "微信", "src": "/img/donate-wechat.png" }
+    ]
   },
   "seo": {
     "robotsAllow": true

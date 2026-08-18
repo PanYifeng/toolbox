@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { mountProPanel, proHeaders, refreshProPanel } from '/core/pro.js';
 
 // render 视频截断（服务端 ffmpeg -ss/-to 流复制，提交后轮询任务状态）
 export default function (el) {
@@ -10,8 +11,10 @@ export default function (el) {
       <input id="c-end" type="text" placeholder="${t('vcut.endPh')}" />
       <button id="c-submit">${t('vcut.submit')}</button>
     </div>
+    <div id="c-pro"></div>
     <pre id="c-out" class="muted">${t('vcut.waiting')}</pre>`;
 
+  mountProPanel(el.querySelector('#c-pro'));
   const $out = el.querySelector('#c-out');
   let timer = null;
 
@@ -26,10 +29,11 @@ export default function (el) {
     fd.append('file', file);
     fd.append('start', start);
     fd.append('end', end);
-    const res = await fetch('/api/tools/video_cut', { method: 'POST', body: fd });
+    const res = await fetch('/api/tools/video_cut', { method: 'POST', body: fd, headers: proHeaders() });
     if (!res.ok) { show(t('vcut.uploadFail') + await res.text(), true); return; }
-    const { jobId } = await res.json();
-    poll(jobId);
+    const data = await res.json();
+    if (data.pro) refreshProPanel();
+    poll(data.jobId);
   };
 
   // poll 轮询任务状态

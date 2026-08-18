@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { mountProPanel, proHeaders, refreshProPanel } from '/core/pro.js';
 
 // render 视频转码（服务端 ffmpeg，提交后轮询任务状态）
 export default function (el) {
@@ -14,8 +15,10 @@ export default function (el) {
       </select>
       <button id="v-submit">${t('vc.submit')}</button>
     </div>
+    <div id="v-pro"></div>
     <pre id="v-out" class="muted">${t('vc.waiting')}</pre>`;
 
+  mountProPanel(el.querySelector('#v-pro'));
   const $out = el.querySelector('#v-out');
   let timer = null;
 
@@ -27,10 +30,11 @@ export default function (el) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('format', fmt);
-    const res = await fetch('/api/tools/video_convert', { method: 'POST', body: fd });
+    const res = await fetch('/api/tools/video_convert', { method: 'POST', body: fd, headers: proHeaders() });
     if (!res.ok) { show(t('vc.uploadFail') + await res.text(), true); return; }
-    const { jobId } = await res.json();
-    poll(jobId);
+    const data = await res.json();
+    if (data.pro) refreshProPanel(); // 次数型 token 扣减后刷新面板状态
+    poll(data.jobId);
   };
 
   // poll 轮询任务状态

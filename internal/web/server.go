@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"crypto/subtle"
 	"embed"
 	"encoding/json"
 	"io"
@@ -32,6 +31,8 @@ type Server struct {
 	seo        *seoStore
 	fileServer http.Handler
 	track      *trackStore
+	pro        *proTokenStore
+	proReq     *proRequestStore
 }
 
 // NewServer 创建服务
@@ -43,6 +44,8 @@ func NewServer(cfg *config.Config) *Server {
 		seo:        newSEOStore(),
 		fileServer: http.FileServer(http.FS(mustSub())),
 		track:      newTrackStore(),
+		pro:        newProTokenStore(cfg.Pro.TokensFile),
+		proReq:     newProRequestStore(cfg.Pro.RequestsFile),
 	}
 	s.routes()
 	return s
@@ -59,6 +62,12 @@ func (s *Server) routes() {
 	mux.HandleFunc("GET /api/ads", s.handleAds)
 	mux.HandleFunc("POST /api/cert/send", s.handleCertSend)
 	mux.HandleFunc("GET /api/bootstrap", s.handleBootstrap)
+	mux.HandleFunc("GET /api/pro/status", s.handleProStatus)
+	mux.HandleFunc("POST /api/pro/request", s.handleProRequestCreate)
+	mux.HandleFunc("GET /api/pro/request/{id}", s.handleProRequestStatus)
+	if s.cfg.Pro.AdminSecret != "" {
+		mux.HandleFunc("GET /api/pro/confirm", s.handleProConfirm)
+	}
 	mux.HandleFunc("GET /robots.txt", s.handleRobots)
 	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
 	if s.cfg.EffectiveFeatures().Analytics {
@@ -116,6 +125,7 @@ func (s *Server) Run(ctx context.Context) error {
 		_ = srv.Shutdown(shutCtx)
 	}()
 	go s.queueCleanupLoop()
+	go s.proAutoApproveLoop(ctx)
 	log.Printf("server listening on %s", s.cfg.Server.Addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
@@ -173,7 +183,23 @@ func (s *Server) handleSubmitTool(w http.ResponseWriter, r *http.Request) {
 		defer os.Remove(inputPath) // 执行完成后清理输入文件
 		return result, err
 	})
-	writeJSON(w, map[string]string{"jobId": jobID})
+	resp := map[string]any{"jobId": jobID}
+	// 上传被接受后，对次数型 Pro token 扣减一次（失败上传不计费）
+	if tok := r.Header.Get("X-Pro-Token"); tok != "" {
+		info := s.pro.consume(tok)
+		if info.status == proValid {
+			p := map[string]any{"type": info.typ, "status": string(info.status)}
+			if info.typ == "count" {
+				p["remaining"] = info.remaining
+			} else {
+				p["expiresAt"] = info.expiresAt
+			}
+			resp["pro"] = p
+		} else {
+			resp["pro"] = map[string]any{"status": string(info.status)}
+		}
+	}
+	writeJSON(w, resp)
 }
 
 // readUpload 流式读取 multipart：文件段写入临时文件（保留扩展名），其余段作为单值参数
@@ -226,17 +252,30 @@ func (s *Server) isProRequest(r *http.Request) bool {
 	return s.isProToken(r.Header.Get("X-Pro-Token"))
 }
 
-// isProToken 常数时间校验 token，防时序攻击
+// isProToken 校验 token 是否有效（委托 proTokenStore，按时间/次数规则）
 func (s *Server) isProToken(token string) bool {
-	if token == "" {
-		return false
+	return s.pro.validate(token).status == proValid
+}
+
+// handleProStatus 查询 token 状态：供前端输入 token 后即时显示有效期/剩余次数/限额
+func (s *Server) handleProStatus(w http.ResponseWriter, r *http.Request) {
+	info := s.pro.validate(r.Header.Get("X-Pro-Token"))
+	resp := map[string]any{
+		"enabled":    s.cfg.Pro.Enabled,
+		"valid":      info.status == proValid,
+		"status":     string(info.status),
+		"freeLimit":  s.cfg.Limits.MaxUploadBytes,
+		"proLimit":   s.cfg.Pro.MaxUploadBytes,
 	}
-	for _, t := range s.cfg.Pro.Tokens {
-		if subtle.ConstantTimeCompare([]byte(token), []byte(t)) == 1 {
-			return true
+	if info.status == proValid {
+		resp["type"] = info.typ
+		if info.typ == "count" {
+			resp["remaining"] = info.remaining
+		} else {
+			resp["expiresAt"] = info.expiresAt
 		}
 	}
-	return false
+	writeJSON(w, resp)
 }
 
 // effectiveUploadLimit 取生效上传上限（Pro 用户更高）

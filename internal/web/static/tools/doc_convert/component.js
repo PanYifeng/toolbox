@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { mountProPanel, proHeaders, refreshProPanel } from '/core/pro.js';
 
 // render 文档转换（服务端 LibreOffice，提交后轮询任务状态）
 export default function (el) {
@@ -16,8 +17,10 @@ export default function (el) {
       </select>
       <button id="d-submit">${t('dc.submit')}</button>
     </div>
+    <div id="d-pro"></div>
     <pre id="d-out" class="muted">${t('dc.waiting')}</pre>`;
 
+  mountProPanel(el.querySelector('#d-pro'));
   const $out = el.querySelector('#d-out');
   let timer = null;
 
@@ -29,10 +32,11 @@ export default function (el) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('format', fmt);
-    const res = await fetch('/api/tools/doc_convert', { method: 'POST', body: fd });
+    const res = await fetch('/api/tools/doc_convert', { method: 'POST', body: fd, headers: proHeaders() });
     if (!res.ok) { show(t('dc.uploadFail') + await res.text(), true); return; }
-    const { jobId } = await res.json();
-    poll(jobId);
+    const data = await res.json();
+    if (data.pro) refreshProPanel();
+    poll(data.jobId);
   };
 
   // poll 轮询任务状态
