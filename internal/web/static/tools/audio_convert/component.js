@@ -1,5 +1,6 @@
 import { t } from '/core/i18n.js';
 import { mountProPanel, proHeaders, refreshProPanel } from '/core/pro.js';
+import { showSupportHint } from '/core/support-hint.js';
 
 // render 音频转换（服务端 ffmpeg，提交后轮询任务状态）
 export default function (el) {
@@ -50,6 +51,7 @@ export default function (el) {
         clearInterval(timer);
         show(t('ac.done') + j.downloadUrl);
         $out.className = 'ok';
+        showSupportHint(el);
         location.href = j.downloadUrl;
       } else {
         clearInterval(timer);

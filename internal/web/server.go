@@ -92,6 +92,10 @@ func (s *Server) handleSPA(w http.ResponseWriter, r *http.Request) {
 		s.renderIndex(w, r, "")
 		return
 	}
+	if p == "/about" {
+		s.renderIndex(w, r, "")
+		return
+	}
 	if strings.HasPrefix(p, "/t/") {
 		id := strings.TrimPrefix(p, "/t/")
 		id = strings.TrimSuffix(id, "/")

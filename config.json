@@ -46,11 +46,15 @@
   },
   "donation": {
     "enabled": true,
-    "title": "支持本项目",
-    "desc": "这些工具对你有帮助？欢迎请作者喝杯咖啡 ☕",
+    "title": { "zh": "支持本项目", "en": "Support This Project" },
+    "desc": { "zh": "如果这些工具帮到了你，欢迎支持本站持续运行——免费支持同样感谢！", "en": "If these tools helped you, please consider supporting the site — free support counts too!" },
     "methods": [
-      { "type": "image", "label": "支付宝", "src": "/img/donate-alipay.jpg" },
-      { "type": "image", "label": "微信", "src": "/img/donate-wechat.png" }
+      { "type": "image", "label": { "zh": "支付宝", "en": "Alipay" }, "src": "/img/donate-alipay.jpg" },
+      { "type": "image", "label": { "zh": "微信", "en": "WeChat" }, "src": "/img/donate-wechat.png" }
+    ],
+    "links": [
+      { "label": { "zh": "买 Vultr 云服务器", "en": "Buy Vultr Cloud" }, "url": "https://www.vultr.com/?ref=9918580", "hint": { "zh": "用此链接注册，你不多花钱", "en": "No extra cost to you" }, "sponsored": true },
+      { "label": { "zh": "买阿里云服务器", "en": "Buy Aliyun Cloud" }, "url": "https://www.aliyun.com/minisite/goods?userCode=yjm7ip1v", "hint": { "zh": "领 8.5 折券", "en": "15% off coupon" }, "sponsored": true }
     ]
   },
   "seo": {
@@ -65,7 +69,10 @@
       {
         "id": "top",
         "position": "top",
-        "html": "<!-- 顶部广告位：替换为自售赞助 banner / 二维码（不走外部脚本，合规友好） -->"
+        "html": {
+          "zh": "<a href=\"https://www.vultr.com/?ref=9918580\" rel=\"nofollow sponsored noopener noreferrer\" target=\"_blank\" style=\"display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:#eff6ff;color:#1e40af;text-decoration:none;font-size:13px;\"><span style=\"font-weight:600;\">🚀 Vultr 全球云服务器</span><span>按小时计费 · 新用户专享福利 →</span><span style=\"margin-left:auto;font-size:11px;color:#64748b;\">广告</span></a>",
+          "en": "<a href=\"https://www.vultr.com/?ref=9918580\" rel=\"nofollow sponsored noopener noreferrer\" target=\"_blank\" style=\"display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:#eff6ff;color:#1e40af;text-decoration:none;font-size:13px;\"><span style=\"font-weight:600;\">🚀 Vultr Global Cloud</span><span>Hourly billing · New-user bonus →</span><span style=\"margin-left:auto;font-size:11px;color:#64748b;\">Ad</span></a>"
+        }
       },
       {
         "id": "sidebar",
@@ -75,7 +82,10 @@
       {
         "id": "bottom",
         "position": "bottom",
-        "html": "<!-- 底部广告位 -->"
+        "html": {
+          "zh": "<a href=\"https://www.aliyun.com/minisite/goods?userCode=yjm7ip1v\" rel=\"nofollow sponsored noopener noreferrer\" target=\"_blank\" style=\"display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:#fff7ed;color:#9a3412;text-decoration:none;font-size:13px;\"><span style=\"font-weight:600;\">☁️ 阿里云新用户</span><span>本站让利 · 领券享 8.5 折特惠 →</span><span style=\"margin-left:auto;font-size:11px;color:#64748b;\">广告</span></a>",
+          "en": "<a href=\"https://www.aliyun.com/minisite/goods?userCode=yjm7ip1v\" rel=\"nofollow sponsored noopener noreferrer\" target=\"_blank\" style=\"display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:#fff7ed;color:#9a3412;text-decoration:none;font-size:13px;\"><span style=\"font-weight:600;\">☁️ Aliyun New Users</span><span>15% off · site-sponsored →</span><span style=\"margin-left:auto;font-size:11px;color:#64748b;\">Ad</span></a>"
+        }
       }
     ]
   }

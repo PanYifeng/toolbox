@@ -1,5 +1,6 @@
 import { t } from '/core/i18n.js';
 import { mountProPanel, proHeaders, refreshProPanel } from '/core/pro.js';
+import { showSupportHint } from '/core/support-hint.js';
 
 // render 视频截断（服务端 ffmpeg -ss/-to 流复制，提交后轮询任务状态）
 export default function (el) {
@@ -48,6 +49,7 @@ export default function (el) {
         clearInterval(timer);
         show(t('vcut.done') + j.downloadUrl);
         $out.className = 'ok';
+        showSupportHint(el);
         location.href = j.downloadUrl;
       } else {
         clearInterval(timer);

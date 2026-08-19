@@ -8,15 +8,15 @@ import (
 
 // Config 全局配置
 type Config struct {
-	Server     ServerConfig     `json:"server"`
-	Limits     LimitsConfig     `json:"limits"`
-	Ads        AdsConfig        `json:"ads"`
-	Pro        ProConfig        `json:"pro"`
-	Mail       MailConfig       `json:"mail"`
-	Site       SiteConfig       `json:"site"`
-	Features   FeaturesConfig   `json:"features"`
-	Compliance ComplianceConfig `json:"compliance"`
-	Donation   DonationConfig   `json:"donation"`
+	Server           ServerConfig       `json:"server"`
+	Limits           LimitsConfig       `json:"limits"`
+	Ads              AdsConfig          `json:"ads"`
+	Pro              ProConfig          `json:"pro"`
+	Mail             MailConfig         `json:"mail"`
+	Site             SiteConfig         `json:"site"`
+	Features         FeaturesConfig     `json:"features"`
+	Compliance       ComplianceConfig   `json:"compliance"`
+	Donation         DonationConfig     `json:"donation"`
 	SEO              SEOConfig          `json:"seo"`
 	SiteVerification []VerificationFile `json:"siteVerification"`
 }
@@ -41,9 +41,9 @@ type AdsConfig struct {
 
 // AdSlot 广告位
 type AdSlot struct {
-	ID       string `json:"id"`
-	Position string `json:"position"` // top / bottom / sidebar
-	HTML     string `json:"html"`
+	ID       string      `json:"id"`
+	Position string      `json:"position"` // top / bottom / sidebar
+	HTML     interface{} `json:"html"`
 }
 
 // ProConfig 付费层配置：针对资源消耗大的功能（视频/音频/文档转换等）售卖上传额度。
@@ -133,17 +133,26 @@ type ComplianceConfig struct {
 // DonationConfig 赞助 / 捐赠配置（纯自愿支持，不绑定任何 Pro 权益）
 type DonationConfig struct {
 	Enabled bool             `json:"enabled"` // 总开关（同时受 features.donation 控制）
-	Title   string           `json:"title"`
-	Desc    string           `json:"desc"`
+	Title   interface{}      `json:"title"`
+	Desc    interface{}      `json:"desc"`
 	Methods []DonationMethod `json:"methods"`
+	Links   []DonationLink   `json:"links"` // 免费支持外链（推广购买 / star 等），区别于打赏
 }
 
 // DonationMethod 单个赞助方式
 type DonationMethod struct {
-	Type  string `json:"type"`  // image / link
-	Label string `json:"label"`
-	Src   string `json:"src"`   // type=image 时的图片路径
-	URL   string `json:"url"`   // type=link 时的外链
+	Type  string      `json:"type"` // image / link
+	Label interface{} `json:"label"`
+	Src   string      `json:"src"` // type=image 时的图片路径
+	URL   string      `json:"url"` // type=link 时的外链
+}
+
+// DonationLink 免费支持外链（推广购买、GitHub star 等）
+type DonationLink struct {
+	Label     interface{} `json:"label"` // {zh,en}
+	URL       string      `json:"url"`
+	Hint      interface{} `json:"hint"`      // {zh,en} 可选说明
+	Sponsored bool        `json:"sponsored"` // 推广返佣链接：追加 rel="nofollow sponsored"
 }
 
 // SEOConfig SEO 相关开关

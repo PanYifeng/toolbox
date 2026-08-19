@@ -2,6 +2,7 @@ import { registry } from '/tools/registry.js';
 import { t, tr, getLang, setLang } from '/core/i18n.js';
 import { enhanceLined } from '/core/lined.js';
 import { renderMarkdown } from '/core/md.js';
+import { aboutPageHTML } from '/core/about.js';
 
 const app = document.getElementById('app');
 let currentId = null;
@@ -98,7 +99,9 @@ function shell() {
         <a href="mailto:904379134@qq.com">904379134@qq.com</a>
       </span>
       ${showSponsor ? `<a href="#" id="footer-sponsor" class="footer-sponsor">${t('footer.sponsor')}</a>` : ''}
+      <a href="/about" id="footer-about" class="footer-about">${t('footer.about')}</a>
       ${showSignature ? `<span class="footer-love">${t('footer.love')}</span>` : ''}
+      ${featureEnabled('ads') ? `<span class="footer-disclosure" title="${t('footer.adDisclosureTip')}">${t('footer.adDisclosure')}</span>` : ''}
     </footer>`;
   app.querySelector('#search').oninput = onSearch;
   app.querySelector('#lang-toggle').onclick = toggleLang;
@@ -106,6 +109,8 @@ function shell() {
   if (sp) sp.onclick = () => openDonation();
   const fs = app.querySelector('#footer-sponsor');
   if (fs) fs.onclick = (e) => { e.preventDefault(); openDonation(); };
+  const fa = app.querySelector('#footer-about');
+  if (fa) fa.onclick = (e) => { e.preventDefault(); history.pushState({}, '', '/about'); route(); window.scrollTo(0, 0); };
   updateLangButton();
   render();
 }
@@ -134,7 +139,8 @@ function toggleLang() {
 
 // render 按当前状态渲染首页或工具页
 function render() {
-  if (currentId) renderTool();
+  if (currentId === '__about__') renderAbout();
+  else if (currentId) renderTool();
   else renderHome();
   loadAds();
 }
@@ -171,23 +177,36 @@ function donateCardHTML() {
   const d = BOOT.donation;
   const methods = (d.methods || [])
     .map((m) => {
+      const label = tr(m.label);
       if (m.type === 'image') {
-        return `<figure class="dm-item"><img src="${m.src}" alt="${m.label}" loading="lazy"><figcaption>${m.label}</figcaption></figure>`;
+        return `<figure class="dm-item"><img src="${m.src}" alt="${label}" loading="lazy"><figcaption>${label}</figcaption></figure>`;
       }
       if (m.type === 'link') {
-        return `<a class="dm-link" href="${m.url}" target="_blank" rel="noopener">${m.label} ↗</a>`;
+        return `<a class="dm-link" href="${m.url}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`;
       }
       return '';
     })
     .join('');
+  // links 免费支持外链（推广购买 / star），与打赏二维码分组渲染
+  const links = (d.links || [])
+    .map((l) => {
+      const label = tr(l.label);
+      const hint = tr(l.hint);
+      const rel = l.sponsored ? 'nofollow sponsored noopener noreferrer' : 'noopener noreferrer';
+      return `<a class="dm-link" href="${l.url}" target="_blank" rel="${rel}">${label}${hint ? ` <span class="dm-hint">${hint}</span>` : ''} ↗</a>`;
+    })
+    .join('');
+  const linksHtml = links ? `<div class="dc-section-title">${t('donate.freeTitle')}</div><div class="donate-links">${links}</div>` : '';
   return `
     <section class="donate-card" id="donate-card">
       <div class="dc-head">
-        <div class="dc-title">${d.title || t('footer.sponsor')}</div>
+        <div class="dc-title">${tr(d.title) || t('footer.sponsor')}</div>
         <button class="dc-toggle" id="dc-toggle" aria-expanded="true" aria-label="collapse">▾</button>
       </div>
       <div class="dc-body" id="dc-body">
-        <div class="dc-desc">${d.desc || ''}</div>
+        <div class="dc-desc">${tr(d.desc) || ''}</div>
+        ${linksHtml}
+        <div class="dc-section-title">${t('donate.donateTitle')}</div>
         <div class="donate-methods">${methods}</div>
       </div>
     </section>`;
@@ -265,6 +284,14 @@ function matches(m, ql) {
   if (!ql) return true;
   const name = tr(m.name).toLowerCase();
   return name.includes(ql) || (m.keywords || []).some((k) => k.toLowerCase().includes(ql));
+}
+
+// renderAbout 关于页：返回按钮 + 双语关于/隐私政策内容
+function renderAbout() {
+  const view = app.querySelector('#view');
+  view.innerHTML = aboutPageHTML();
+  const back = view.querySelector('.back');
+  if (back) back.onclick = (e) => { e.preventDefault(); navigate(null); };
 }
 
 // renderTool 工具页：返回按钮 + 标题 + 工具组件
@@ -349,7 +376,7 @@ function loadAds() {
       cfg.slots.forEach((s) => {
         const id = 'ad-' + (s.position === 'bottom' ? 'bottom' : 'top');
         const e = app.querySelector('#' + id);
-        if (e) e.innerHTML += s.html;
+        if (e) e.innerHTML += tr(s.html);
       });
     })
     .catch(() => {});
@@ -376,6 +403,11 @@ function escapeAttr(s) {
 // route 根据当前 URL 解析要展示的工具
 function route() {
   const path = location.pathname;
+  if (path === '/about') {
+    currentId = '__about__';
+    render();
+    return;
+  }
   let id = null;
   if (path.startsWith('/t/')) {
     id = path.slice(3).replace(/\/$/, '');

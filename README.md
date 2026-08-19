@@ -219,9 +219,13 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 |------|------|
 | [腾讯云域名部署](docs/deployment-tencent-cloud.md) | 服务器/域名/备案/DNS/Nginx/HTTPS/安全/成本，让服务通过域名对外访问 |
 | [微信小程序方案](docs/wechat-miniprogram.md) | web-view 内嵌 vs 原生两条路径、平台约束、落地步骤 |
+| [Cloudflare Tunnel 部署](docs/cloudflare-tunnel-euorg.md) | 不用备案、免服务器公网 IP，经 Cloudflare Tunnel 把本地服务暴露到 eu.org 域名 |
+| [商业化与可发现性配置](docs/commercialization.md) | config.json 字段参考：盈利入口（赞助/广告/Pro）、SEO、合规开关 |
+| [广告变现合规落地](docs/ad-monetization.md) | affiliate 自托管链接逐步操作：选计划、拿返佣链接、做 banner、填配置、合规要点 |
 
 - **想让别人用域名访问** → 看部署文档，约 ¥66/月，备案 7~20 天。
 - **想做微信小程序** → 看小程序文档：有企业/个体主体走 web-view 内嵌（1~2 天上线）；只有个人主体走原生纯前端工具（小程序单文件 10MB 上限，1GB 视频做不了，引导网页版）。
+- **想接入广告变现** → 看广告变现文档：云服务 affiliate 自托管链接是首选（零代码、无需备案、契合开发者受众），附合规要点与操作清单。
 
 ## GitHub Topics
 
