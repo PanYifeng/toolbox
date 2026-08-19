@@ -198,10 +198,13 @@ function donateCardHTML() {
     .join('');
   const linksHtml = links ? `<div class="dc-section-title">${t('donate.freeTitle')}</div><div class="donate-links">${links}</div>` : '';
   return `
-    <section class="donate-card" id="donate-card">
-      <div class="dc-head">
-        <div class="dc-title">${tr(d.title) || t('footer.sponsor')}</div>
-        <button class="dc-toggle" id="dc-toggle" aria-expanded="true" aria-label="collapse">▾</button>
+    <section class="donate-card collapsed" id="donate-card">
+      <div class="dc-head" id="dc-head" role="button" tabindex="0" aria-expanded="false" aria-controls="dc-body">
+        <div class="dc-title-wrap">
+          <span class="dc-title">${tr(d.title) || t('footer.sponsor')}</span>
+          <span class="dc-subtitle">${t('donate.subtitle')}</span>
+        </div>
+        <button class="dc-toggle" id="dc-toggle" aria-label="collapse">▸</button>
       </div>
       <div class="dc-body" id="dc-body">
         <div class="dc-desc">${tr(d.desc) || ''}</div>
@@ -212,17 +215,102 @@ function donateCardHTML() {
     </section>`;
 }
 
-// bindDonateCard 绑定赞助卡折叠切换
+// picksSample 从 affiliate 单品池按平台分组洗牌、各取 2 件（"不选死"，均匀曝光 + 新鲜感）
+function picksSample() {
+  const pool = (BOOT.donation && BOOT.donation.picks) || [];
+  if (!pool.length) return [];
+  // 按平台分组：保证淘宝 / 京东都有曝光，避免某次全是单一平台
+  const taobao = pool.filter((p) => p.platform === 'taobao');
+  const jd = pool.filter((p) => p.platform === 'jd');
+  const sample = (arr, n) => {
+    const a = arr.slice();
+    // Fisher–Yates 洗牌后取前 n 件
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, n);
+  };
+  return [...sample(taobao, 2), ...sample(jd, 2)];
+}
+
+// picksItemsHTML 渲染随机抽取的好物网格项
+// 链接用 pick.url —— 即带 PID 的导购推广短链（淘宝 s.click / 京东 u.jd），不可替换为裸商品页，否则佣金不计入
+function picksItemsHTML() {
+  return picksSample().map((p) => {
+    const tag = p.platform === 'taobao' ? t('picks.taobao') : t('picks.jd');
+    return `<a class="pick-item" href="${p.url}" target="_blank" rel="nofollow sponsored noopener noreferrer">
+      <span class="pick-platform ${p.platform}">${tag}</span>
+      <img class="pick-img" src="${p.image}" alt="${escapeAttr(p.name)}" loading="lazy">
+      <span class="pick-name">${p.name}</span>
+      <span class="pick-price">¥${escapeAttr(p.price)} <em>${t('picks.dealPrice')}</em></span>
+      <span class="pick-cta">${t('picks.view')} →</span>
+    </a>`;
+  }).join('');
+}
+
+// picksCardHTML 工具页底部"好物"展示卡：每次进工具页随机抽 4 件，可折叠 + 换一批刷新
+function picksCardHTML() {
+  if (!featureEnabled('donation') || !BOOT.donation || !BOOT.donation.enabled) return '';
+  const pool = (BOOT.donation && BOOT.donation.picks) || [];
+  if (!pool.length) return '';
+  const items = picksItemsHTML();
+  if (!items) return '';
+  return `
+    <section class="picks-card" id="picks-card">
+      <div class="pc-head" id="pc-head" role="button" tabindex="0" aria-expanded="true" aria-controls="pc-body">
+        <div class="pc-title-wrap">
+          <span class="pc-title">${t('picks.title')}</span>
+          <span class="pc-subtitle">${t('picks.subtitle')}</span>
+        </div>
+        <button class="pc-refresh" id="pc-refresh" title="${t('picks.refresh')}">↻ ${t('picks.refresh')}</button>
+        <button class="pc-toggle" id="pc-toggle" aria-label="collapse">▾</button>
+      </div>
+      <div class="pc-body" id="pc-body">
+        <div class="picks-grid">${items}</div>
+        <div class="pc-foot">${t('picks.foot')}</div>
+      </div>
+    </section>`;
+}
+
+// bindPicksCard 绑定好物卡折叠切换 + 换一批（重新随机抽取网格项）
+function bindPicksCard() {
+  const card = app.querySelector('#picks-card');
+  if (!card) return;
+  const head = card.querySelector('#pc-head');
+  const toggle = card.querySelector('#pc-toggle');
+  const grid = card.querySelector('.picks-grid');
+  const refresh = card.querySelector('#pc-refresh');
+  const flip = () => {
+    const collapsed = card.classList.toggle('collapsed');
+    if (toggle) toggle.textContent = collapsed ? '▸' : '▾';
+    head.setAttribute('aria-expanded', String(!collapsed));
+  };
+  if (head) {
+    head.onclick = flip;
+    head.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
+  }
+  if (toggle) toggle.onclick = (e) => { e.stopPropagation(); flip(); };
+  // 换一批：只重渲染网格项（新随机选择），不整卡重建
+  if (refresh && grid) refresh.onclick = (e) => { e.stopPropagation(); grid.innerHTML = picksItemsHTML(); };
+}
+
+// bindDonateCard 绑定赞助卡折叠切换（整个头部可点击）
 function bindDonateCard() {
   const card = app.querySelector('#donate-card');
   if (!card) return;
+  const head = card.querySelector('#dc-head');
   const toggle = card.querySelector('#dc-toggle');
-  if (!toggle) return;
-  toggle.onclick = () => {
+  if (!head) return;
+  const flip = () => {
     const collapsed = card.classList.toggle('collapsed');
-    toggle.textContent = collapsed ? '▸' : '▾';
-    toggle.setAttribute('aria-expanded', String(!collapsed));
+    if (toggle) { toggle.textContent = collapsed ? '▸' : '▾'; }
+    head.setAttribute('aria-expanded', String(!collapsed));
   };
+  head.onclick = flip;
+  head.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
+  // toggle 在 head 内，单独点击会冒泡双触发，故阻止冒泡由自身处理
+  if (toggle) toggle.onclick = (e) => { e.stopPropagation(); flip(); };
 }
 
 // openDonation 展开赞助卡并滚动定位（首页）或跳回首页并定位
@@ -231,7 +319,9 @@ function openDonation() {
     if (!card) return;
     card.classList.remove('collapsed');
     const t = card.querySelector('#dc-toggle');
-    if (t) { t.textContent = '▾'; t.setAttribute('aria-expanded', 'true'); }
+    const h = card.querySelector('#dc-head');
+    if (t) { t.textContent = '▾'; }
+    if (h) { h.setAttribute('aria-expanded', 'true'); }
     card.scrollIntoView({ behavior: 'smooth' });
   };
   if (!currentId) { show(app.querySelector('#donate-card')); return; }
@@ -316,6 +406,7 @@ function renderTool() {
       </div>
       ${guideHtml}
       <div id="tool-body"></div>
+      ${picksCardHTML()}
     </div>`;
   view.querySelector('.back').onclick = (e) => {
     e.preventDefault();
@@ -323,6 +414,7 @@ function renderTool() {
   };
   const shareBtn = view.querySelector('#tool-share');
   if (shareBtn) shareBtn.onclick = onShare;
+  bindPicksCard();
   loadComponent(m, view.querySelector('#tool-body'));
 }
 

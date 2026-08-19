@@ -46,15 +46,39 @@
   },
   "donation": {
     "enabled": true,
-    "title": { "zh": "支持本项目", "en": "Support This Project" },
-    "desc": { "zh": "如果这些工具帮到了你，欢迎支持本站持续运行——免费支持同样感谢！", "en": "If these tools helped you, please consider supporting the site — free support counts too!" },
+    "title": { "zh": "支持一下 Toolbox", "en": "Keep Toolbox Running" },
+    "desc": { "zh": "这些工具永久免费、无需注册、无广告打扰，是作者一个人业余维护的小站。如果觉得好用，哪怕只是从这里领个云服务器券、或买本技术书——你不花一分多余的钱，本站就能多撑久一点。每一次支持，都让作者有动力继续做下去。感谢你。", "en": "These tools are free forever — no signup, no ads, maintained by one person in spare time. If they help you, even grabbing a cloud coupon or a tech book through these links costs you nothing extra, yet keeps the site running a little longer. Every bit of support keeps the author going. Thank you." },
     "methods": [
       { "type": "image", "label": { "zh": "支付宝", "en": "Alipay" }, "src": "/img/donate-alipay.jpg" },
       { "type": "image", "label": { "zh": "微信", "en": "WeChat" }, "src": "/img/donate-wechat.png" }
     ],
     "links": [
-      { "label": { "zh": "买 Vultr 云服务器", "en": "Buy Vultr Cloud" }, "url": "https://www.vultr.com/?ref=9918580", "hint": { "zh": "用此链接注册，你不多花钱", "en": "No extra cost to you" }, "sponsored": true },
-      { "label": { "zh": "买阿里云服务器", "en": "Buy Aliyun Cloud" }, "url": "https://www.aliyun.com/minisite/goods?userCode=yjm7ip1v", "hint": { "zh": "领 8.5 折券", "en": "15% off coupon" }, "sponsored": true }
+      { "label": { "zh": "买 Vultr 云服务器", "en": "Buy Vultr Cloud" }, "url": "https://www.vultr.com/?ref=9918580", "hint": { "zh": "注册即支持，你不加价", "en": "Sign up, no extra cost" }, "sponsored": true },
+      { "label": { "zh": "买阿里云服务器", "en": "Buy Aliyun Cloud" }, "url": "https://www.aliyun.com/minisite/goods?userCode=yjm7ip1v", "hint": { "zh": "领券即支持，你不加价", "en": "Grab coupon, no extra cost" }, "sponsored": true },
+      { "label": { "zh": "淘宝开发者好物清单", "en": "Taobao Dev Picks" }, "url": "https://mo.m.taobao.com/union2/page_1720491021187?templateId=2&groupId=2180497003&openPageId=8764e705841dc3bfa23221d5cc331291&union_lens=lensId%3APUB%401787141427%400bbb35a5_0d53_1a019ee1299_5daf%4001%40eyJmbG9vcklkIjo2OTIxNSwiic3BtQiiI6Il9wb3J0YWxfdjJfcGFnZXNfdG9vbF9tdWx0aXByb21vX2NyZWF0ZV9odG0iifQieie", "hint": { "zh": "逛一逛，你不加价", "en": "Browse, no extra cost" }, "sponsored": true },
+      { "label": { "zh": "京东开发者好物", "en": "JD Dev Picks" }, "url": "https://jingfen.jd.com/item?u_act_p=union-activity&union_page_id=305015&utm_campaign=t_2038489630", "hint": { "zh": "下单即支持，你不加价", "en": "Buy, no extra cost" }, "sponsored": true }
+    ],
+    "picks": [
+      { "platform": "taobao", "name": "Herschel赫行retreat双肩包通勤休闲情侣书包背包电脑包", "image": "https://img.alicdn.com/i4/3083173120/O1CN01OZvyEmg0bgD2vH2e_!!3083173120.jpg", "price": "219", "url": "https://s.click.taobao.com/WvIPtqj" },
+      { "platform": "taobao", "name": "【自营】Apple/苹果 AirPods 4 降噪蓝牙耳机", "image": "https://img.alicdn.com/i2/2549841410/O1CN01DSeReJknlRC1chua_!!2549841410-0-tmg_sticker.jpg", "price": "1281.55", "url": "https://s.click.taobao.com/WQwUIij" },
+      { "platform": "taobao", "name": "GOOM保温马克杯办公室咖啡泡茶杯子女生新款高颜值带盖", "image": "https://img.alicdn.com/i3/2208159693436/O1CN01tEMCyN1bFjzc8I9lM_!!4611686018427386492-0-item_pic.jpg", "price": "89", "url": "https://s.click.taobao.com/WVoOtqj" },
+      { "platform": "taobao", "name": "GANSS高斯GS3104TPRO机械键盘静音无线蓝牙三模", "image": "https://img.alicdn.com/i4/3385485070/O1CN01yrftrX1nK76BiiDVr_!!4611686018427381518-0-item_pic.jpg", "price": "219", "url": "https://s.click.taobao.com/PQwUIij" },
+      { "platform": "taobao", "name": "小米官方米家体重秤电子秤智能体脂秤家用精准", "image": "https://img.alicdn.com/i3/1714128138/O1CN01pR08sbcpKdL2vH2e-1714128138.jpg", "price": "68", "url": "https://s.click.taobao.com/Pm8Ptqj" },
+      { "platform": "taobao", "name": "正版 大语言模型原理、微调与Agent开发", "image": "https://img.alicdn.com/i4/3446196188/O1CN01ptC7M61va9vQB86fg_!!4611686018427381724-0-item_pic.jpg", "price": "66.2", "url": "https://s.click.taobao.com/VNwUIij" },
+      { "platform": "taobao", "name": "Agent设计模式 图解可复用智能体架构", "image": "https://img.alicdn.com/i3/1049653664/O1CN01qyDSc91cwAJ69AYHU_!!4611686018427384224-2-item_pic.png", "price": "54.4", "url": "https://s.click.taobao.com/jM9Otqj" },
+      { "platform": "taobao", "name": "中国儿童百科全书典藏版 刷边纪念版精装全彩", "image": "https://img.alicdn.com/i4/710781888/O1CN01Ksi9E01Pokurw67O6_!!4611686018427382720-0-item_pic.jpg", "price": "139.4", "url": "https://s.click.taobao.com/MNwUIij" },
+      { "platform": "taobao", "name": "红星照耀中国和红岩正版原著八年级上册必读", "image": "https://img.alicdn.com/i2/1049653664/O1CN01SvubWm1cwAL0Mslye_!!4611686018427384224-0-item_pic.jpg", "price": "11.5", "url": "https://s.click.taobao.com/HGjOtqj" },
+      { "platform": "taobao", "name": "盖世小鸡超新星无线游戏手柄switch2精英手柄", "image": "https://img.alicdn.com/i1/2241702396/O1CN01uS6hBK1TZQ42lNzMO_!!4611686018427382268-0-item_pic.jpg", "price": "169", "url": "https://s.click.taobao.com/El3Ptqj" },
+      { "platform": "taobao", "name": "联想拯救者Y7000X/Y7000P/Y9000P2026酷睿Ultra", "image": "https://img.alicdn.com/i3/2200675249400/O1CN01Ax6aAKfCDnG1chua_!!4611686018427383032-0-item_pic.jpg", "price": "13299", "url": "https://s.click.taobao.com/OnNPtqj" },
+      { "platform": "taobao", "name": "ai智能机器人2026新款儿童玩具遥控编程豆包对话", "image": "https://img.alicdn.com/i2/2073560347/O1CN01QTBJpltRvOE2vH2e_!!4611686018427381019-0-item_pic.jpg", "price": "344", "url": "https://s.click.taobao.com/kCmUIij" },
+      { "platform": "jd", "name": "得力5只A4文件袋网格拉链袋彩色学生科目分类袋", "image": "https://img14.360buyimg.com/n0/jfs/t20280818/507518/30/4291/191949/6a859d4bFa78c7f43/0a023203204e6f74.jpg", "price": "13.90", "url": "https://u.jd.com/kaG9ZeE" },
+      { "platform": "jd", "name": "极川笔记本电脑支架散热器可360°旋转升降悬空", "image": "https://img14.360buyimg.com/n0/jfs/t1/499529/19/4529/165158/6a7699c1F3fbac431/0083320320547941.jpg", "price": "49.40", "url": "https://u.jd.com/k1GHSu9" },
+      { "platform": "jd", "name": "Apple/苹果 AirPods 4 搭配USB-C充电盒蓝牙耳机", "image": "https://img14.360buyimg.com/n0/jfs/t1/504498/23/6224/106879/6a82d0a5Fd469ee23/00835dc5dcbdb3e5.png", "price": "799.00", "url": "https://u.jd.com/kOGH9y6" },
+      { "platform": "jd", "name": "狼蛛M75铝坨坨客制化机械键盘81键三模蓝牙gasket", "image": "https://img14.360buyimg.com/n0/jfs/t1/474119/34/9300/682489/6a4f016eFa85bdeff/00835dc5dce8c2fd.jpg", "price": "399.00", "url": "https://u.jd.com/kDGj8Hr" },
+      { "platform": "jd", "name": "程序员修炼之道+程序员的自我修养+代码整洁之道 三册", "image": "https://img14.360buyimg.com/n0/jfs/t1/110431/36/32064/120283/63326143E7501d3fa/4bbc97337d432c6f.jpg", "price": "255.50", "url": "https://u.jd.com/kgGWABc" },
+      { "platform": "jd", "name": "德国瑞科奥智能体脂秤体重秤电子称精准家用心率秤", "image": "https://img14.360buyimg.com/n0/jfs/t1/443736/30/8746/77762/6a1bafa3F327b12ba/0083320320ebcd2a.jpg", "price": "258.00", "url": "https://u.jd.com/kgGZCX6" },
+      { "platform": "jd", "name": "从0到1搭建AI智能体:Manus+LangChain+Dify多平台应用", "image": "https://img14.360buyimg.com/n0/jfs/t1/392821/29/13519/929398/6989c988F2993a9ea/0083320320f5ef52.png", "price": "166.00", "url": "https://u.jd.com/kGGTUBR" },
+      { "platform": "jd", "name": "AI AGENT智能体开发实践 清华大学出版社", "image": "https://img14.360buyimg.com/n0/jfs/t1/439998/1/17421/113782/6a1a8c8cF7d716aee/008325c25c8429d3.png", "price": "236.60", "url": "https://u.jd.com/kgG7hpz" }
     ]
   },
   "seo": {

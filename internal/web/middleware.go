@@ -14,7 +14,9 @@ func securityHeaders(next http.Handler) http.Handler {
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("X-Frame-Options", "DENY")
 		h.Set("Referrer-Policy", "no-referrer")
-		h.Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'")
+		// img-src 放行淘宝/京东联盟商品图 CDN（affiliate 好物卡展示）；Referrer-Policy:no-referrer
+		// 已在下方设置，不带 Referer 反而绕过两平台防盗链。佣金靠链接内 PID（union_lens / utm_campaign）计入，与 Referer 无关。
+		h.Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.alicdn.com https://*.360buyimg.com; connect-src 'self'")
 		next.ServeHTTP(w, r)
 	})
 }

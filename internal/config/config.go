@@ -137,6 +137,7 @@ type DonationConfig struct {
 	Desc    interface{}      `json:"desc"`
 	Methods []DonationMethod `json:"methods"`
 	Links   []DonationLink   `json:"links"` // 免费支持外链（推广购买 / star 等），区别于打赏
+	Picks   []DonationPick   `json:"picks"` // 站长精选好物池（affiliate 单品，前端每次随机抽取展示）
 }
 
 // DonationMethod 单个赞助方式
@@ -153,6 +154,16 @@ type DonationLink struct {
 	URL       string      `json:"url"`
 	Hint      interface{} `json:"hint"`      // {zh,en} 可选说明
 	Sponsored bool        `json:"sponsored"` // 推广返佣链接：追加 rel="nofollow sponsored"
+}
+
+// DonationPick 站长精选好物（affiliate 单品）。前端每次进入工具页从池中随机抽取若干展示，
+// 保证"不选死"——每个单品都有均匀曝光机会，每次访问所见略有不同。
+type DonationPick struct {
+	Platform string `json:"platform"` // taobao / jd
+	Name     string `json:"name"`     // 商品名（已截断，避免过长）
+	Image    string `json:"image"`    // 商品主图 URL（已是 https）
+	Price    string `json:"price"`    // 到手价（含币种符号或纯数字，原样展示）
+	URL      string `json:"url"`      // affiliate 短链（带 PID，点击即计佣）
 }
 
 // SEOConfig SEO 相关开关
