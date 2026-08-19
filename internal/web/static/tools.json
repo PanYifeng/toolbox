@@ -280,6 +280,34 @@
     }
   },
   {
+    "id": "game_tetris",
+    "name": {
+      "zh": "俄罗斯方块",
+      "en": "Tetris"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🟦",
+    "keywords": [
+      "tetris",
+      "game",
+      "游戏",
+      "俄罗斯方块",
+      "方块",
+      "消除",
+      "经典",
+      "休闲",
+      "街机"
+    ],
+    "desc": "经典俄罗斯方块：移动旋转下落方块，填满整行消除得分，每消 10 行升级提速，堆到顶部即结束，纯前端运行。",
+    "guide": {
+      "zh": "## 功能\n\n10 列 × 20 行棋盘，7 种四格方块随机下落。左右移动、旋转、软降 / 硬降，填满整行即消除并得分；每消除 10 行升一级、下落变快，方块堆到顶部则游戏结束。\n\n## 使用场景\n\n- 碎片时间来一局经典俄罗斯方块\n- 追逐最高分与最高等级，刷新本地记录\n- 通关后领取专属纪念卡收藏或分享\n\n## 常见问题\n\n- **操作方式**：←→ 移动、↑ 旋转、↓ 软降、空格硬降、P 暂停；移动端可滑动或使用屏上方向键\n- **计分**：单消 100、双消 300、三消 500、四消 800，乘以当前等级\n- **最高分保存**：最高分存储在浏览器本地，清除站点数据会重置",
+      "en": "## Features\n\nA 10×20 board with 7 tetrominoes falling at random. Move left/right, rotate, soft/hard drop; fill a full row to clear and score. Every 10 cleared rows levels up and speeds the fall; stacking to the top ends the game.\n\n## Use cases\n\n- Play a quick round of classic Tetris in spare moments\n- Chase the highest score and level, beating your local best\n- Earn an exclusive memorial card on completion to collect or share\n\n## FAQ\n\n- **Controls**: ←→ move, ↑ rotate, ↓ soft drop, Space hard drop, P pause; swipe or on-screen D-pad on touch devices\n- **Scoring**: 1 line = 100, 2 = 300, 3 = 500, 4 = 800, times current level\n- **Best score**: stored locally in the browser; clearing site data resets it"
+    }
+  },
+  {
     "id": "game_ttt",
     "name": {
       "zh": "井字棋",

@@ -306,6 +306,8 @@ Toolbox 已有 `donation` 配置（见 `commercialization.md` §2.1），支持 
 - 需企业或个体工商户资质
 - 除非未来买独立域名 + 完成 ICP 备案，否则不可用
 
+> 注意：这里说的是 **CPC 广告联盟**（按展示 / 点击计费，需备案）。**国内 CPS 导购返佣**（淘宝联盟 / 京东联盟）走「社交渠道」注册可绕开 ICP，已落地——见 [`affiliate-taobao-jd.md`](./affiliate-taobao-jd.md)。
+
 ### 自售广告位
 
 - 等流量起来后，直接把 banner 位按月卖给相关 SaaS / 工具服务商
