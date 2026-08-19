@@ -329,6 +329,25 @@ canvas { outline: none; border-radius: 6px; max-width: 100%; height: auto; touch
 .dpad-down { grid-column: 2; grid-row: 3; }
 .dpad-right { grid-column: 3; grid-row: 2; }
 
+/* 硬降按钮（俄罗斯方块用，默认隐藏，触屏 / 窄屏与方向键一同显示） */
+.game-drop {
+  display: none;
+  margin: 12px auto 0;
+  padding: 12px 36px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--bg-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.game-drop:active { background: var(--accent); color: #fff; }
+
 /* 扫雷网格 */
 .ms-grid {
   display: grid;
@@ -550,6 +569,7 @@ pre {
   .lined-row { flex-direction: column; }
   /* 触屏 / 窄屏显示方向键 */
   .dpad { display: grid; }
+  .game-drop { display: block; }
   /* 2048 棋盘缩小，避免横向溢出 */
   .board-2048 { grid-template-columns: repeat(4, 64px); grid-template-rows: repeat(4, 64px); }
   .board-2048 .t128, .board-2048 .t256, .board-2048 .t512 { font-size: 16px; }
@@ -576,6 +596,7 @@ pre {
 /* 触屏设备（无 hover）：即便宽屏也显示方向键 */
 @media (hover: none) and (pointer: coarse) {
   .dpad { display: grid; }
+  .game-drop { display: block; }
 }
 
 /* ===== 宗教文化 / 测验 / 纪念卡 ===== */

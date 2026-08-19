@@ -31,7 +31,8 @@ export default function (el) {
       <button id="t-new">${t('game.newgame')}</button>
     </div>
     <p class="rules">${t('tetris.howto')}</p>
-    <canvas id="t-canvas" width="${W * CELL}" height="${H * CELL}" tabindex="0"></canvas>`;
+    <canvas id="t-canvas" width="${W * CELL}" height="${H * CELL}" tabindex="0"></canvas>
+    <button id="t-drop" class="game-drop" type="button" aria-label="${t('tetris.drop')}">⤓ ${t('tetris.drop')}</button>`;
 
   const $cv = el.querySelector('#t-canvas');
   const ctx = $cv.getContext('2d');
@@ -43,6 +44,7 @@ export default function (el) {
   let board, cur, score, lines, level, best, timer, running, paused, over;
 
   el.querySelector('#t-new').onclick = newGame;
+  el.querySelector('#t-drop').onclick = () => { if (!over && !paused) hardDrop(); };
   $cv.onkeydown = onKey;
   $cv.onclick = () => $cv.focus();
   // 移动端滑动：L/R 移动、U 旋转、D 软降
@@ -147,11 +149,12 @@ export default function (el) {
     start();
   }
 
-  // hardDrop 直落到底 +2/格，触发锁定
+  // hardDrop 直落到底 +2/格，触发锁定，并确保重力运行（首次输入启动）
   function hardDrop() {
     let d = 0; while (!collide(cur.x, cur.y + 1, cur.mat)) { cur.y++; d++; }
     score += d * 2; $score.textContent = score;
     tick();
+    if (!over) start();
   }
 
   // rotate 顺时针旋转 + 简易墙踢（偏移 0/-1/+1/-2/+2）
