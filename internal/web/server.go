@@ -36,6 +36,7 @@ type Server struct {
 	lb         *leaderboardStore
 	rv         *recordVerifyStore
 	ec         *errataVerifyStore
+	pr         *paidReportStore
 	lbRL       *rateLimiter
 	payRL      *rateLimiter
 }
@@ -54,6 +55,7 @@ func NewServer(cfg *config.Config) *Server {
 		lb:         newLeaderboardStore(cfg.Leaderboard, cfg.Pro.AdminSecret, cfg.Site.URL),
 		rv:         newRecordVerifyStore(cfg.Leaderboard.ClaimsFile),
 		ec:         newErrataVerifyStore("./errata-claims.json"),
+		pr:         newPaidReportStore("./paid-reports.json"),
 		lbRL:       newRateLimiter(5, 10*time.Minute), // 排行榜提交每 IP 每 10 分钟最多 5 次，防刷榜
 		payRL:      newRateLimiter(5, 10*time.Minute), // 支付对账通知每 IP 每 10 分钟最多 5 次，防刷通知
 	}
@@ -97,6 +99,11 @@ func (s *Server) routes() {
 	if s.cfg.EffectiveFeatures().Errata && s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" && s.cfg.Pro.AdminSecret != "" {
 		mux.HandleFunc("POST /api/errata/claim", s.handleErrataClaimCreate)
 		mux.HandleFunc("GET /api/errata/confirm", s.handleErrataConfirm)
+	}
+	// 通用付费内容解锁（站主确认门，人格测试完整版等用）：未配邮件/站主邮箱/确认密钥时不注册
+	if s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" && s.cfg.Pro.AdminSecret != "" {
+		mux.HandleFunc("POST /api/paidreport/claim", s.handlePaidReportCreate)
+		mux.HandleFunc("GET /api/paidreport/confirm", s.handlePaidReportConfirm)
 	}
 	mux.HandleFunc("GET /robots.txt", s.handleRobots)
 	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)

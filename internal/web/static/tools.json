@@ -84,6 +84,37 @@
     }
   },
   {
+    "id": "big-five",
+    "name": {
+      "zh": "大五人格测试",
+      "en": "Big Five Personality Test"
+    },
+    "category": {
+      "zh": "知识 · 趣味",
+      "en": "Knowledge & Fun"
+    },
+    "icon": "🧠",
+    "keywords": [
+      "big five",
+      "大五",
+      "ocean",
+      "人格",
+      "性格",
+      "五因素",
+      "personality",
+      "openness",
+      "conscientiousness",
+      "extraversion",
+      "agreeableness",
+      "neuroticism"
+    ],
+    "desc": "大五人格（OCEAN）测试，20 道李克特题定位你在开放性、尽责性、外向性、宜人性、神经质五个维度上的百分比；免费看简版画像，完整版详细报告 ¥5 经站主确认后邮件送达。",
+    "guide": {
+      "zh": "## 功能\n\n通过 20 道李克特量表题（1-5 分，每维度 4 题）测量大五人格五维度（OCEAN）的百分比画像。免费查看五维度分数与简版解读；完整版报告（每维度深度解析 + 建议）为付费项，¥5 一次，经站主确认收款后邮件送达。\n\n## 使用场景\n\n- 想要基于科学模型的人格画像\n- 自我成长、了解自己的情绪与社交倾向\n- 团队建设中了解成员特质分布\n\n## 常见问题\n\n- **计分方式**：每题 1（很不符合）到 5（很符合），含反向计分题；每维度换算为 0-100 百分比\n- **免费 vs 完整版**：免费给五维度百分比 + 简版高低解读；完整版给每维度深度解析与建议\n- **完整版送达**：提交邮箱+交易号后，站主确认收款即把完整报告邮件发给你\n- **数据安全**：作答仅在浏览器本地计分，不上传服务器（完整版报告文本随申请提交以邮件送达）",
+      "en": "## Features\n\nAnswer 20 Likert-scale items (1-5, 4 per dimension) to get your Big Five (OCEAN) percentage profile. View the free brief profile with per-dimension scores; a detailed full report (deep-dive + tips per dimension) is a paid item, ¥5 one-time, emailed after the site owner confirms payment.\n\n## Use cases\n\n- A science-based personality profile\n- Self-growth — understanding emotional and social tendencies\n- Team building — seeing members' trait spread\n\n## FAQ\n\n- **Scoring**: each item 1 (strongly disagree) to 5 (strongly agree), some reverse-scored; each dimension becomes a 0-100 percentage\n- **Free vs full**: free gives the five percentages + brief high/low read; the full report gives deep analysis and tips per dimension\n- **Full delivery**: submit email + TXID; once the site owner confirms payment, the full report is emailed to you\n- **Privacy**: scoring runs locally in your browser (the full-report text is submitted with the claim so it can be emailed)"
+    }
+  },
+  {
     "id": "cert-verify",
     "name": {
       "zh": "纪念卡验真",
@@ -137,6 +168,38 @@
     "guide": {
       "zh": "## 功能\n\n输入 HEX 颜色值，实时换算并展示对应的 RGB 与 HSL 表示，同时显示色块预览。\n\n## 使用场景\n\n- 在 CSS、设计稿之间统一颜色格式\n- 快速查看某个 HEX 色值的 RGB 分量用于调色\n- 把屏幕取色结果换算成 HSL 方便调整色相和饱和度\n\n## 常见问题\n\n- **输入格式**：支持带或不带「#」前缀的 6 位 HEX，例如「2563eb」或「#2563eb」\n- **格式无效**：输入非 6 位十六进制字符时会提示错误\n- **数据安全**：换算在浏览器本地完成，不上传服务器",
       "en": "## Features\n\nEnter a HEX color and instantly get the equivalent RGB and HSL values, with a live swatch preview.\n\n## Use cases\n\n- Unify color formats between CSS and design mockups\n- Inspect the RGB components of a HEX value for fine-tuning\n- Convert a picked screen color into HSL to adjust hue and saturation\n\n## FAQ\n\n- **Input format**: accepts 6-digit HEX with or without a # prefix, e.g. 2563eb or #2563eb\n- **Invalid format**: non-6-digit hex input triggers an error\n- **Privacy**: conversion runs locally in your browser, nothing is uploaded"
+    }
+  },
+  {
+    "id": "disc",
+    "name": {
+      "zh": "DISC 行为风格测试",
+      "en": "DISC Behavior Style Test"
+    },
+    "category": {
+      "zh": "知识 · 趣味",
+      "en": "Knowledge & Fun"
+    },
+    "icon": "🎯",
+    "keywords": [
+      "disc",
+      "行为风格",
+      "behavior style",
+      "性格",
+      "人格",
+      "dominance",
+      "influence",
+      "steadiness",
+      "conscientiousness",
+      "支配",
+      "影响",
+      "稳健",
+      "服从"
+    ],
+    "desc": "DISC 行为风格测试，16 道李克特题定位你在支配 D、影响 I、稳健 S、严谨 C 四个维度上的风格，找出你的主导风格；免费看简版解读，完整版详细报告 ¥5 经站主确认后邮件送达。",
+    "guide": {
+      "zh": "## 功能\n\n通过 16 道李克特题（1-5 分，每维度 4 题）测量 DISC 四维度风格（D 支配 / I 影响 / S 稳健 / C 严谨）的强度，找出你的主导风格。免费查看主导风格与四维度简版解读；完整版报告（四维度深度解析 + 主导风格应用建议）为付费项，¥5 一次，经站主确认收款后邮件送达。\n\n## 使用场景\n\n- 了解自己在团队中的行为倾向\n- 改善沟通、减少协作摩擦\n- 招聘与岗位匹配参考\n\n## 常见问题\n\n- **计分方式**：每题 1（很不符合）到 5（很符合），含反向计分题；每维度换算为 0-100 百分比，最高者为主导风格\n- **免费 vs 完整版**：免费给主导风格 + 四维度百分比简版解读；完整版给每维度深度解析与沟通建议\n- **完整版送达**：提交邮箱+交易号后，站主确认收款即把完整报告邮件发给你\n- **数据安全**：作答仅在浏览器本地计分，不上传服务器（完整版报告文本随申请提交以邮件送达）",
+      "en": "## Features\n\nAnswer 16 Likert items (1-5, 4 per dimension) to measure your DISC profile (D Dominance / I Influence / S Steadiness / C Conscientiousness) and find your primary style. View the free brief read of your primary style and four-dimension scores; a detailed full report (deep-dive per dimension + application tips) is a paid item, ¥5 one-time, emailed after the site owner confirms payment.\n\n## Use cases\n\n- Understanding your behavioral tendencies in teams\n- Improving communication, reducing friction\n- Reference for hiring and role-fit\n\n## FAQ\n\n- **Scoring**: each item 1 (strongly disagree) to 5 (strongly agree), some reverse-scored; each dimension becomes a 0-100 percentage; the highest is your primary style\n- **Free vs full**: free gives the primary style + brief per-dimension read; the full report gives deep analysis and communication tips per dimension\n- **Full delivery**: submit email + TXID; once the site owner confirms payment, the full report is emailed to you\n- **Privacy**: scoring runs locally in your browser (the full-report text is submitted with the claim so it can be emailed)"
     }
   },
   {
@@ -225,6 +288,32 @@
     }
   },
   {
+    "id": "game-flappy",
+    "name": {
+      "zh": "Flappy Bird",
+      "en": "Flappy Bird"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🐤",
+    "keywords": [
+      "flappy",
+      "flappy bird",
+      "飞鸟",
+      "小鸟",
+      "pixel bird",
+      "tap game",
+      "点击游戏"
+    ],
+    "desc": "Flappy Bird 简化版：点按屏幕或空格让小鸟上跳，避开管道，穿越缝隙得分。纯 canvas 实现，无需物理引擎。支持计分、最高分、通关纪念卡与排行榜。",
+    "guide": {
+      "zh": "## 玩法\n\n点按画布或按空格，小鸟向上跳一下；松手则受重力下坠。穿越每对管道的缝隙得 1 分，撞管或触地即结束。分数越高越好。\n\n## 说明\n\n- 纯前端 canvas 实现，简化版（无物理引擎、无原版精灵图）\n- 最高分记录在本地浏览器，通关可生成纪念卡并可上排行榜\n- 触屏点按、鼠标点按、空格键均可操作",
+      "en": "## How to play\n\nTap the canvas or press Space to make the bird hop; release and gravity pulls it down. Pass through each pipe gap for 1 point; hitting a pipe or the ground ends the run. Higher is better.\n\n## Notes\n\n- Pure front-end canvas, a simplified version (no physics engine, no original sprites)\n- Best score is stored locally in your browser; clearing a run generates a memorial card and may enter the leaderboard\n- Touch, mouse, or Space all work"
+    }
+  },
+  {
     "id": "game-minesweeper",
     "name": {
       "zh": "扫雷",
@@ -307,6 +396,32 @@
     }
   },
   {
+    "id": "game-suika",
+    "name": {
+      "zh": "合成水果",
+      "en": "Suika Fruit Merge"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🍉",
+    "keywords": [
+      "suika",
+      "合成大西瓜",
+      "合成水果",
+      "watermelon game",
+      "merge game",
+      "合并游戏",
+      "水果合成"
+    ],
+    "desc": "合成水果（Suika）简化版：无物理引擎，点按列让水果下落，相邻同种水果自动合并升级（🍒→🍓→🍇→🍊→🍎→🍉），两个西瓜合并得高分并消除。计分、最高分、通关纪念卡与排行榜。",
+    "guide": {
+      "zh": "## 玩法\n\n点按画布的某一列，下一颗水果落到该列顶部。上下左右相邻的同种水果会自动合并为下一级并加分：🍒→🍓→🍇→🍊→🍎→🍉。两个🍉合并得高分并双双消除。分数越高越好；所有列都填满即结束。\n\n## 说明\n\n- 简化版：无物理引擎，采用网格列下落 + 相邻合并模型，与原版 Suika 的物理堆叠体验不同\n- 下一颗水果随机为🍒/🍓/🍇/🍊之一；🍉只能由合并产生\n- 纯前端实现，最高分记录在本地浏览器；通关可生成纪念卡并可上排行榜",
+      "en": "## How to play\n\nTap a column to drop the next fruit onto its top. Same fruits touching (up/down/left/right) auto-merge into the next tier and score: 🍒→🍓→🍇→🍊→🍎→🍉. Two 🍉 merge for a big bonus and both vanish. Higher is better; the game ends when every column is full.\n\n## Notes\n\n- Simplified version: no physics engine — uses a grid drop + adjacent-merge model, unlike the original Suika's physics stacking\n- The next fruit is randomly 🍒/🍓/🍇/🍊; 🍉 only appears via merging\n- Pure front-end; best score stored locally; clearing a run generates a memorial card and may enter the leaderboard"
+    }
+  },
+  {
     "id": "game_tetris",
     "name": {
       "zh": "俄罗斯方块",
@@ -359,6 +474,32 @@
     "guide": {
       "zh": "## 功能\n\n3x3 棋盘的井字棋，玩家执 X，电脑执 O 并使用 minimax 算法走最佳一步，几乎无法被击败，最多只能逼平。\n\n## 使用场景\n\n- 碎片时间杀时间的经典小游戏\n- 体验 minimax 博弈算法的实际效果\n- 给小朋友讲解棋类 AI 的入门示例\n\n## 常见问题\n\n- **能赢电脑吗**：minimax 永远选最优解，你最多只能平局\n- **怎么重开**：点击「重新开始」按钮即可清空棋盘\n- **胜场记录在哪**：保存在浏览器本地存储，清缓存会丢失",
       "en": "## Features\n\nClassic 3x3 Tic-Tac-Toe. You play X and the computer plays O using the minimax algorithm to always pick the optimal move, making it nearly unbeatable — at best you force a draw.\n\n## Use cases\n\n- A quick classic game for spare moments\n- See the minimax game-playing algorithm in action\n- A simple demo for teaching board-game AI to kids\n\n## FAQ\n\n- **Can I beat the AI**: minimax always plays optimally, so the best you can do is draw\n- **How to restart**: click the reset button to clear the board\n- **Where are wins saved**: stored in browser local storage and lost if you clear cache"
+    }
+  },
+  {
+    "id": "game-wordle",
+    "name": {
+      "zh": "Wordle 猜词",
+      "en": "Wordle"
+    },
+    "category": {
+      "zh": "游戏",
+      "en": "Games"
+    },
+    "icon": "🟩",
+    "keywords": [
+      "wordle",
+      "猜词",
+      "word game",
+      "five letter",
+      "5 字母",
+      "guess word",
+      "word puzzle"
+    ],
+    "desc": "Wordle 猜词游戏：6 次机会猜一个 5 字母英文单词，绿/黄/灰给出线索。内置常见词库，并支持粘贴自定义词库。计分（猜中所用次数越少分越高）、最高分、通关纪念卡与排行榜。",
+    "guide": {
+      "zh": "## 玩法\n\n6 次机会猜出 5 字母英文单词。每行输入 5 个字母后回车提交，字母会着色：**绿**=位置正确；**黄**=在词中但位置错；**灰**=不在词中。猜中所用次数越少分越高：1 次 600 分，6 次 100 分；未猜中 0 分。\n\n## 自定义词库\n\n展开\"自定义词库\"，每行粘贴一个 5 字母词（仅 A-Z），点击应用即覆盖内置词库作为答案来源。作答不强制属于词库（无大词典校验，接受任意 5 字母输入）。\n\n## 说明\n\n- 纯前端实现，词库与作答均在本地；最高分记录在本地浏览器\n- 物理键盘或屏上键盘均可输入；通关可生成纪念卡并可上排行榜",
+      "en": "## How to play\n\nYou have 6 tries to guess a 5-letter English word. Type 5 letters and press Enter; letters color: **green** = correct spot; **yellow** = in the word, wrong spot; **gray** = not in the word. Fewer tries score higher: 1 try = 600, 6 tries = 100; failing = 0.\n\n## Custom word list\n\nExpand \"Custom word list\", paste one 5-letter word (A-Z only) per line, and apply to override the built-in list as the answer source. Guesses are not required to be in the list (no large dictionary check—any 5 letters are accepted).\n\n## Notes\n\n- Pure front-end; the list and scoring run locally; best score is stored in your browser\n- Physical or on-screen keyboard both work; clearing a run generates a memorial card and may enter the leaderboard"
     }
   },
   {
@@ -571,6 +712,34 @@
     "guide": {
       "zh": "## 功能\n\n左侧输入 Markdown 文本，右侧通过内置渲染器实时输出 HTML 预览，输入即渲染，无需点击按钮。\n\n## 使用场景\n\n- 写文档时即时查看 Markdown 排版效果\n- 复制一段 Markdown 快速确认渲染样式\n- 在不支持 MD 的地方粘贴前先转成预览效果\n\n## 常见问题\n\n- **支持哪些语法**：标题、列表、代码、引用、链接、图片、表格等常见语法\n- **内容会上传吗**：不会，渲染完全在浏览器本地完成\n- **能导出 HTML 吗**：本工具只做预览，不提供导出文件",
       "en": "## Features\n\nType Markdown on the left and get real-time HTML preview on the right via the built-in renderer — rendering happens on every keystroke with no button to click.\n\n## Use cases\n\n- Instantly check Markdown formatting while writing docs\n- Paste a Markdown snippet to quickly verify the rendered look\n- Preview before pasting into a place that does not support MD\n\n## FAQ\n\n- **Which syntax is supported**: headings, lists, code, quotes, links, images, tables and other common syntax\n- **Is content uploaded**: no, rendering runs entirely in your browser\n- **Can I export HTML**: this tool only previews and does not export files"
+    }
+  },
+  {
+    "id": "mbti",
+    "name": {
+      "zh": "MBTI 人格测试",
+      "en": "MBTI Personality Test"
+    },
+    "category": {
+      "zh": "知识 · 趣味",
+      "en": "Knowledge & Fun"
+    },
+    "icon": "🎭",
+    "keywords": [
+      "mbti",
+      "personality",
+      "人格",
+      "性格测试",
+      "十六型",
+      "迈尔斯",
+      "十六型人格",
+      "16 personalities",
+      "myers briggs"
+    ],
+    "desc": "MBTI 十六型人格测试，20 题强制选择快速得出你的四字母型态；免费看简版结果，完整版详细报告 ¥5 经站主确认后邮件送达。",
+    "guide": {
+      "zh": "## 功能\n\n通过 20 道二选一题（每个维度 5 题）快速定位你的 MBTI 四字母型态（如 INTJ、ENFP），免费查看简版结果。完整版详细报告（型态深度解析 + 优势 / 盲点 / 职场 / 关系建议）为付费项，¥5 一次，经站主确认收款后邮件送达。\n\n## 使用场景\n\n- 好奇自己属于哪一型，快速自测\n- 团队破冰、了解同事风格差异\n- 为完整版深度报告做入门\n\n## 常见问题\n\n- **计分方式**：每个维度 5 题，你选的那一极计 1 票，多者胜出决定该维度字母\n- **免费 vs 完整版**：免费版给四字母型态 + 一句简述；完整版给多段深度解析\n- **完整版送达**：提交邮箱+交易号后，站主确认收款即把完整报告邮件发给你\n- **数据安全**：作答仅在浏览器本地计分，不上传服务器（完整版报告文本随申请提交以邮件送达）",
+      "en": "## Features\n\nAnswer 20 forced-choice questions (5 per dichotomy) to find your four-letter MBTI type (e.g. INTJ, ENFP) and view a free brief result. A detailed full report (type deep-dive + strengths / blind spots / career / relationship tips) is a paid item, ¥5 one-time, emailed after the site owner confirms payment.\n\n## Use cases\n\n- Curious which type you are — take a quick self-test\n- Team icebreakers, understanding colleagues' styles\n- An entry point before buying the full deep-dive report\n\n## FAQ\n\n- **Scoring**: 5 questions per dichotomy; the pole you pick earns one vote; the majority wins that letter\n- **Free vs full**: free gives the four-letter type + a one-line summary; the full report gives multi-paragraph analysis\n- **Full delivery**: submit email + TXID; once the site owner confirms payment, the full report is emailed to you\n- **Privacy**: scoring runs locally in your browser (the full-report text is submitted with the claim so it can be emailed)"
     }
   },
   {

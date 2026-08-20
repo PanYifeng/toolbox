@@ -75,6 +75,34 @@ export const THEMES = {
     // 样例完成时间：俄罗斯方块诞生（Aleksej Pažitnov，1984 年 6 月 6 日）
     sampleDate: '1984-06-06',
   },
+  'game-tetris': {
+    primary: '#3b82f6', secondary: '#1E40AF', bg: '#F0F6FE', symbol: '🟦', auspicious: '★', pattern: 'grid4',
+    title: { zh: '俄罗斯方块 通关纪念卡', en: 'Tetris Clear-Stage Memorial Card' },
+    message: { zh: '方寸之间进退有度，愿你于纷至沓来中从容不迫。', en: 'Order within the falling blocks; may you stay composed as things pile up.' },
+    // 样例完成时间：俄罗斯方块诞生（Aleksej Pažitnov，1984 年 6 月 6 日）
+    sampleDate: '1984-06-06',
+  },
+  'game-flappy': {
+    primary: '#f59e0b', secondary: '#b45309', bg: '#FFF8EB', symbol: '🐤', auspicious: '☁', pattern: 'wave',
+    title: { zh: 'Flappy Bird 通关纪念卡', en: 'Flappy Bird Memorial Card' },
+    message: { zh: '屡仆屡起，方能穿越缝隙，愿你跌倒后总敢再飞。', en: 'Rise each fall to slip through the gap; may you dare to fly again.' },
+    // 样例完成时间：Flappy Bird 上架（Dong Nguyen，2013 年 5 月 24 日）
+    sampleDate: '2013-05-24',
+  },
+  'game-wordle': {
+    primary: '#16a34a', secondary: '#15803d', bg: '#F2FAF4', symbol: '🟩', auspicious: '★', pattern: 'grid5',
+    title: { zh: 'Wordle 猜词纪念卡', en: 'Wordle Memorial Card' },
+    message: { zh: '于字母间抽丝剥茧，愿你以思考抵达答案。', en: 'Teasing truth from letters; may your thinking find the word.' },
+    // 样例完成时间：Wordle 向公众开放（Josh Wardle，2021 年 10 月）
+    sampleDate: '2021-10-01',
+  },
+  'game-suika': {
+    primary: '#db2777', secondary: '#9d174d', bg: '#FDF2F8', symbol: '🍉', auspicious: '★', pattern: 'dots',
+    title: { zh: '合成水果 纪念卡', en: 'Suika Fruit-Merge Memorial Card' },
+    message: { zh: '同类相聚，渐成圆满，愿你于聚合中越合越大。', en: 'Like kinds gather into wholeness; may you grow by merging.' },
+    // 样例完成时间：Synthetic Suika 上线（Eldorado，2021 年）
+    sampleDate: '2021-09-01',
+  },
   game: {
     primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', pattern: 'grid4',
     title: { zh: '通关纪念卡', en: 'Clear Stage Memorial Card' },
