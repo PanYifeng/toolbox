@@ -875,6 +875,7 @@ pre {
 .about-content li { margin: 4px 0; }
 .footer-about { color: var(--muted); text-decoration: none; }
 .footer-about:hover { color: var(--accent); }
+.about-feedback { font-weight: 600; }
 
 /* 像素画板 */
 .px-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 12px; }

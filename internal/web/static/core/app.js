@@ -392,6 +392,8 @@ function renderAbout() {
   view.innerHTML = aboutPageHTML();
   const back = view.querySelector('.back');
   if (back) back.onclick = (e) => { e.preventDefault(); navigate(null); };
+  const af = view.querySelector('#about-feedback');
+  if (af) af.onclick = (e) => { e.preventDefault(); openFeedback('__about__'); };
 }
 
 // renderTool 工具页：返回按钮 + 标题 + 工具组件
@@ -413,6 +415,7 @@ function renderTool() {
       <div class="tool-head">
         <h2>${m.icon || ''} ${tr(m.name)}</h2>
         <button id="tool-share" class="tool-share-btn" title="${t('share.title')}">🔗 ${t('share.title')}</button>
+        <button id="tool-feedback" class="tool-share-btn" title="${t('fb.open')}">💬 ${t('fb.open')}</button>
       </div>
       ${guideHtml}
       <div id="tool-body"></div>
@@ -424,6 +427,8 @@ function renderTool() {
   };
   const shareBtn = view.querySelector('#tool-share');
   if (shareBtn) shareBtn.onclick = onShare;
+  const tfb = view.querySelector('#tool-feedback');
+  if (tfb) tfb.onclick = () => openFeedback(currentId);
   bindPicksCard();
   loadComponent(m, view.querySelector('#tool-body'));
 }
