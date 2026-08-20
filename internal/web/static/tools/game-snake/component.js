@@ -35,7 +35,7 @@ export default function (el) {
   mountDpad(el, handleDir);
   newGame();
   // 通关纪念卡入口
-  mountGameCard(el, () => score, 'snake');
+  mountGameCard(el, () => best, 'snake');
 
   function newGame() {
     clearInterval(timer);

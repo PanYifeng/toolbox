@@ -1,0 +1,17 @@
+{
+  "game-tetris": [
+    {
+      "name": "测试员",
+      "score": 1000,
+      "time": "2026-08-20 01:07",
+      "ip": "::1",
+      "signedCode": "TB-R-MWNZ-AWMG-MAU6"
+    },
+    {
+      "name": "路人甲",
+      "score": 500,
+      "time": "2026-08-20 01:07",
+      "ip": "::1"
+    }
+  ]
+}

@@ -351,21 +351,27 @@ function bindCards() {
   });
 }
 
-// groupByCategory 按分类分组并按预设顺序排列
+// groupByCategory 按分类分组并按预设顺序排列；纪念卡分类始终置底（不受未知分类追加影响）
 function groupByCategory(list) {
   const order = CAT_ORDER.map(tr);
+  const memorialCat = tr({ zh: '纪念卡', en: 'Memorial' }); // 纪念卡：始终放最下面
   const buckets = {};
   list.forEach((m) => {
     const c = tr(m.category);
     (buckets[c] = buckets[c] || []).push(m);
   });
+  // 预设顺序分组（排除纪念卡，其单独置底）
   const groups = order
-    .filter((c) => buckets[c])
+    .filter((c) => c !== memorialCat && buckets[c])
     .map((c) => ({ name: c, items: buckets[c] }));
-  // 未在预设顺序中的分类追加到末尾
+  // 未在预设顺序中的分类追加到末尾（纪念卡之前）
   Object.keys(buckets)
-    .filter((c) => !order.includes(c))
+    .filter((c) => c !== memorialCat && !order.includes(c))
     .forEach((c) => groups.push({ name: c, items: buckets[c] }));
+  // 纪念卡始终放在最下面
+  if (buckets[memorialCat]) {
+    groups.push({ name: memorialCat, items: buckets[memorialCat] });
+  }
   return groups;
 }
 

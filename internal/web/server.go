@@ -33,6 +33,11 @@ type Server struct {
 	track      *trackStore
 	pro        *proTokenStore
 	proReq     *proRequestStore
+	lb         *leaderboardStore
+	rv         *recordVerifyStore
+	ec         *errataVerifyStore
+	lbRL       *rateLimiter
+	payRL      *rateLimiter
 }
 
 // NewServer 创建服务
@@ -46,6 +51,11 @@ func NewServer(cfg *config.Config) *Server {
 		track:      newTrackStore(),
 		pro:        newProTokenStore(cfg.Pro.TokensFile),
 		proReq:     newProRequestStore(cfg.Pro.RequestsFile),
+		lb:         newLeaderboardStore(cfg.Leaderboard, cfg.Pro.AdminSecret, cfg.Site.URL),
+		rv:         newRecordVerifyStore(cfg.Leaderboard.ClaimsFile),
+		ec:         newErrataVerifyStore("./errata-claims.json"),
+		lbRL:       newRateLimiter(5, 10*time.Minute), // 排行榜提交每 IP 每 10 分钟最多 5 次，防刷榜
+		payRL:      newRateLimiter(5, 10*time.Minute), // 支付对账通知每 IP 每 10 分钟最多 5 次，防刷通知
 	}
 	s.routes()
 	return s
@@ -67,6 +77,26 @@ func (s *Server) routes() {
 	mux.HandleFunc("GET /api/pro/request/{id}", s.handleProRequestStatus)
 	if s.cfg.Pro.AdminSecret != "" {
 		mux.HandleFunc("GET /api/pro/confirm", s.handleProConfirm)
+	}
+	if s.cfg.EffectiveFeatures().Leaderboard {
+		mux.HandleFunc("GET /api/leaderboard/{game}", s.handleLeaderboardGet)
+		mux.HandleFunc("POST /api/leaderboard/{game}", s.handleLeaderboardSubmit)
+		mux.HandleFunc("POST /api/leaderboard/verify", s.handleLeaderboardVerify)
+		// 破纪录金版卡下载核销（站主确认门）：未配邮件/站主邮箱/确认密钥时不注册
+		if s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" && s.cfg.Pro.AdminSecret != "" {
+			mux.HandleFunc("POST /api/game/record-claim", s.handleRecordClaimFill)
+			mux.HandleFunc("GET /api/game/record-status", s.handleRecordStatus)
+			mux.HandleFunc("GET /api/game/record-confirm", s.handleRecordConfirm)
+		}
+	}
+	// 支付对账通知：未配置邮件/站主邮箱时不注册该端点（前端 best-effort，404 静默）
+	if s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" {
+		mux.HandleFunc("POST /api/pay/notify", s.handlePayNotify)
+	}
+	// 错题解析付费解锁核销（站主确认门）：未配邮件/站主邮箱/确认密钥或 errata 关闭时不注册
+	if s.cfg.EffectiveFeatures().Errata && s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" && s.cfg.Pro.AdminSecret != "" {
+		mux.HandleFunc("POST /api/errata/claim", s.handleErrataClaimCreate)
+		mux.HandleFunc("GET /api/errata/confirm", s.handleErrataConfirm)
 	}
 	mux.HandleFunc("GET /robots.txt", s.handleRobots)
 	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
@@ -280,11 +310,11 @@ func (s *Server) isProToken(token string) bool {
 func (s *Server) handleProStatus(w http.ResponseWriter, r *http.Request) {
 	info := s.pro.validate(r.Header.Get("X-Pro-Token"))
 	resp := map[string]any{
-		"enabled":    s.cfg.Pro.Enabled,
-		"valid":      info.status == proValid,
-		"status":     string(info.status),
-		"freeLimit":  s.cfg.Limits.MaxUploadBytes,
-		"proLimit":   s.cfg.Pro.MaxUploadBytes,
+		"enabled":   s.cfg.Pro.Enabled,
+		"valid":     info.status == proValid,
+		"status":    string(info.status),
+		"freeLimit": s.cfg.Limits.MaxUploadBytes,
+		"proLimit":  s.cfg.Pro.MaxUploadBytes,
 	}
 	if info.status == proValid {
 		resp["type"] = info.typ

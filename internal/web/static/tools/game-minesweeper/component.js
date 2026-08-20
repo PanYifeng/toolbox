@@ -11,6 +11,7 @@ export default function (el) {
   el.innerHTML = `
     <div class="game-bar">
       <span>${t('ms.mines')}: <b id="m-left">10</b></span>
+      <span>${t('game.score')}: <b id="m-score">0</b></span>
       <span id="m-status" class="muted">${t('ms.start')}</span>
       <button id="m-new">${t('game.newgame')}</button>
     </div>
@@ -19,11 +20,13 @@ export default function (el) {
   const $grid = el.querySelector('#m-grid');
   const $status = el.querySelector('#m-status');
   const $left = el.querySelector('#m-left');
-  let board, revealed, flagged, over, won, firstClick, timer, startedAt, wins;
-  wins = Number(localStorage.getItem('tbmswins') || 0);
+  let board, revealed, flagged, over, won, firstClick, timer, startedAt, score;
+  score = Number(localStorage.getItem('tbmsscore') || 0);
+  const $score = el.querySelector('#m-score');
+  $score.textContent = score;
   el.querySelector('#m-new').onclick = newGame;
   newGame();
-  mountGameCard(el, () => wins, 'minesweeper');
+  mountGameCard(el, () => score, 'minesweeper');
 
   function newGame() {
     clearInterval(timer);
@@ -110,8 +113,12 @@ export default function (el) {
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (!revealed[r][c]) hidden++;
     if (hidden === MINES) {
       over = true; won = true; clearInterval(timer);
-      wins++; localStorage.setItem('tbmswins', wins);
-      $status.textContent = t('ms.win'); $status.className = 'ok';
+      // 速度加成计分：越快得分越高（max(1, 120-秒)），每胜累计、无上限，鼓励快解
+      const sec = startedAt ? Math.floor((Date.now() - startedAt) / 1000) : 0;
+      const pts = Math.max(1, 120 - sec);
+      score += pts; localStorage.setItem('tbmsscore', score);
+      $score.textContent = score;
+      $status.textContent = `${t('ms.win')} +${pts}`; $status.className = 'ok';
     }
   }
 

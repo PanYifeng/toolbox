@@ -29,7 +29,7 @@ export default function (el) {
   mountDpad(el, handleDir);
   newGame();
   // 通关纪念卡入口
-  mountGameCard(el, () => score, '2048');
+  mountGameCard(el, () => best, '2048');
 
   function newGame() {
     grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));

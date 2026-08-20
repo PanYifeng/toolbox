@@ -7,6 +7,8 @@ import { mountGameCard } from '/core/game-card.js';
 
 const NCols = 10;
 const RANK = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const SP_MOVE_BENCH = 120; // 蜘蛛纸牌完成步数基准：少于此步数完成有效率加成
+const SP_MOVE_K = 3;       // 每少 1 步加 3 分（鼓励精简解法，打破全收 900 平局）
 
 // render 蜘蛛纸牌
 export default function (el) {
@@ -31,7 +33,13 @@ export default function (el) {
   el.querySelector('#sp-new').onclick = newGame;
   $stock.onclick = dealStock;
   newGame();
-  mountGameCard(el, () => found * 100 + (8 - found ? 0 : 100), 'spider');
+  // spiderScore 计分：每收一组牌 +100；全收(8组)额外 +100 并按完成步数效率加成（步数越少分越高，打破 900 平局）
+  function spiderScore() {
+    let s = found * 100;
+    if (found === 8) s += 100 + Math.max(0, SP_MOVE_BENCH - moves) * SP_MOVE_K;
+    return s;
+  }
+  mountGameCard(el, () => spiderScore(), 'spider');
 
   function newGame() {
     const deck = shuffle(buildDeck());

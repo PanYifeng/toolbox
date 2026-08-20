@@ -39,10 +39,16 @@
     "signature": true,
     "religion": true,
     "memorialCard": true,
+    "leaderboard": true,
+    "errata": true,
     "analytics": false
   },
   "compliance": {
     "strict": false
+  },
+  "leaderboard": {
+    "enabled": true,
+    "file": "./leaderboard.json"
   },
   "donation": {
     "enabled": true,

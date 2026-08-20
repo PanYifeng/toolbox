@@ -59,7 +59,7 @@ export default function (el) {
   mountDpad(el, handleDir);
   newGame();
   // 通关纪念卡入口（传入当前分数）
-  mountGameCard(el, () => score, 'tetris');
+  mountGameCard(el, () => best, 'tetris');
 
   // newGame 重置棋盘 / 生成首块 / 启动重力
   function newGame() {

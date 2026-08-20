@@ -26,6 +26,13 @@ export const THEMES = {
     // 样例完成时间：圣诞节 Christmas（12 月 25 日）
     sampleDate: '2025-12-25',
   },
+  'knowledge-quiz': {
+    primary: '#7c3aed', secondary: '#5b21b6', bg: '#F6F2FE', symbol: '🧠', auspicious: '📚', pattern: 'grid4',
+    title: { zh: '趣味知识问答纪念卡', en: 'Knowledge Quiz Memorial Card' },
+    message: { zh: '学海无涯，知行合一，愿求知之心长存。', en: 'Boundless learning, knowledge in action; may your curiosity endure.' },
+    // 样例完成时间：首次诺贝尔奖颁发（1901 年 12 月 10 日，致敬知识的传承）
+    sampleDate: '1901-12-10',
+  },
   'game-2048': {
     primary: '#E67E22', secondary: '#A8541A', bg: '#FFF6EE', symbol: '▦', auspicious: '★', pattern: 'grid4',
     title: { zh: '2048 通关纪念卡', en: '2048 Clear-Stage Memorial Card' },
@@ -60,6 +67,13 @@ export const THEMES = {
     message: { zh: '步步推理，谨慎前行，愿你避开暗礁抵达彼岸。', en: 'Reason step by step and proceed with care; may you steer past hidden reefs.' },
     // 样例完成时间：扫雷随 Windows 3.1 发布（1992 年 4 月）
     sampleDate: '1992-04-06',
+  },
+  'game-tetris': {
+    primary: '#3b82f6', secondary: '#1E40AF', bg: '#F0F6FE', symbol: '🟦', auspicious: '★', pattern: 'grid4',
+    title: { zh: '俄罗斯方块 通关纪念卡', en: 'Tetris Memorial Card' },
+    message: { zh: '方寸之间进退有度，愿你于纷至沓来中从容不迫。', en: 'Order within the falling blocks; may you stay composed as things pile up.' },
+    // 样例完成时间：俄罗斯方块诞生（Aleksej Pažitnov，1984 年 6 月 6 日）
+    sampleDate: '1984-06-06',
   },
   game: {
     primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', pattern: 'grid4',
@@ -202,23 +216,44 @@ export async function renderMemorialCard(opts) {
   // 卡面显示的完成时间字符串（到分钟）。防伪码基于此字符串，
   // 这样用户凭卡面四要素即可复算验真；找回时可直接传 displayTime 跳过 iso 转换，跨时区一致。
   const displayTime = opts.displayTime || fmtTime(iso);
-  const code = await computeAntiFake(opts.name, opts.themeKey, opts.score, displayTime);
+  // 金版卡（破纪录/满分/待核验）用金色边框与防伪码，区别于普通通关卡。
+  const gold = !!(opts.recordCode || opts.recordPending || opts.perfect);
+  // 破纪录卡由服务端签发 TB-R- 码（opts.recordCode），跳过前端复算，直接用作防伪码。
+  // 待核验态（opts.recordPending）：防伪码位占位，不发真码，核验通过后才下发。
+  let code;
+  if (opts.recordPending) code = '待核验 · PENDING';
+  else code = opts.recordCode || await computeAntiFake(opts.name, opts.themeKey, opts.score, displayTime);
 
-  drawBackground(ctx, W, H, theme);
+  drawBackground(ctx, W, H, theme, gold);
+  if (opts.recordCode || opts.recordPending) drawRecordBanner(ctx, W, H, theme);
+  else if (opts.perfect) drawPerfectBanner(ctx, W, H, theme);
   drawHeader(ctx, W, theme);
   drawBody(ctx, W, opts, theme, displayTime);
   await drawFooter(ctx, W, H, theme, opts.showDonate);
-  drawAntiFake(ctx, W, H, code);
+  drawAntiFake(ctx, W, H, code, gold);
   if (opts.preview) drawPreviewWatermark(ctx, W, H);
 
   return { dataUrl: canvas.toDataURL('image/png'), code };
 }
 
-// drawBackground 底色 + 主题专属纹样 + 双层装饰边框
-function drawBackground(ctx, W, H, theme) {
+// drawBackground 底色 + 主题专属纹样 + 双层装饰边框（金版卡用全金边框）
+function drawBackground(ctx, W, H, theme, gold) {
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, W, H);
   drawThemePattern(ctx, W, H, theme);
+  if (gold) {
+    // 金版卡：外围整圈实心金框（深金填充 + 亮金内描边收口），金框外部不留主题底色
+    const M = 60; // 金框宽度：从画布边缘到内容区，覆盖原双层描边位置
+    ctx.fillStyle = '#C99A2E';
+    ctx.fillRect(0, 0, W, M);                 // 上
+    ctx.fillRect(0, H - M, W, M);             // 下
+    ctx.fillRect(0, M, M, H - 2 * M);         // 左
+    ctx.fillRect(W - M, M, M, H - 2 * M);     // 右
+    ctx.strokeStyle = '#F6C453';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(M + 1.5, M + 1.5, W - 2 * (M + 1.5), H - 2 * (M + 1.5)); // 亮金内描边，金框与内容区分界
+    return;
+  }
   ctx.strokeStyle = theme.primary;
   ctx.lineWidth = 10;
   ctx.strokeRect(36, 36, W - 72, H - 72);
@@ -440,16 +475,67 @@ function drawAuspiciousMedallion(ctx, cx, cy, r, theme) {
   ctx.restore();
 }
 
-// drawAntiFake 底部居中防伪码（双语标签，与边框留足间距）
-function drawAntiFake(ctx, W, H, code) {
+// drawAntiFake 底部居中防伪码（双语标签；金版卡用金色码，普通卡用深灰）
+function drawAntiFake(ctx, W, H, code, gold) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#888';
+  ctx.fillStyle = gold ? '#8C6D1F' : '#888';
   ctx.font = '14px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.fillText(`${BILABEL.antiFake.zh} · ${BILABEL.antiFake.en}`, W / 2, H - 116);
-  ctx.fillStyle = '#444';
+  ctx.fillStyle = gold ? '#8C6D1F' : '#444';
   ctx.font = 'bold 22px monospace';
   ctx.fillText(code, W / 2, H - 84);
+}
+
+// drawRecordBanner 破纪录卡专属标识：顶部金色绶带 + 四角星纹。
+// 仅当 opts.recordCode（服务端签发码）时绘制，使金版破纪录卡与普通通关卡一眼可辨。
+function drawRecordBanner(ctx, W, H, theme) {
+  // 顶部金色绶带
+  const grad = ctx.createLinearGradient(0, 0, 0, 40);
+  grad.addColorStop(0, '#F6C453');
+  grad.addColorStop(1, '#C99A2E');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, 40);
+  ctx.fillStyle = '#5C3D00';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",serif';
+  ctx.fillText('🏆 破纪录 · NEW RECORD', W / 2, 20);
+  // 四角星纹（避开顶部绶带与底部二维码区）
+  ctx.fillStyle = '#C99A2E';
+  ctx.globalAlpha = 0.5;
+  ctx.font = '28px serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✦', 80, 120);
+  ctx.fillText('✦', W - 80, 120);
+  ctx.fillText('✦', 80, H - 150);
+  ctx.fillText('✦', W - 80, H - 150);
+  ctx.globalAlpha = 1;
+}
+
+// drawPerfectBanner 满分特别版卡专属标识：顶部金色绶带 + 四角星纹。
+// 仅当 opts.perfect（客户端满分标记）时绘制，与破纪录绶带同结构、文案区分。
+// 满分卡防伪码仍为前端 computeAntiFake 复算的普通 TB- 码（与破纪录卡服务端签发的 TB-R- 区分）。
+function drawPerfectBanner(ctx, W, H, theme) {
+  const grad = ctx.createLinearGradient(0, 0, 0, 40);
+  grad.addColorStop(0, '#F6C453');
+  grad.addColorStop(1, '#C99A2E');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, 40);
+  ctx.fillStyle = '#5C3D00';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",serif';
+  ctx.fillText('🏆 满分 · PERFECT SCORE', W / 2, 20);
+  ctx.fillStyle = '#C99A2E';
+  ctx.globalAlpha = 0.5;
+  ctx.font = '28px serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✦', 80, 120);
+  ctx.fillText('✦', W - 80, 120);
+  ctx.fillText('✦', 80, H - 150);
+  ctx.fillText('✦', W - 80, H - 150);
+  ctx.globalAlpha = 1;
 }
 
 // drawPreviewWatermark 样例预览水印（中英），防止样例被当作正式纪念卡

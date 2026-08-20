@@ -45,6 +45,12 @@ async function onVerify(el) {
     return;
   }
 
+  // 破纪录卡（TB-R- 前缀，服务端 HMAC 签发）走服务端验签；普通 TB- 卡走前端复算
+  if (/^TB-?R/i.test(userCode)) {
+    await verifyRecordCard(el, { game: themeKey, name, score, displayTime, code: userCode });
+    return;
+  }
+
   $out.innerHTML = `<p class="muted">${t('cv.verifying')}</p>`;
   try {
     const expected = await computeAntiFake(name, themeKey, score, displayTime);
@@ -63,6 +69,38 @@ async function onVerify(el) {
       <p class="muted">${t('rel.antiFake')}: <code>${code}</code></p>
       <button id="cv-dl" class="btn">${t('cv.download')}</button>`;
     $out.querySelector('#cv-dl').onclick = () => downloadPng(dataUrl, `${themeKey}-memorial.png`);
+  } catch (err) {
+    console.error(err);
+    $out.innerHTML = `<p class="err">${t('rel.genFail')}</p>`;
+  }
+}
+
+// verifyRecordCard 破纪录卡走服务端 HMAC 验签：通过则用 recordCode 重渲染金版卡。
+// 与 onVerify 的前端复算路径互补——破纪录卡防伪码由服务端 secret 签发，前端无法复算，须回服务端复验。
+async function verifyRecordCard(el, { game, name, score, displayTime, code }) {
+  const $out = el.querySelector('#cv-out');
+  $out.innerHTML = `<p class="muted">${t('cv.verifying')}</p>`;
+  try {
+    const r = await fetch('/api/leaderboard/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game, name, score: Number(score), time: displayTime, code }),
+    });
+    const d = await r.json();
+    if (!d.valid) {
+      $out.innerHTML = `<p class="err">${t('lb.verifyFail')}</p>`;
+      return;
+    }
+    // 验签通过：用服务端签发码重渲染金版破纪录卡（drawRecordBanner 自动启用）
+    const { dataUrl } = await renderMemorialCard({
+      themeKey: game, name, score, displayTime, recordCode: code, showDonate: true,
+    });
+    $out.innerHTML = `
+      <p class="ok">${t('lb.verifyRecord')}</p>
+      <img class="rc-preview" src="${dataUrl}" alt="record memorial card">
+      <p class="muted">${t('rel.antiFake')}: <code>${code}</code></p>
+      <button id="cv-dl" class="btn">${t('cv.download')}</button>`;
+    $out.querySelector('#cv-dl').onclick = () => downloadPng(dataUrl, `${game}-record.png`);
   } catch (err) {
     console.error(err);
     $out.innerHTML = `<p class="err">${t('rel.genFail')}</p>`;

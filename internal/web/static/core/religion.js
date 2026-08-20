@@ -5,6 +5,7 @@
 import { t, getLang } from '/core/i18n.js';
 import { renderQuiz } from '/core/quiz.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
+import { renderErrata } from '/core/errata.js';
 
 // renderReligion 渲染两标签页
 export function renderReligion(el, data) {
@@ -56,8 +57,14 @@ function renderQuizTab(el, data, lang) {
     <div id="rel-quiz"></div>`;
   el.querySelector('#rel-start').onclick = () => {
     const $q = el.querySelector('#rel-quiz');
-    renderQuiz($q, data.quiz, { count: 50, minutes: 60, passScore: 60 }, (score, total, passed) => {
+    renderQuiz($q, data.quiz, { count: 50, minutes: 60, passScore: 60 }, (score, total, passed, review) => {
       if (passed) renderCardForm($q, data, lang, score);
+      // 错题解析：仅当题库已含 explanation 时才展示付费面板，避免无解析却收费（割韭菜）。
+      // 三宗教 data.js 目前无 explanation → 不显示；后续补全后此处自动激活，无需改引擎。
+      const hasExpl = review.some((r) => r.explanation);
+      if (review.some((r) => r.userPick !== r.correctIndex) && hasExpl) {
+        renderErrata($q, review, { pricePerQ: 0.2, feature: data.meta.themeKey + ' 错题解析' });
+      }
     });
     el.querySelector('#rel-start').style.display = 'none';
     el.querySelector('#rel-preview').style.display = 'none';

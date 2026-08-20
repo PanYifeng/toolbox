@@ -611,6 +611,11 @@ pre {
 .rel-section h3 { margin: 0 0 8px; }
 .rel-section p { margin: 0; line-height: 1.8; white-space: pre-wrap; }
 .quiz-bar { position: sticky; top: 0; display: flex; gap: 16px; align-items: center; padding: 10px 12px; background: var(--card, #fff); border: 1px solid var(--border, #ddd); border-radius: 8px; margin-bottom: 12px; z-index: 5; }
+/* 底部交卷条：与顶部条同视觉但不吸顶，居中放置交卷按钮 */
+.quiz-bar-bottom { display: flex; gap: 16px; align-items: center; justify-content: center; padding: 10px 12px; background: var(--card, #fff); border: 1px solid var(--border, #ddd); border-radius: 8px; margin-top: 12px; }
+/* 回到顶部浮动按钮：固定右下，避开 30px 固定底栏，交卷后随 el 清空自动消失 */
+.q-totop { position: fixed; right: 16px; bottom: 44px; width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%; background: var(--accent, #2563eb); color: #fff; font-size: 20px; line-height: 1; display: none; align-items: center; justify-content: center; z-index: 30; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); margin: 0; }
+.q-totop:hover { opacity: .9; }
 #q-timer { font-weight: bold; font-variant-numeric: tabular-nums; }
 .quiz-q { padding: 12px 14px; margin: 10px 0; border: 1px solid var(--border, #eee); border-radius: 8px; }
 .quiz-stem { margin: 0 0 8px; font-weight: 500; }
@@ -709,6 +714,46 @@ pre {
 .pick-item .pick-cta { padding: 4px 8px 8px; font-size: 12px; color: var(--accent); font-weight: 600; }
 .picks-card .pc-foot { margin-top: 8px; font-size: 11px; color: var(--muted); line-height: 1.4; }
 @media (max-width: 640px) { .picks-grid { gap: 8px; } .pick-item .pick-name { font-size: 11px; } }
+
+/* 小游戏排行榜 + 破纪录金版卡升级面板 */
+.lb-section { margin: 16px 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--card, #fff); }
+.lb-title { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.lb-list { font-size: 13px; }
+.lb-table { width: 100%; border-collapse: collapse; }
+.lb-table th, .lb-table td { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.lb-table th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.lb-table td:first-child { font-weight: 700; color: var(--accent); width: 32px; }
+.lb-table tr:first-child td { color: #C99A2E; } /* #1 名金标 */
+.lb-upgrade { margin-top: 10px; padding: 12px; border: 1px dashed var(--border); border-radius: 8px; background: rgba(246, 196, 83, 0.08); }
+.lb-upgrade-desc { margin: 0 0 10px; font-size: 13px; line-height: 1.5; }
+.lb-qr { display: flex; gap: 16px; justify-content: center; margin: 10px 0; flex-wrap: wrap; }
+.lb-qr img { width: 120px; height: 120px; object-fit: contain; border: 1px solid var(--border); border-radius: 8px; }
+.lb-qr p { margin: 4px 0 0; font-size: 11px; text-align: center; }
+.lb-pay-name { font-weight: 600; font-size: 12px; margin: 2px 0 0; }
+.lb-upgrade-foot { margin: 8px 0 0; font-size: 11px; line-height: 1.4; }
+@media (max-width: 640px) { .lb-qr img { width: 96px; height: 96px; } .lb-qr { gap: 10px; } }
+
+/* 知识问答学科选择 + 错题解析面板 + 支付备注提示 */
+.kq-subjects { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.kq-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.errata-entry { width: 100%; }
+.kq-subj { padding: 8px 14px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-soft); color: var(--fg); cursor: pointer; font-size: 13px; transition: border-color .15s, background .15s; }
+.kq-subj:hover { border-color: var(--accent); background: rgba(124, 58, 237, 0.08); }
+.kq-perfect-choice { text-align: center; }
+.errata-wrap { margin-top: 16px; }
+.errata-title { margin: 0 0 6px; font-size: 15px; }
+.errata-list { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.errata-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-soft); }
+.errata-picked { margin: 4px 0; font-size: 13px; }
+.errata-locked-hint { margin: 4px 0; font-size: 13px; color: var(--muted, #888); }
+.errata-correct { margin: 4px 0; font-size: 13px; }
+.errata-wrong { color: #dc2626; font-weight: 500; }
+.errata-right { color: #16a34a; font-weight: 500; }
+.errata-expl { margin: 6px 0 0; font-size: 13px; line-height: 1.5; }
+.errata-gate { margin-top: 14px; }
+.pay-remark { margin: 8px 0; font-size: 12px; line-height: 1.5; }
+.pay-remark code { padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-soft); font-weight: 600; color: var(--accent, #7c3aed); }
+@media (max-width: 640px) { .kq-subj { padding: 7px 12px; font-size: 12px; } }
 
 /* Pro 额度面板（仅出现在重转换工具内） */
 .pro-panel {

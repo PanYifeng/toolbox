@@ -17,6 +17,7 @@ type Config struct {
 	Features         FeaturesConfig     `json:"features"`
 	Compliance       ComplianceConfig   `json:"compliance"`
 	Donation         DonationConfig     `json:"donation"`
+	Leaderboard      LeaderboardConfig  `json:"leaderboard"`
 	SEO              SEOConfig          `json:"seo"`
 	SiteVerification []VerificationFile `json:"siteVerification"`
 }
@@ -122,12 +123,24 @@ type FeaturesConfig struct {
 	Signature    bool `json:"signature"`    // 个人署名（逸丰 ❤ 思宏）
 	Religion     bool `json:"religion"`     // 宗教文化分类（合规风险）
 	MemorialCard bool `json:"memorialCard"` // 纪念卡 + 验真（发证资质风险）
+	Leaderboard  bool `json:"leaderboard"`  // 小游戏排行榜 + 破纪录签发卡（同 memorialCard 门控）
+	Errata       bool `json:"errata"`       // 错题解析付费项（非满分可付费看解析）
 	Analytics    bool `json:"analytics"`    // 匿名埋点上报
 }
 
 // ComplianceConfig 合规预设
 type ComplianceConfig struct {
 	Strict bool `json:"strict"` // true=大陆合规预设：强制关闭宗教/纪念卡/署名/埋点
+}
+
+// LeaderboardConfig 小游戏持久化排行榜配置。
+// HMAC 密钥用于签发/复验破纪录纪念卡防伪码（TB-R- 前缀）：优先用 Secret，
+// 其次复用 Pro.AdminSecret，二者皆空时降级派生自 Site.URL（仅弱防伪，会记日志告警）。
+type LeaderboardConfig struct {
+	Enabled    bool   `json:"enabled"`    // 总开关（同时受 features.leaderboard 控制）
+	File       string `json:"file"`       // 排行榜 state 文件路径（运行时改写）
+	ClaimsFile string `json:"claimsFile"` // 破纪录金版卡核销请求 state 文件路径（运行时改写）
+	Secret     string `json:"secret"`     // HMAC 密钥；空则派生自 Pro.AdminSecret
 }
 
 // DonationConfig 赞助 / 捐赠配置（纯自愿支持，不绑定任何 Pro 权益）
@@ -192,8 +205,10 @@ func (c *Config) EffectiveFeatures() FeaturesConfig {
 	if c.Compliance.Strict {
 		f.Religion = false
 		f.MemorialCard = false
+		f.Leaderboard = false
 		f.Signature = false
 		f.Analytics = false
+		f.Errata = false
 	}
 	return f
 }
@@ -235,6 +250,12 @@ func (c *Config) applyDefaults() {
 	if c.Pro.RequestsFile == "" {
 		c.Pro.RequestsFile = "./pro-requests.json"
 	}
+	if c.Leaderboard.File == "" {
+		c.Leaderboard.File = "./leaderboard.json"
+	}
+	if c.Leaderboard.ClaimsFile == "" {
+		c.Leaderboard.ClaimsFile = "./record-claims.json"
+	}
 	if c.Pro.AutoApproveTTL == "" {
 		c.Pro.AutoApproveTTL = "1h"
 	}
@@ -254,7 +275,7 @@ func (c *Config) applyDefaults() {
 	if c.Features == (FeaturesConfig{}) {
 		c.Features = FeaturesConfig{
 			Ads: true, Donation: true, Signature: true,
-			Religion: true, MemorialCard: true, Analytics: false,
+			Religion: true, MemorialCard: true, Leaderboard: true, Errata: true, Analytics: false,
 		}
 	}
 	if c.SEO.RobotsAllow == nil {
