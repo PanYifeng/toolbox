@@ -87,6 +87,7 @@ export function renderQuiz(el, bank, opts, onFinish) {
       subject: p.subject, explanation: p.explanation,
     }));
     drawResult(el, correct, total, score, passed, pfx);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (onFinish) onFinish(score, total, passed, review);
   }
 }

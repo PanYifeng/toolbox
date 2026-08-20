@@ -5,20 +5,20 @@ import { t } from '/core/i18n.js';
 import { mountGameCard } from '/core/game-card.js';
 
 const W = 360, H = 430; // 画布宽高（游戏场）
-const GRAV = 0.38; // 重力（每固定步像素/步²），偏慢便于操控
+const GRAV = 0.5; // 重力（贴近原版：下落更快，反应时间收紧）
 const VY_CAP = 12; // 下落速度上限，防高速穿透
 const DAMP = 0.25; // 反弹系数（墙与水果间，低则堆叠稳）
 const AIR = 0.999, GROUND = 0.9; // 空中/触地水平阻尼
 const ITER = 6; // 每帧碰撞迭代次数（位置修正稳定性）
 const FIXED = 1 / 60; // 固定物理步长
-const DEATH_Y = 6; // 顶部警戒线：水果顶部静止越过即结束
-const REST_LIMIT = 0.5; // 顶部静止持续秒数达此值才判结束（避免落果误判）
-const EMOJI = ['🍒', '🍓', '🍇', '🍊', '🍎', '🍉'];
-const RADII = [13, 18, 24, 31, 39, 48]; // 各级半径
-const POINTS = [2, 4, 8, 16, 32, 64]; // 合并到该级得分
-const MAX = 5;
-const WM_BONUS = 128; // 两西瓜合并额外分（双双消除）
-const DROP_POOL = [0, 0, 1, 1, 2, 3]; // 下落水果层级池（仅小果）
+const DEATH_Y = 40; // 顶部警戒线（贴近原版：下移，堆叠空间收紧）
+const REST_LIMIT = 0.3; // 顶部静止持续秒数达此值才判结束（比旧值更快判负）
+const EMOJI = ['🍒', '🍓', '🍇', '🍊', '🍎', '🍐', '🍑', '🍍', '🥝', '🍈', '🍉'];
+const RADII = [13, 18, 24, 31, 39, 48, 58, 70, 83, 98, 116]; // 各级半径（11 级，西瓜为顶）
+const POINTS = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]; // 合并到该级得分
+const MAX = 10; // 西瓜为顶级（两西瓜合并双双消除）
+const WM_BONUS = 2048; // 两西瓜合并额外分（双双消除）
+const DROP_POOL = [0, 0, 0, 1]; // 下落水果层级池（贴近原版：仅樱桃为主、偶有草莓，不再送葡萄橘子）
 
 // render Suika
 export default function (el) {

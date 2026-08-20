@@ -27,6 +27,7 @@ function fmtYuan(n) {
 }
 
 // renderErrata 错题解析（旧入口，宗教等用）：直接进入申请态，付款前保留题干+你选的
+// 有解析的错题展示锁定态并计费，无解析的错题展示免费"解析待补"
 export function renderErrata(container, review, { pricePerQ, feature } = {}) {
   if (!featOn('errata')) return;
   const wrong = review.filter((r) => r.userPick !== r.correctIndex);
@@ -34,7 +35,8 @@ export function renderErrata(container, review, { pricePerQ, feature } = {}) {
     container.innerHTML = `<div class="quiz-result ok"><p>${t('errata.allCorrect')}</p></div>`;
     return;
   }
-  renderClaimForm(container, wrong, { pricePerQ, feature, showStems: true, onSubmitted: null });
+  const explained = wrong.filter((r) => r.explanation && r.explanation.zh && r.explanation.en);
+  renderClaimForm(container, wrong, { explained, pricePerQ, feature, showStems: true, onSubmitted: null });
 }
 
 // renderErrataEntry 错题解析入口（知识问答用）：交卷后仅给分数，此处先渲染"查看错题和解析"按钮；
@@ -42,13 +44,14 @@ export function renderErrata(container, review, { pricePerQ, feature } = {}) {
 export function renderErrataEntry(container, review, { pricePerQ, feature, onSubmitted } = {}) {
   if (!featOn('errata')) return;
   const wrong = review.filter((r) => r.userPick !== r.correctIndex);
+  const explained = wrong.filter((r) => r.explanation && r.explanation.zh && r.explanation.en);
   if (wrong.length === 0) return; // 全对，无需入口
   const wrap = document.createElement('div');
   wrap.className = 'errata-entry';
   const btn = document.createElement('button');
   btn.className = 'btn kq-errata-entry';
   btn.textContent = `${t('errata.viewWrong')}（${t('errata.wrongCountShort').replace('{n}', wrong.length)}）`;
-  btn.onclick = () => renderClaimForm(wrap, wrong, { pricePerQ, feature, showStems: false, onSubmitted });
+  btn.onclick = () => renderClaimForm(wrap, wrong, { explained, pricePerQ, feature, showStems: false, onSubmitted });
   wrap.appendChild(btn);
   container.appendChild(wrap);
 }
@@ -69,18 +72,20 @@ export function renderErrataSubmitted(container, { claimId, email } = {}) {
   container.appendChild(wrap);
 }
 
-// renderClaimForm 申请态：按错题数直接开价 + 收款码（标注 Alipay/WeChat）+ TXID 备注 + 邮箱 + 提交按钮。
-// showStems=true 付款前展示题干+你选的（旧入口）；=false 付款前仅展示错题数与价格（知识问答入口）。
-// 生成 TXID 提示填入支付备注；提交后落库 pending + 发站主确认邮件，前端仅显示"已提交待确认"。
-function renderClaimForm(container, wrong, { pricePerQ, feature, showStems, onSubmitted }) {
+// renderClaimForm 申请态：按有解析的错题数开价 + 收款码 + TXID 备注 + 邮箱 + 提交按钮。
+// showStems=true 付款前展示题干+你选的（旧入口）；=false 仅展示错题数与价格（知识问答入口）。
+// 有解析的错题锁定态收费，无解析的错题免费显示"解析待补"。
+function renderClaimForm(container, wrong, { explained, pricePerQ, feature, showStems, onSubmitted }) {
   const lang = getLang();
-  const cost = Math.round(wrong.length * (pricePerQ || 0) * 100) / 100;
+  const cost = Math.round((explained || wrong).length * (pricePerQ || 0) * 100) / 100;
   const txid = genTxid('KQ');
+  const unexplained = wrong.filter((r) => !r.explanation || !r.explanation.zh || !r.explanation.en);
   container.innerHTML = `
     <div class="errata-wrap">
       <h3 class="errata-title">${t('errata.title')}</h3>
       <p class="muted">${t('errata.wrongCount').replace('{n}', wrong.length)}</p>
       ${showStems ? `<div class="errata-list">${wrong.map((r, i) => wrongItemLocked(r, i, lang)).join('')}</div>` : ''}
+      ${unexplained.length > 0 ? `<p class="errata-free-hint">${t('errata.freeHint').replace('{n}', unexplained.length)}</p>` : ''}
       <div class="lb-upgrade errata-gate">
         <p class="lb-upgrade-desc">${t('errata.costHint').replace('{n}', fmtYuan(cost))}</p>
         <div class="lb-qr">
@@ -93,19 +98,20 @@ function renderClaimForm(container, wrong, { pricePerQ, feature, showStems, onSu
         <p class="muted lb-upgrade-foot">${t('errata.foot')}</p>
       </div>
     </div>`;
-  container.querySelector('#er-submit').onclick = () => submitClaim(container, wrong, { cost, txid, feature, lang, onSubmitted });
+  container.querySelector('#er-submit').onclick = () => submitClaim(container, wrong, { cost, txid, feature, lang, onSubmitted, explained: explained || wrong });
 }
 
-// submitClaim 校验邮箱 → POST /api/errata/claim（review 快照随申请落盘）→ 渲染已提交态
-async function submitClaim(container, wrong, { cost, txid, feature, lang, onSubmitted }) {
+// submitClaim 校验邮箱 → POST /api/errata/claim（有解析的错题快照随申请落盘，无解析的免费显示）→ 渲染已提交态
+async function submitClaim(container, wrong, { cost, txid, feature, lang, onSubmitted, explained }) {
   const email = (container.querySelector('#er-email')?.value || '').trim();
   if (!email || !/.+@.+\..+/.test(email)) { alert(t('errata.needEmail')); return; }
   const $btn = container.querySelector('#er-submit');
   if ($btn) $btn.disabled = true;
+  const explainedItems = explained || wrong;
   const payload = {
     feature: feature || t('kq.errataFeature'),
-    amount: cost, count: wrong.length, email, txId: txid, lang,
-    review: wrong.map((r) => ({
+    amount: cost, count: explainedItems.length, email, txId: txid, lang,
+    review: explainedItems.map((r) => ({
       q: r.q, options: r.options, userPick: r.userPick,
       correctIndex: r.correctIndex, explanation: r.explanation || null,
     })),
@@ -140,7 +146,17 @@ function renderSubmitted(container, { id, email }) {
 }
 
 // wrongItemLocked 单题锁定项：题干 + 你选的（用户自己的数据），正确答案/解析占位
+// 有解析的题锁定态收费，无解析的题免费显示"暂无解析"
 function wrongItemLocked(r, i, lang) {
+  const hasExpl = r.explanation && r.explanation.zh && r.explanation.en;
+  if (!hasExpl) {
+    return `
+    <div class="errata-item">
+      <p class="quiz-stem"><b>${i + 1}.</b> ${esc(r.q[lang] || r.q.zh)}</p>
+      <p class="errata-picked">${t('errata.youPicked')}: <span class="errata-wrong">${esc(optText(r, r.userPick, lang))}</span></p>
+      <p class="errata-free">${t('errata.noExpl')}</p>
+    </div>`;
+  }
   return `
   <div class="errata-item">
     <p class="quiz-stem"><b>${i + 1}.</b> ${esc(r.q[lang] || r.q.zh)}</p>

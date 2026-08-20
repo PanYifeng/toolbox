@@ -27,6 +27,7 @@ type paidReportInput struct {
 	TxID    string  // 前端生成，提示填入支付备注供站主对账
 	Lang    string  // 访客当前语言，邮件按此渲染脚注
 	Report  string  // 完整报告文本（按访客语言客户端预生成，确认后原样邮件送达）
+	PNG     string  // 金纪念卡 PNG（dataURL/base64，人格测试完整版随申请附带，确认后作邮件附件）
 }
 
 // paidReportEntry 单条付费报告解锁申请
@@ -39,6 +40,7 @@ type paidReportEntry struct {
 	TxID        string  `json:"txId"`
 	Lang        string  `json:"lang"`
 	Report      string  `json:"report"`
+	PNG         string  `json:"png"`
 	Status      string  `json:"status"`
 	CreatedAt   string  `json:"createdAt"`
 	ActivatedAt string  `json:"activatedAt"`
@@ -136,6 +138,7 @@ func (s *paidReportStore) create(in paidReportInput) paidReportEntry {
 		TxID:      in.TxID,
 		Lang:      in.Lang,
 		Report:    in.Report,
+		PNG:       in.PNG,
 		Status:    prPending,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}

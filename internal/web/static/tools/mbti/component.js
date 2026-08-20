@@ -24,13 +24,32 @@ let snapshot = null;
 // render 入口：有快照则恢复结果，否则渲染免费版/完整版选择卡
 export function render(el) {
   const lang = getLang();
-  if (snapshot) { renderResult(el, snapshot, lang); return; }
+  if (snapshot) { renderByVersion(el, snapshot, lang); return; }
   renderChoice(el, {
     freeN: FREE_PER_DIM * DIMS.length,
     fullN: FULL.length,
     onFree: () => startTest(el, lang, 'free'),
     onFull: () => startTest(el, lang, 'full'),
   });
+}
+
+// renderByVersion 按版本走结果：完整版仅类型代号诱饵 + 付费墙；免费版全可视化
+function renderByVersion(el, snap, lang) {
+  if (snap.version === 'full') renderFullBait(el, snap, lang);
+  else renderResult(el, snap, lang);
+}
+
+// renderFullBait 完整版结果：仅类型代号作诱饵（画像/雷达/子维/金卡付费确认后邮件附件送达）
+function renderFullBait(el, snap, lang) {
+  const tp = data.types[snap.code] || data.types.INTJ;
+  const L = (o) => o[lang] || o.zh;
+  el.innerHTML = `
+    <div class="quiz-result ok">
+      <p class="muted">${t('mbti.yourType')}</p>
+      <h3 class="ps-bait">${snap.code} · ${esc(L(tp.nick))}</h3>
+      <p class="muted">${t('ps.fullPaywallHint')}</p>
+    </div>`;
+  renderActions(el, snap, lang);
 }
 
 // startTest 按版本选题（免费版子集 / 完整版全部）渲染二选一表单 + 进度 + 交卷按钮
@@ -91,7 +110,8 @@ function onSubmit(el, answers, items, version, lang) {
   const tally = computeTally(items, answers);
   const code = DIMS.map((d) => (tally[d][0] >= tally[d][1] ? data.dims[d].first : data.dims[d].second)).join('');
   snapshot = { version, answers: [...answers], code, tally, fullStage: 'pending' };
-  renderResult(el, snapshot, lang);
+  renderByVersion(el, snapshot, lang);
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // computeTally 每维度 [第一极票数, 第二极票数]；选 a 计第一极，选 b 计第二极
@@ -132,15 +152,18 @@ function renderResult(el, snap, lang) {
   renderActions(el, snap, lang);
 }
 
-// renderActions 分享卡按钮 +（完整版）付费入口/已提交 或（免费版）升级 + 重新测试
+// renderActions（完整版）付费入口/已提交 或（免费版）分享卡+升级 + 重新测试
+// 完整版画像付费后才邮件送达，不在结果页泄露分享卡；免费版保留分享卡作传播诱饵
 function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
   $actions.className = 'kq-actions';
-  const share = document.createElement('button');
-  share.className = 'btn-soft';
-  share.textContent = t('ps.downloadCard');
-  share.onclick = () => downloadShareCard(snap, lang);
-  $actions.appendChild(share);
+  if (snap.version !== 'full') {
+    const share = document.createElement('button');
+    share.className = 'btn-soft';
+    share.textContent = t('ps.downloadCard');
+    share.onclick = () => downloadShareCard(snap, lang);
+    $actions.appendChild(share);
+  }
   if (snap.version === 'full') {
     if (snap.fullStage === 'submitted') {
       renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
@@ -148,6 +171,7 @@ function renderActions(el, snap, lang) {
       renderPaidReportEntry($actions, {
         feature: t('mbti.fullFeature'), title: t('mbti.fullTitle'), amount: AMOUNT,
         report: buildFullReport(snap, lang),
+        getPng: () => buildGoldPng(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
     }
@@ -236,6 +260,12 @@ function buildShareOpts(snap, lang) {
 async function downloadShareCard(snap, lang) {
   const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
   downloadPng(dataUrl, `mbti-${Date.now()}.png`);
+}
+
+// buildGoldPng 生成完整版金纪念卡 PNG dataURL（复用分享卡参数 + gold 标记），付费后作邮件附件送达
+async function buildGoldPng(snap, lang) {
+  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang), gold: true });
+  return dataUrl;
 }
 
 // 默认导出：app.js loadComponent 通过 mod.default(body) 挂载，入口即 render

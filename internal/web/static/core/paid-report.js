@@ -19,14 +19,14 @@ function fmtYuan(n) {
 }
 
 // renderPaidReportEntry 付费内容入口：先"查看完整版"按钮，点击后进申请表单
-export function renderPaidReportEntry(container, { feature, title, amount, report, onSubmitted } = {}) {
+export function renderPaidReportEntry(container, { feature, title, amount, report, onSubmitted, getPng } = {}) {
   const lang = getLang();
   const wrap = document.createElement('div');
   wrap.className = 'pr-entry';
   const btn = document.createElement('button');
   btn.className = 'btn pr-entry-btn';
   btn.textContent = `${t('pr.viewFull')}（¥${fmtYuan(amount)}）`;
-  btn.onclick = () => renderClaimForm(wrap, { feature, title, amount, report, lang, onSubmitted });
+  btn.onclick = () => renderClaimForm(wrap, { feature, title, amount, report, lang, onSubmitted, getPng });
   wrap.appendChild(btn);
   container.appendChild(wrap);
 }
@@ -47,7 +47,7 @@ export function renderPaidReportSubmitted(container, { claimId, email, amount } 
 }
 
 // renderClaimForm 申请态：开价 + 收款码（标注 Alipay/WeChat）+ TXID 备注 + 邮箱 + 提交按钮
-function renderClaimForm(container, { feature, title, amount, report, lang, onSubmitted }) {
+function renderClaimForm(container, { feature, title, amount, report, lang, onSubmitted, getPng }) {
   const txid = genTxid('PR');
   container.innerHTML = `
     <div class="errata-wrap">
@@ -64,16 +64,20 @@ function renderClaimForm(container, { feature, title, amount, report, lang, onSu
         <p class="muted lb-upgrade-foot">${t('pr.foot')}</p>
       </div>
     </div>`;
-  container.querySelector('#pr-submit').onclick = () => submitClaim(container, { feature, title, amount, report, txid, lang, onSubmitted });
+  container.querySelector('#pr-submit').onclick = () => submitClaim(container, { feature, title, amount, report, txid, lang, onSubmitted, getPng });
 }
 
 // submitClaim 校验邮箱 → POST /api/paidreport/claim（报告随申请落盘）→ 渲染已提交态
-async function submitClaim(container, { feature, title, amount, report, txid, lang, onSubmitted }) {
+async function submitClaim(container, { feature, title, amount, report, txid, lang, onSubmitted, getPng }) {
   const email = (container.querySelector('#pr-email')?.value || '').trim();
   if (!email || !/.+@.+\..+/.test(email)) { alert(t('pr.needEmail')); return; }
   const $btn = container.querySelector('#pr-submit');
   if ($btn) $btn.disabled = true;
+  // 金纪念卡 PNG（人格测试完整版）：提交前异步生成，失败则不附带（服务端回退纯文本邮件）
+  let png = null;
+  try { png = getPng ? await getPng() : null; } catch (_) { png = null; }
   const payload = { feature, title, amount, email, txId: txid, lang, report };
+  if (png) payload.png = png;
   let d;
   try {
     const r = await fetch('/api/paidreport/claim', {

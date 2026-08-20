@@ -368,6 +368,7 @@ const dict = {
     'errata.explanation': '解析',
     'errata.noExpl': '暂无解析',
     'errata.costHint': '本次错题解析建议支持 ¥{n}',
+    'errata.freeHint': '其中 {n} 题解析待补，免费展示',
     'errata.payHint': '扫码支持小站',
     'errata.unlock': '已支持，解锁解析',
     'errata.confirmUnlock': '确认已完成支付（¥{n}）并查看错题解析？解锁后不可撤回。',
@@ -489,6 +490,7 @@ const dict = {
     'ps.secGrowth': '成长建议',
     'ps.downloadCard': '下载分享卡',
     'ps.cardMsg': '愿你更懂自己，也温柔待人。',
+    'ps.fullPaywallHint': '完整人格画像（雷达图 / 各维度详解 / 子维度 / 人际 / 压力 / 成长）与金纪念卡，将在付费确认后通过邮件附件送达。',
     // —— 反馈渠道（feedback.js）——
     'fb.open': '反馈',
     'fb.title': '反馈与建议',
@@ -897,6 +899,7 @@ const dict = {
     'errata.explanation': 'Explanation',
     'errata.noExpl': 'No explanation available',
     'errata.costHint': 'Suggested support for this analysis: ¥{n}',
+    'errata.freeHint': '{n} of these have no explanation yet — shown for free',
     'errata.payHint': 'Scan to support this site',
     'errata.unlock': 'I have tipped — unlock analysis',
     'errata.confirmUnlock': 'Confirm you have paid (¥{n}) to view the analysis? This cannot be undone.',
@@ -1018,6 +1021,7 @@ const dict = {
     'ps.secGrowth': 'Growth tips',
     'ps.downloadCard': 'Download share card',
     'ps.cardMsg': 'Know yourself, and treat others with warmth.',
+    'ps.fullPaywallHint': 'Your full personality profile (radar / dimension details / sub-dimensions / relationships / stress / growth) and a gold memorial card will be delivered via email attachment once payment is confirmed.',
     // —— Feedback channel (feedback.js) ——
     'fb.open': 'Feedback',
     'fb.title': 'Feedback & Suggestions',

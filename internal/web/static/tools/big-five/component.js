@@ -23,13 +23,32 @@ let snapshot = null;
 // render 入口：有快照恢复，否则渲染免费版/完整版选择卡
 export function render(el) {
   const lang = getLang();
-  if (snapshot) { renderResult(el, snapshot, lang); return; }
+  if (snapshot) { renderByVersion(el, snapshot, lang); return; }
   renderChoice(el, {
     freeN: FREE_PER_DIM * DIMS.length,
     fullN: FULL.length,
     onFree: () => startTest(el, lang, 'free'),
     onFull: () => startTest(el, lang, 'full'),
   });
+}
+
+// renderByVersion 按版本走结果：完整版仅主导维度诱饵 + 付费墙；免费版全可视化
+function renderByVersion(el, snap, lang) {
+  if (snap.version === 'full') renderFullBait(el, snap, lang);
+  else renderResult(el, snap, lang);
+}
+
+// renderFullBait 完整版结果：仅主导维度+档位作诱饵（画像/雷达/子维/金卡付费确认后邮件附件送达）
+function renderFullBait(el, snap, lang) {
+  const L = (o) => o[lang] || o.zh;
+  const top = [...DIMS].sort((a, b) => snap.pcts[b] - snap.pcts[a])[0];
+  el.innerHTML = `
+    <div class="quiz-result ok">
+      <p class="muted">${t('bf.yourProfile')}</p>
+      <h3 class="ps-bait">${esc(L(data.dims[top].name))} · ${t('ps.band' + bandKey(snap.pcts[top]))}</h3>
+      <p class="muted">${t('ps.fullPaywallHint')}</p>
+    </div>`;
+  renderActions(el, snap, lang);
 }
 
 // startTest 按版本选题（免费版子集 / 完整版全部）渲染 Likert 表单
@@ -83,7 +102,8 @@ function onSubmit(el, ratings, items, version, lang) {
   if (!confirm(t('bf.confirmSubmit'))) return;
   const pcts = computePcts(items, ratings);
   snapshot = { version, ratings: [...ratings], pcts, fullStage: 'pending' };
-  renderResult(el, snapshot, lang);
+  renderByVersion(el, snapshot, lang);
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // computePcts 每维度百分比：reverse 反向计分，pct=(sum-min)/(max-min)*100
@@ -129,15 +149,18 @@ function renderResult(el, snap, lang) {
   renderActions(el, snap, lang);
 }
 
-// renderActions 分享卡按钮 +（完整版）付费入口/已提交 或（免费版）升级 + 重新测试
+// renderActions（完整版）付费入口/已提交 或（免费版）分享卡+升级 + 重新测试
+// 完整版画像付费后才邮件送达，不在结果页泄露分享卡；免费版保留分享卡作传播诱饵
 function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
   $actions.className = 'kq-actions';
-  const share = document.createElement('button');
-  share.className = 'btn-soft';
-  share.textContent = t('ps.downloadCard');
-  share.onclick = () => downloadShareCard(snap, lang);
-  $actions.appendChild(share);
+  if (snap.version !== 'full') {
+    const share = document.createElement('button');
+    share.className = 'btn-soft';
+    share.textContent = t('ps.downloadCard');
+    share.onclick = () => downloadShareCard(snap, lang);
+    $actions.appendChild(share);
+  }
   if (snap.version === 'full') {
     if (snap.fullStage === 'submitted') {
       renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
@@ -145,6 +168,7 @@ function renderActions(el, snap, lang) {
       renderPaidReportEntry($actions, {
         feature: t('bf.fullFeature'), title: t('bf.fullTitle'), amount: AMOUNT,
         report: buildFullReport(snap, lang),
+        getPng: () => buildGoldPng(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
     }
@@ -234,6 +258,12 @@ function buildShareOpts(snap, lang) {
 async function downloadShareCard(snap, lang) {
   const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
   downloadPng(dataUrl, `bigfive-${Date.now()}.png`);
+}
+
+// buildGoldPng 生成完整版金纪念卡 PNG dataURL（复用分享卡参数 + gold 标记），付费后作邮件附件送达
+async function buildGoldPng(snap, lang) {
+  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang), gold: true });
+  return dataUrl;
 }
 
 export default (el) => render(el);

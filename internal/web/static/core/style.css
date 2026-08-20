@@ -906,7 +906,7 @@ pre {
 /* 人格测试 / 测试入口与结果行（mbti / big-five / disc 复用） */
 .rel-intro { text-align: center; padding: 24px 16px; }
 .rel-intro .btn { margin-top: 12px; }
-.mbti-type, .disc-primary { font-size: 1.6rem; margin: 6px 0; color: var(--accent, #2A5DB0); }
+.mbti-type, .disc-primary, .ps-bait { font-size: 1.6rem; margin: 6px 0; color: var(--accent, #2A5DB0); }
 .mbti-dim, .bf-row, .disc-row { margin: 4px 0; }
 .bf-row, .disc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
 .bf-pct, .disc-pct { font-weight: 700; color: var(--accent, #2A5DB0); }

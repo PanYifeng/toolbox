@@ -12,8 +12,9 @@ import (
 	"strings"
 )
 
-// paidReportBody 访客提交付费报告申请入参：邮箱 + 交易号 + 语言 + 报告文本。
+// paidReportBody 访客提交付费报告申请入参：邮箱 + 交易号 + 语言 + 报告文本 + 金纪念卡 PNG。
 // 报告文本由客户端按访客语言预生成，确认后原样邮件送达（访客 tab 关闭后仍可送达）。
+// PNG 为人格测试完整版随申请附带的金纪念卡（可选），确认后作邮件附件。
 type paidReportBody struct {
 	Feature string  `json:"feature"`
 	Title   string  `json:"title"`
@@ -22,13 +23,14 @@ type paidReportBody struct {
 	TxID    string  `json:"txId"`
 	Lang    string  `json:"lang"`
 	Report  string  `json:"report"`
+	PNG     string  `json:"png"`
 }
 
 // handlePaidReportCreate 访客提交付费报告申请：校验+落库 pending+发站主确认邮件。
 // 通过前报告绝不展示（前端无自解锁）；站主点确认链接后由 handlePaidReportConfirm 把报告邮件发访客。
 func (s *Server) handlePaidReportCreate(w http.ResponseWriter, r *http.Request) {
 	var body paidReportBody
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<19)).Decode(&body); err != nil {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 6<<20)).Decode(&body); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
@@ -42,7 +44,7 @@ func (s *Server) handlePaidReportCreate(w http.ResponseWriter, r *http.Request) 
 	}
 	e := s.pr.create(paidReportInput{
 		Feature: body.Feature, Title: body.Title, Amount: body.Amount,
-		Email: body.Email, TxID: body.TxID, Lang: body.Lang, Report: body.Report,
+		Email: body.Email, TxID: body.TxID, Lang: body.Lang, Report: body.Report, PNG: body.PNG,
 	})
 	go s.notifyPaidReportOwner(e)
 	log.Printf("paid report claim created: id=%s feature=%s txid=%s amount=%.2f email=%s",
@@ -120,7 +122,7 @@ func (s *Server) notifyPaidReportOwner(e paidReportEntry) {
 	}
 }
 
-// notifyPaidReportApprovedUser 通知访客并把完整报告以纯文本邮件发送
+// notifyPaidReportApprovedUser 通知访客并把完整报告邮件送达：附带金纪念卡则 multipart 附件，否则纯文本
 func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) {
 	m := s.cfg.Mail
 	if !m.Configured() {
@@ -130,6 +132,16 @@ func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) {
 	subject := e.Title
 	if subject == "" {
 		subject = "[Toolbox] 你的付费报告"
+	}
+	// 申请若附带金纪念卡 PNG（人格测试完整版），作附件 multipart 发送；无则纯文本回退
+	if strings.TrimSpace(e.PNG) != "" {
+		if pngBytes, decErr := decodePNG(e.PNG); decErr == nil {
+			if sendErr := sendMailWithAttachment(m, e.Email, subject, text, pngBytes, "gold-card.png"); sendErr != nil {
+				log.Printf("paid report notify user (with card) failed: id=%s err=%v", e.ID, sendErr)
+			}
+			return
+		}
+		log.Printf("paid report png decode failed, fallback to text: id=%s", e.ID)
 	}
 	if err := sendMail(m, e.Email, subject, text); err != nil {
 		log.Printf("paid report notify user failed: id=%s err=%v", e.ID, err)

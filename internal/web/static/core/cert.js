@@ -269,8 +269,8 @@ export async function renderMemorialCard(opts) {
   // 卡面显示的完成时间字符串（到分钟）。防伪码基于此字符串，
   // 这样用户凭卡面四要素即可复算验真；找回时可直接传 displayTime 跳过 iso 转换，跨时区一致。
   const displayTime = opts.displayTime || fmtTime(iso);
-  // 金版卡（破纪录/满分/待核验）用金色边框与防伪码，区别于普通通关卡。
-  const gold = !!(opts.recordCode || opts.recordPending || opts.perfect);
+  // 金版卡（破纪录/满分/待核验/人格付费纪念）用金色边框与防伪码，区别于普通通关卡。
+  const gold = !!(opts.recordCode || opts.recordPending || opts.perfect || opts.gold);
   // 破纪录卡由服务端签发 TB-R- 码（opts.recordCode），跳过前端复算，直接用作防伪码。
   // 待核验态（opts.recordPending）：防伪码位占位，不发真码，核验通过后才下发。
   let code;
@@ -280,6 +280,7 @@ export async function renderMemorialCard(opts) {
   drawBackground(ctx, W, H, theme, gold);
   if (opts.recordCode || opts.recordPending) drawRecordBanner(ctx, W, H, theme);
   else if (opts.perfect) drawPerfectBanner(ctx, W, H, theme);
+  else if (opts.gold) drawMemorialBanner(ctx, W, H, theme);
   drawHeader(ctx, W, theme);
   if (opts.personality) drawPersonalityBody(ctx, opts, theme, displayTime);
   else drawBody(ctx, W, opts, theme, displayTime);
@@ -655,6 +656,31 @@ function drawPerfectBanner(ctx, W, H, theme) {
   ctx.textBaseline = 'middle';
   ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",serif';
   ctx.fillText('🏆 满分 · PERFECT SCORE', W / 2, 20);
+  ctx.fillStyle = '#C99A2E';
+  ctx.globalAlpha = 0.5;
+  ctx.font = '28px serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✦', 80, 120);
+  ctx.fillText('✦', W - 80, 120);
+  ctx.fillText('✦', 80, H - 150);
+  ctx.fillText('✦', W - 80, H - 150);
+  ctx.globalAlpha = 1;
+}
+
+// drawMemorialBanner 金纪念卡专属标识：顶部金色绶带 + 四角星纹。
+// 仅当 opts.gold（人格测试完整版付费纪念卡）时绘制，与破纪录/满分绶带同结构、文案区分。
+// 人格测试无分数，故用"纪念"标识区别于满分卡。
+function drawMemorialBanner(ctx, W, H, theme) {
+  const grad = ctx.createLinearGradient(0, 0, 0, 40);
+  grad.addColorStop(0, '#F6C453');
+  grad.addColorStop(1, '#C99A2E');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, 40);
+  ctx.fillStyle = '#5C3D00';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",serif';
+  ctx.fillText('🏆 纪念 · MEMORIAL', W / 2, 20);
   ctx.fillStyle = '#C99A2E';
   ctx.globalAlpha = 0.5;
   ctx.font = '28px serif';
