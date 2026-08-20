@@ -1,33 +1,75 @@
 // MBTI 题库与型态描述（中英双语）。
 // questions: 每题二选一；选 a 计该维度"第一极"(E/S/T/J)，选 b 计"第二极"(I/N/F/P)。
-// 每个维度 5 题，多者胜出决定字母（平票取第一极）。
+// 每个维度 15 题（完整版 60 题），多者胜出决定字母（15 题为奇数，无平票）。
+// 免费版取每维度前 5 题（共 20，即原有精选）。
 // types: 16 型态，brief=免费简版一句，full=完整版多段报告（付费项，邮件送达）。
+// 题目文案均为原创，仅参考维度结构，不复制任何受版权保护的正式量表题目。
 export default {
   questions: [
-    // —— E/I 外向·内向 ——
+    // —— E/I 外向·内向（15 题）——
     { a: { zh: '我喜欢在人群中社交，结识新朋友', en: 'I enjoy socializing in crowds and meeting new people' }, b: { zh: '我更享受独处或小范围深度交流', en: 'I prefer solitude or deep talk with a few' }, dim: 'EI' },
     { a: { zh: '我话多，常边说边想', en: "I'm talkative and think out loud" }, b: { zh: '我先想清楚再开口', en: 'I think it through before speaking' }, dim: 'EI' },
     { a: { zh: '社交让我精力充沛', en: 'Socializing energizes me' }, b: { zh: '社交后我需要独处充电', en: 'I need alone time to recharge after socializing' }, dim: 'EI' },
     { a: { zh: '我更关注外部世界与行动', en: 'I focus on the outer world and action' }, b: { zh: '我更关注内心世界与想法', en: 'I focus on the inner world and ideas' }, dim: 'EI' },
     { a: { zh: '我常主动发起活动或邀约', en: 'I often initiate activities or invites' }, b: { zh: '我常等别人邀请或随性参与', en: 'I usually wait to be invited or join casually' }, dim: 'EI' },
-    // —— S/N 实感·直觉 ——
+    { a: { zh: '我能轻松和陌生人打开话题', en: 'I easily strike up chats with strangers' }, b: { zh: '我更愿和熟人深聊', en: 'I prefer deep talks with people I know' }, dim: 'EI' },
+    { a: { zh: '我喜欢成为注意的焦点', en: 'I enjoy being the center of attention' }, b: { zh: '我宁愿在幕后不被注意', en: 'I prefer to stay behind the scenes' }, dim: 'EI' },
+    { a: { zh: '沉默让我想找话说', en: 'Silence makes me want to fill it' }, b: { zh: '沉默让我自在', en: 'I feel at ease in silence' }, dim: 'EI' },
+    { a: { zh: '我认识的人很多', en: 'I know a lot of people' }, b: { zh: '我只有少数深交好友', en: 'I keep just a few close friends' }, dim: 'EI' },
+    { a: { zh: '我做事时喜欢有人陪着', en: 'I like company while I work' }, b: { zh: '我做事时需要安静独处', en: 'I need quiet solitude to work' }, dim: 'EI' },
+    { a: { zh: '派对上我待到散场', en: 'I stay at parties until they wind down' }, b: { zh: '我常提前离开去独处', en: 'I often leave early for downtime' }, dim: 'EI' },
+    { a: { zh: '我习惯口头表达', en: 'I express myself best out loud' }, b: { zh: '我习惯文字表达', en: 'I express myself best in writing' }, dim: 'EI' },
+    { a: { zh: '别人觉得我外放', en: 'Others see me as outgoing' }, b: { zh: '别人觉得我内敛', en: 'Others see me as reserved' }, dim: 'EI' },
+    { a: { zh: '聚会上我主动串场认识人', en: 'At gatherings I mingle and meet people' }, b: { zh: '聚会上我待在熟人旁边', en: 'At gatherings I stick with people I know' }, dim: 'EI' },
+    { a: { zh: '团队讨论我会抢着发言', en: 'I jump in during group discussions' }, b: { zh: '团队讨论我先听再说', en: 'I listen first in group discussions' }, dim: 'EI' },
+    // —— S/N 实感·直觉（15 题）——
     { a: { zh: '我关注具体事实与细节', en: 'I focus on concrete facts and details' }, b: { zh: '我关注可能性与整体模式', en: 'I focus on possibilities and patterns' }, dim: 'SN' },
     { a: { zh: '我务实，相信经验', en: 'I am practical and trust experience' }, b: { zh: '我富于想象，相信灵感', en: 'I am imaginative and trust inspiration' }, dim: 'SN' },
     { a: { zh: '我倾向一步步按流程来', en: 'I prefer step-by-step procedures' }, b: { zh: '我倾向跳跃式创意思考', en: 'I prefer leap-by-leap creative thinking' }, dim: 'SN' },
     { a: { zh: '我喜欢已验证的可靠方法', en: 'I like proven, reliable methods' }, b: { zh: '我喜欢尝试新思路', en: 'I like trying new ideas' }, dim: 'SN' },
     { a: { zh: '我描述事物如其所是', en: 'I describe things as they are' }, b: { zh: '我描述事物可能的样子', en: 'I describe things as they could be' }, dim: 'SN' },
-    // —— T/F 思考·情感 ——
+    { a: { zh: '我看重已被验证的做法', en: 'I value proven approaches' }, b: { zh: '我看重尚未尝试的可能', en: 'I value untried possibilities' }, dim: 'SN' },
+    { a: { zh: '我记得具体细节', en: 'I remember concrete details' }, b: { zh: '我抓住整体印象', en: 'I grasp the overall impression' }, dim: 'SN' },
+    { a: { zh: '我相信五官感知', en: 'I trust what I can observe' }, b: { zh: '我相信直觉预感', en: 'I trust my hunches' }, dim: 'SN' },
+    { a: { zh: '我喜欢步骤清晰', en: 'I like clear sequenced steps' }, b: { zh: '我喜欢跳跃联想', en: 'I work by leaps and associations' }, dim: 'SN' },
+    { a: { zh: '我读实用指南', en: 'I read practical how-to guides' }, b: { zh: '我读理论或小说', en: 'I read theory or fiction' }, dim: 'SN' },
+    { a: { zh: '我关注当下的事实', en: 'I notice present facts' }, b: { zh: '我关注未来的趋势', en: 'I notice future trends' }, dim: 'SN' },
+    { a: { zh: '我凭过去经验判断', en: 'I judge from past experience' }, b: { zh: '我凭预感判断', en: 'I judge by intuition' }, dim: 'SN' },
+    { a: { zh: '我说话具体直白', en: 'I speak concretely' }, b: { zh: '我说话多用比喻', en: 'I speak in metaphors' }, dim: 'SN' },
+    { a: { zh: '新任务我照既有流程', en: 'On new tasks I follow known procedures' }, b: { zh: '新任务我另起设计', en: 'On new tasks I redesign from scratch' }, dim: 'SN' },
+    { a: { zh: '我更相信亲手做过的事', en: 'I trust what I have done myself' }, b: { zh: '我更相信脑海里的构想', en: 'I trust what I can envision' }, dim: 'SN' },
+    // —— T/F 思考·情感（15 题）——
     { a: { zh: '我做决策重逻辑与客观', en: 'I decide based on logic and objectivity' }, b: { zh: '我做决策重价值观与对人的影响', en: 'I decide based on values and impact on people' }, dim: 'TF' },
     { a: { zh: '我追求公正，一视同仁', en: 'I prize fairness, treating all alike' }, b: { zh: '我追求和谐，因人而异', en: 'I prize harmony, adapting to each person' }, dim: 'TF' },
     { a: { zh: '不公平会激怒我', en: 'Injustice angers me' }, b: { zh: '冷漠无情会激怒我', en: 'Callousness angers me' }, dim: 'TF' },
     { a: { zh: '争论中我倾向找逻辑漏洞', en: 'In debates I look for logical flaws' }, b: { zh: '争论中我倾向照顾感受', en: 'In debates I tend to people\'s feelings' }, dim: 'TF' },
     { a: { zh: '我把任务置于关系之上', en: 'I put tasks before relationships' }, b: { zh: '我把关系置于任务之上', en: 'I put relationships before tasks' }, dim: 'TF' },
-    // —— J/P 判断·感知 ——
+    { a: { zh: '我重真相胜过面子', en: 'Truth matters more than face' }, b: { zh: '我和气胜过争对错', en: 'Harmony matters more than being right' }, dim: 'TF' },
+    { a: { zh: '批评我能就事论事', en: 'I take criticism objectively' }, b: { zh: '批评会触动我情绪', en: 'Criticism stirs my emotions' }, dim: 'TF' },
+    { a: { zh: '我用同一标准衡量每个人', en: 'I hold everyone to one standard' }, b: { zh: '我因人调整标准', en: 'I adjust my standard per person' }, dim: 'TF' },
+    { a: { zh: '决策我看长远利弊', en: 'Decisions weigh long-term pros and cons' }, b: { zh: '决策我看是否伤人', en: 'Decisions weigh who gets hurt' }, dim: 'TF' },
+    { a: { zh: '我说话直来直去', en: 'I speak bluntly' }, b: { zh: '我说话委婉', en: 'I phrase things gently' }, dim: 'TF' },
+    { a: { zh: '我倾向按公平分配', en: 'I favor fair distribution' }, b: { zh: '我倾向按需要分配', en: 'I favor need-based distribution' }, dim: 'TF' },
+    { a: { zh: '出问题我先找原因', en: 'When things break I find the cause first' }, b: { zh: '出问题我先稳住情绪', en: 'When things break I steady emotions first' }, dim: 'TF' },
+    { a: { zh: '争论我追求对错', en: 'In disputes I pursue what is right' }, b: { zh: '争论我追求理解', en: 'In disputes I pursue understanding' }, dim: 'TF' },
+    { a: { zh: '我更看重能力', en: 'I weigh competence more' }, b: { zh: '我更看重努力', en: 'I weigh effort more' }, dim: 'TF' },
+    { a: { zh: '规则面前无人例外', en: 'No one is above the rule' }, b: { zh: '规则可视情况通融', en: 'Rules can bend for the situation' }, dim: 'TF' },
+    // —— J/P 判断·感知（15 题）——
     { a: { zh: '我列清单，按计划执行', en: 'I make lists and follow plans' }, b: { zh: '我随性而为，保留弹性', en: 'I go with the flow, keeping options open' }, dim: 'JP' },
     { a: { zh: '我习惯提前完成任务', en: 'I finish tasks ahead of time' }, b: { zh: '我常在截止前冲刺', en: 'I often rush near deadlines' }, dim: 'JP' },
     { a: { zh: '我喜欢确定与结论', en: 'I like certainty and closure' }, b: { zh: '我喜欢开放与探索', en: 'I like openness and exploration' }, dim: 'JP' },
     { a: { zh: '我的生活有规律有条理', en: 'My life is orderly and routine' }, b: { zh: '我的生活随性多变', en: 'My life is spontaneous and varied' }, dim: 'JP' },
     { a: { zh: '计划被打乱让我烦躁', en: 'Broken plans upset me' }, b: { zh: '被计划束缚让我烦躁', en: 'Being bound by plans upsets me' }, dim: 'JP' },
+    { a: { zh: '我把日程排满', en: 'I pack my schedule tight' }, b: { zh: '我留白等临时起意', en: 'I leave room for the spontaneous' }, dim: 'JP' },
+    { a: { zh: '计划定好就执行', en: 'I commit to plans and execute' }, b: { zh: '执行中随时调整', en: 'I adjust as I go' }, dim: 'JP' },
+    { a: { zh: '我讨厌悬而未决', en: 'I hate loose ends' }, b: { zh: '我享受选项开放', en: 'I enjoy keeping options open' }, dim: 'JP' },
+    { a: { zh: '我提前收拾行李', en: 'I pack well ahead of time' }, b: { zh: '我临走才收拾', en: 'I pack at the last minute' }, dim: 'JP' },
+    { a: { zh: '我列购物清单', en: 'I shop from a list' }, b: { zh: '我即兴采购', en: 'I shop on impulse' }, dim: 'JP' },
+    { a: { zh: '我准时甚至早到', en: 'I am punctual, often early' }, b: { zh: '我常踩着点到', en: 'I often arrive on the dot' }, dim: 'JP' },
+    { a: { zh: '我要结论明确', en: 'I want clear conclusions' }, b: { zh: '我能接受模糊地带', en: 'I am comfortable with ambiguity' }, dim: 'JP' },
+    { a: { zh: '我做长期规划', en: 'I plan over the long term' }, b: { zh: '我走一步看一步', en: 'I take it one step at a time' }, dim: 'JP' },
+    { a: { zh: '桌面井井有条', en: 'My desk is tidy' }, b: { zh: '桌面杂乱随性', en: 'My desk is happily messy' }, dim: 'JP' },
+    { a: { zh: '我把任务拆成排期步骤', en: 'I break tasks into scheduled steps' }, b: { zh: '我凭兴致推进', en: 'I move by inspiration' }, dim: 'JP' },
   ],
   // 维度极标签（用于结果展示）
   dims: {

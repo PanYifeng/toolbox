@@ -1,33 +1,75 @@
 // 大五人格（OCEAN）题库与维度描述（中英双语）。
 // questions: 李克特 1-5 分（1 很不符合 → 5 很符合），reverse:true 的题反向计分（6-raw）。
-// 每维度 4 题，共 20 题；维度百分比 = (sum - min) / (max - min) * 100，min=4, max=20。
+// 每维度 12 题，共 60 题（完整版）；免费版取每维度前 4 题（共 20）。
+// 维度百分比 = (sum - min) / (max - min) * 100，min=n（全 1），max=5n（全 5），n 为该维度题数。
 // dims: 每维度 name + 按高低分三档简版 + full 完整版深度解析（付费项，邮件送达）。
+// 题目文案均为原创，仅参考 OCEAN 维度结构，不复制任何受版权保护的正式量表题目。
 export default {
-  // —— 开放性 O ——
+  // —— 开放性 O（12 题）——
   O1: { text: { zh: '我喜欢思考新想法和抽象概念', en: 'I enjoy thinking about new ideas and abstract concepts' }, dim: 'O', reverse: false },
   O2: { text: { zh: '我对艺术、音乐或美的事物很敏感', en: 'I am sensitive to art, music, or beauty' }, dim: 'O', reverse: false },
   O3: { text: { zh: '我富有想象力，常做白日梦', en: 'I have a vivid imagination and often daydream' }, dim: 'O', reverse: false },
   O4: { text: { zh: '我倾向循规蹈矩，按既有方式做事', en: 'I prefer routine and doing things the established way' }, dim: 'O', reverse: true },
-  // —— 尽责性 C ——
+  O5: { text: { zh: '我对哲学与存在之类问题着迷', en: 'I am drawn to philosophical and existential questions' }, dim: 'O', reverse: false },
+  O6: { text: { zh: '我喜欢尝试异国风味与新食材', en: 'I enjoy exotic flavors and new ingredients' }, dim: 'O', reverse: false },
+  O7: { text: { zh: '我常反思自己的想法', en: 'I often reflect on my own thinking' }, dim: 'O', reverse: false },
+  O8: { text: { zh: '我对传统做法深信不疑', en: 'I firmly believe in traditional ways' }, dim: 'O', reverse: true },
+  O9: { text: { zh: '我会被一首诗或一幅画打动', en: 'A poem or painting can move me' }, dim: 'O', reverse: false },
+  O10: { text: { zh: '我宁愿做熟悉的事也不冒险尝新', en: 'I would rather do the familiar than risk the new' }, dim: 'O', reverse: true },
+  O11: { text: { zh: '我喜欢把不同领域的点子连起来', en: 'I enjoy connecting ideas across fields' }, dim: 'O', reverse: false },
+  O12: { text: { zh: '我对抽象理论没兴趣', en: 'Abstract theory bores me' }, dim: 'O', reverse: true },
+  // —— 尽责性 C（12 题）——
   C1: { text: { zh: '我做事有条理、爱列计划', en: 'I am organized and like to plan' }, dim: 'C', reverse: false },
   C2: { text: { zh: '我按时完成任务，不拖延', en: 'I finish tasks on time without procrastinating' }, dim: 'C', reverse: false },
   C3: { text: { zh: '我注重细节，力求准确', en: 'I pay attention to detail and aim for accuracy' }, dim: 'C', reverse: false },
   C4: { text: { zh: '我常把事情留到最后一刻', en: 'I often leave things to the last minute' }, dim: 'C', reverse: true },
-  // —— 外向性 E ——
+  C5: { text: { zh: '我说到做到，守承诺', en: 'I keep my promises' }, dim: 'C', reverse: false },
+  C6: { text: { zh: '我总会提前准备', en: 'I prepare in advance' }, dim: 'C', reverse: false },
+  C7: { text: { zh: '我做事容易半途而废', en: 'I tend to abandon things halfway' }, dim: 'C', reverse: true },
+  C8: { text: { zh: '我的物品分类整齐', en: 'I keep my things sorted and tidy' }, dim: 'C', reverse: false },
+  C9: { text: { zh: '我按预算花钱', en: 'I spend within a budget' }, dim: 'C', reverse: false },
+  C10: { text: { zh: '我常立计划却难坚持', en: 'I make plans I cannot stick to' }, dim: 'C', reverse: true },
+  C11: { text: { zh: '遇到困难我坚持到底', en: 'I push through difficulties to the end' }, dim: 'C', reverse: false },
+  C12: { text: { zh: '我的待办清单总拖到过期', en: 'My to-do list keeps expiring' }, dim: 'C', reverse: true },
+  // —— 外向性 E（12 题）——
   E1: { text: { zh: '我乐于与人交谈，是活跃的', en: 'I enjoy talking with people and am talkative' }, dim: 'E', reverse: false },
   E2: { text: { zh: '我充满活力，热情主动', en: 'I am energetic, warm, and proactive' }, dim: 'E', reverse: false },
   E3: { text: { zh: '我喜欢独处和安静的环境', en: 'I prefer solitude and a quiet environment' }, dim: 'E', reverse: true },
   E4: { text: { zh: '我在人群中感到自在，主动社交', en: 'I feel at ease in crowds and initiate socializing' }, dim: 'E', reverse: false },
-  // —— 宜人性 A ——
+  E5: { text: { zh: '我喜欢在群体中发言', en: 'I like speaking in groups' }, dim: 'E', reverse: false },
+  E6: { text: { zh: '我主动认识新朋友', en: 'I take the initiative to make friends' }, dim: 'E', reverse: false },
+  E7: { text: { zh: '独处太久我会低落', en: 'Too much solitude dampens my mood' }, dim: 'E', reverse: false },
+  E8: { text: { zh: '我话不多，更愿倾听', en: 'I am quiet, preferring to listen' }, dim: 'E', reverse: true },
+  E9: { text: { zh: '我做事风风火火', en: 'I do things with high energy and pace' }, dim: 'E', reverse: false },
+  E10: { text: { zh: '我回避大型聚会', en: 'I avoid large gatherings' }, dim: 'E', reverse: true },
+  E11: { text: { zh: '别人说我热情洋溢', en: 'Others call me full of warmth' }, dim: 'E', reverse: false },
+  E12: { text: { zh: '我一个人也能自得其乐', en: 'I entertain myself fine alone' }, dim: 'E', reverse: true },
+  // —— 宜人性 A（12 题）——
   A1: { text: { zh: '我关心他人的感受与需要', en: 'I care about others\' feelings and needs' }, dim: 'A', reverse: false },
   A2: { text: { zh: '我乐于助人，倾向合作', en: 'I like helping others and tend to cooperate' }, dim: 'A', reverse: false },
   A3: { text: { zh: '我容易信任他人', en: 'I tend to trust people' }, dim: 'A', reverse: false },
   A4: { text: { zh: '我有时对别人的动机心存怀疑', en: 'I am sometimes suspicious of others\' motives' }, dim: 'A', reverse: true },
-  // —— 神经质 N ——
+  A5: { text: { zh: '我容易原谅他人', en: 'I forgive others easily' }, dim: 'A', reverse: false },
+  A6: { text: { zh: '我倾向妥协而非争辩', en: 'I would rather compromise than argue' }, dim: 'A', reverse: false },
+  A7: { text: { zh: '我对人起初多半信任', en: 'I generally trust people at first' }, dim: 'A', reverse: false },
+  A8: { text: { zh: '我说话直接，不绕弯', en: 'I am blunt, no beating around the bush' }, dim: 'A', reverse: true },
+  A9: { text: { zh: '我关心弱者', en: 'I care about the vulnerable' }, dim: 'A', reverse: false },
+  A10: { text: { zh: '我觉得多数人不可靠', en: 'I find most people unreliable' }, dim: 'A', reverse: true },
+  A11: { text: { zh: '我愿为他人牺牲时间', en: 'I would sacrifice my time for others' }, dim: 'A', reverse: false },
+  A12: { text: { zh: '与人发生分歧我据理力争', en: 'In disputes I argue my case hard' }, dim: 'A', reverse: true },
+  // —— 神经质 N（12 题）——
   N1: { text: { zh: '我容易感到焦虑或紧张', en: 'I easily feel anxious or tense' }, dim: 'N', reverse: false },
   N2: { text: { zh: '我的情绪起伏较大', en: 'My moods go up and down a lot' }, dim: 'N', reverse: false },
   N3: { text: { zh: '我常为各种事情担忧', en: 'I often worry about things' }, dim: 'N', reverse: false },
   N4: { text: { zh: '我情绪稳定，不易被扰乱', en: 'I am emotionally stable and not easily upset' }, dim: 'N', reverse: true },
+  N5: { text: { zh: '小挫折也能毁我一天', en: 'A small setback can ruin my day' }, dim: 'N', reverse: false },
+  N6: { text: { zh: '我常对未来感到不安', en: 'I often feel uneasy about the future' }, dim: 'N', reverse: false },
+  N7: { text: { zh: '别人一句评价我能琢磨很久', en: 'I mull over a single remark for ages' }, dim: 'N', reverse: false },
+  N8: { text: { zh: '面对压力我泰然自若', en: 'I stay calm under pressure' }, dim: 'N', reverse: true },
+  N9: { text: { zh: '我容易感到受挫或失落', en: 'I easily feel discouraged or let down' }, dim: 'N', reverse: false },
+  N10: { text: { zh: '我很少被情绪牵着走', en: 'I am rarely driven by emotion' }, dim: 'N', reverse: true },
+  N11: { text: { zh: '我夜里常辗转难眠', en: 'I often toss and turn at night' }, dim: 'N', reverse: false },
+  N12: { text: { zh: '突发状况我能稳住', en: 'I hold steady in sudden situations' }, dim: 'N', reverse: true },
   // 李克特选项标签（1-5）
   scale: {
     zh: ['很不符合', '不太符合', '一般', '比较符合', '很符合'],

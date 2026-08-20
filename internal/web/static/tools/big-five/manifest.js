@@ -4,11 +4,11 @@ export default {
   category: { zh: '知识 · 趣味', en: 'Knowledge & Fun' },
   icon: '🧠',
   keywords: ['big five', '大五', 'ocean', '人格', '性格', '五因素', 'personality', 'openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'],
-  desc: '大五人格（OCEAN）测试，20 道李克特题定位你在开放性、尽责性、外向性、宜人性、神经质五个维度上的百分比；免费看简版画像，完整版详细报告 ¥5 经站主确认后邮件送达。',
+  desc: '大五人格（OCEAN）测试，免费版 20 题、完整版 60 题李克特量表定位你在开放性、尽责性、外向性、宜人性、神经质五个维度上的百分比；免费看简版画像，完整版详细报告 ¥5 经站主确认后邮件送达。',
   guide: {
     zh: `## 功能
 
-通过 20 道李克特量表题（1-5 分，每维度 4 题）测量大五人格五维度（OCEAN）的百分比画像。免费查看五维度分数与简版解读；完整版报告（每维度深度解析 + 建议）为付费项，¥5 一次，经站主确认收款后邮件送达。
+通过 20 道李克特量表题（1-5 分，每维度 4 题）测量大五人格五维度（OCEAN）的百分比画像。免费查看五维度分数与简版解读；完整版含全部 60 题（每维度 12 题，题量更足、结果更稳），其报告（每维度深度解析 + 建议）为付费项，¥5 一次，经站主确认收款后邮件送达。
 
 ## 使用场景
 
@@ -24,7 +24,7 @@ export default {
 - **数据安全**：作答仅在浏览器本地计分，不上传服务器（完整版报告文本随申请提交以邮件送达）`,
     en: `## Features
 
-Answer 20 Likert-scale items (1-5, 4 per dimension) to get your Big Five (OCEAN) percentage profile. View the free brief profile with per-dimension scores; a detailed full report (deep-dive + tips per dimension) is a paid item, ¥5 one-time, emailed after the site owner confirms payment.
+Answer 20 Likert-scale items (1-5, 4 per dimension) to get your Big Five (OCEAN) percentage profile. View the free brief profile with per-dimension scores; the full edition has all 60 items (12 per dimension—more items, more stable results), and its detailed report (deep-dive + tips per dimension) is a paid item, ¥5 one-time, emailed after the site owner confirms payment.
 
 ## Use cases
 

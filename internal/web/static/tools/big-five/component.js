@@ -8,8 +8,8 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice, subsetPerDim } from '/core/personality.js';
 import data from './data.js';
 
-const FULL = Object.entries(data).filter(([k]) => /^[OCENA]\d$/.test(k)).map(([k, v]) => ({ k, ...v })); // 完整版（全部 20 题）
-const FREE_PER_DIM = 2; // 免费版每维度取 2 题（共 10）
+const FULL = Object.entries(data).filter(([k]) => /^[OCENA]\d{1,2}$/.test(k)).map(([k, v]) => ({ k, ...v })); // 完整版（全部 60 题，每维度 12 题）
+const FREE_PER_DIM = 4; // 免费版每维度取 4 题（共 20）
 const AMOUNT = 5;
 const DIMS = ['O', 'C', 'E', 'A', 'N'];
 

@@ -9,8 +9,8 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice, subsetPerDim } from '/core/personality.js';
 import data from './data.js';
 
-const FULL = data.questions; // 完整版题集（全部，20 题）
-const FREE_PER_DIM = 3; // 免费版每维度取 3 题（共 12）
+const FULL = data.questions; // 完整版题集（全部，60 题，每维度 15 题）
+const FREE_PER_DIM = 5; // 免费版每维度取 5 题（共 20）
 const AMOUNT = 5; // 完整版详细解读定价 ¥5
 const DIMS = ['EI', 'SN', 'TF', 'JP'];
 

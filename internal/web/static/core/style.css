@@ -911,6 +911,15 @@ pre {
 .bf-row, .disc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
 .bf-pct, .disc-pct { font-weight: 700; color: var(--accent, #2A5DB0); }
 
+/* DISC 经典迫选答卷：每组 = 表头（最像 / 最不像）+ 四行描述，各配两个单选 */
+.disc-opts { display: grid; grid-template-columns: 1fr auto auto; gap: 0 10px; align-items: center; }
+.disc-opt { display: contents; }
+.disc-hdr { font-size: .76rem; color: var(--muted, #888); text-align: center; font-weight: 600; padding: 4px 8px 6px; border-bottom: 1px solid var(--border, #ddd); }
+.disc-opt-text { font-size: .95rem; padding: 8px 0; border-bottom: 1px solid var(--border, #f1f1f1); }
+.disc-radio { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; border-bottom: 1px solid var(--border, #f1f1f1); }
+.disc-radio input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent, #2A5DB0); }
+.disc-radio:has(input:checked) { background: var(--accent-bg, #eef3fc); border-radius: 4px; }
+
 /* Wordle 猜词（game-wordle） */
 .wordle-grid { display: grid; gap: 6px; justify-content: center; margin: 12px 0; }
 .wordle-row { display: flex; gap: 6px; justify-content: center; }
