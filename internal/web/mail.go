@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/smtp"
+	"strings"
 	"time"
 
 	"toolbox/internal/config"
@@ -59,7 +60,26 @@ func buildMultipartMail(from, to, subject, textBody string, png []byte, filename
 		"--%s\r\nContent-Type: image/png; name=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n\r\n",
 		boundary, filename, filename,
 	)
-	b64 := base64.StdEncoding.EncodeToString(png)
-	end := fmt.Sprintf("\r\n--%s--\r\n", boundary)
+	b64 := wrapBase64(base64.StdEncoding.EncodeToString(png))
+	end := fmt.Sprintf("--%s--\r\n", boundary)
 	return []byte(header + textPart + imgPart + b64 + end)
+}
+
+// wrapBase64 将 base64 串按 76 字符折行（每行以 \r\n 结尾），满足 RFC 2045 行长与 RFC 5321 单行 ≤998 octet 限制。
+// SMTP 服务器会拒绝超长单行（整张 PNG base64 若不折行可达数万字符），导致 500 退信。
+func wrapBase64(s string) string {
+	const max = 76
+	if len(s) == 0 {
+		return "\r\n"
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); i += max {
+		end := i + max
+		if end > len(s) {
+			end = len(s)
+		}
+		b.WriteString(s[i:end])
+		b.WriteString("\r\n")
+	}
+	return b.String()
 }
