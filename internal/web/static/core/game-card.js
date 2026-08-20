@@ -36,14 +36,17 @@ export function mountGameCard(container, getScore, gameName) {
   container.appendChild(wrap);
   const $form = wrap.querySelector('#gc-form');
   wrap.querySelector('#gc-name').value = loadName();
+  // 不在进游戏时自动展开纪念卡表单、不自动拉取历史破纪录卡。
+  // 此前每次进游戏都会展开表单并重新渲染旧战绩卡（localStorage 里的 claim 跨刷新仍在），
+  // 体验上像缓存 bug；改为用户点击展开时按需恢复核验态。
+  let restored = false;
   wrap.querySelector('#gc-toggle').onclick = () => {
-    $form.style.display = $form.style.display === 'none' ? 'block' : 'none';
+    const open = $form.style.display === 'none';
+    $form.style.display = open ? 'block' : 'none';
+    if (open && !restored && lbOn) { restored = true; restoreClaim(wrap, gameId, gameName); }
   };
   wrap.querySelector('#gc-gen').onclick = () => onGenerate(wrap, gameId, gameName, getScore);
-  if (lbOn) {
-    loadLeaderboard(wrap, gameId);
-    restoreClaim(wrap, gameId, gameName);
-  }
+  if (lbOn) loadLeaderboard(wrap, gameId);
 }
 
 // renderShell 排行榜 + 折叠表单骨架（姓名 + 一键生成卡按钮，无单独提交按钮）
@@ -231,7 +234,7 @@ function restoreClaim(wrap, gameId, gameName) {
     gameId, gameName, name: saved.name, score: saved.score,
     claimId: saved.claimId, recordTime: saved.recordTime, txid: saved.txid || null,
   };
-  wrap.querySelector('#gc-form').style.display = 'block';
+  // 表单已由 toggle 展开；此处仅恢复核验状态，不再强制展开（避免每次进游戏弹出旧战绩）
   wrap.querySelector('#gc-result').innerHTML = `<p class="muted">${t('lb.verifyRestored')}</p>`;
   checkStatus(wrap, ctx);
 }
