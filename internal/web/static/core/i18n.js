@@ -385,6 +385,22 @@ const dict = {
     'errata.claimSubmitted': '✅ 申请已提交，待站主确认收款',
     'errata.claimId': '申请号：{id}',
     'errata.claimPending': '站主核对收款后，错题解析将发送至 {email}',
+    // —— 像素画板（pixel-art）——
+    'px.size': '网格',
+    'px.color': '自定义色',
+    'px.eraser': '橡皮',
+    'px.fill': '填充',
+    'px.undo': '撤销',
+    'px.clear': '清空',
+    'px.export': '导出 PNG',
+    'px.tip': '按住拖动涂色；选色盘取色或用自定义色；橡皮擦除、填充桶换连通同色、撤销逐笔回退',
+    // —— ASCII 艺术生成器（ascii-art）——
+    'asc.upload': '上传图片',
+    'asc.width': '宽度',
+    'asc.charset': '字符集',
+    'asc.invert': '反转明暗',
+    'asc.copy': '复制',
+    'asc.tip': '上传一张图片，按像素亮度映射成 ASCII 字符画',
   },
   en: {
     'app.title': '🧰 Toolbox',
@@ -771,6 +787,22 @@ const dict = {
     'errata.claimSubmitted': '✅ Claim submitted, awaiting owner confirmation',
     'errata.claimId': 'Claim ID: {id}',
     'errata.claimPending': 'Once the site owner confirms your payment, the analysis will be sent to {email}',
+    // —— Pixel Art (pixel-art) ——
+    'px.size': 'Grid',
+    'px.color': 'Custom',
+    'px.eraser': 'Eraser',
+    'px.fill': 'Fill',
+    'px.undo': 'Undo',
+    'px.clear': 'Clear',
+    'px.export': 'Export PNG',
+    'px.tip': 'Press and drag to paint; pick from the palette or a custom color; erase, flood-fill, undo per stroke',
+    // —— ASCII Art Generator (ascii-art) ——
+    'asc.upload': 'Upload image',
+    'asc.width': 'Width',
+    'asc.charset': 'Charset',
+    'asc.invert': 'Invert light/dark',
+    'asc.copy': 'Copy',
+    'asc.tip': 'Upload an image to convert it into ASCII art by pixel brightness',
   },
 };
 

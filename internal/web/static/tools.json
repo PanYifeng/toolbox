@@ -1,5 +1,32 @@
 [
   {
+    "id": "ascii-art",
+    "name": {
+      "zh": "ASCII 艺术生成器",
+      "en": "ASCII Art Generator"
+    },
+    "category": {
+      "zh": "设计",
+      "en": "Design"
+    },
+    "icon": "🖼️",
+    "keywords": [
+      "ascii",
+      "art",
+      "ascii art",
+      "图片转字符",
+      "字符画",
+      "灰度",
+      "图片转文本",
+      "image to text"
+    ],
+    "desc": "把上传的图片转为 ASCII 字符画：读取像素灰度，按亮度映射到 @#%*+=-:. 字符，输出可复制的文本，纯前端运行。",
+    "guide": {
+      "zh": "## 功能\n\n上传一张图片，按像素灰度亮度映射到 ASCII 字符（如 `@#%*+=-:.` ），生成可复制的字符画。可调节输出宽度、切换明暗方向、选择字符集。\n\n## 使用场景\n\n- 把头像 / logo 转成字符画用于 README 或论坛签名\n- 制作复古风格的字符海报\n- 理解亮度→字符映射的小演示\n\n## 常见问题\n\n- **支持格式**：PNG / JPG / GIF / WebP 等浏览器支持的图片格式\n- **宽度**：字符画按字符宽度（列数）缩放，行数按图片比例自动折半（字符高宽比约 2:1）\n- **明暗方向**：默认亮处用空格、暗处用 @；可反转用于深色背景\n- **数据安全**：图片在浏览器本地读取处理，不上传服务器",
+      "en": "## Features\n\nUpload an image and convert it to ASCII art: each pixel's grayscale brightness maps to a character like `@#%*+=-:.` , producing copyable text. Adjust output width, flip light/dark direction, or switch character sets.\n\n## Use cases\n\n- Turn an avatar or logo into ASCII for a README or forum signature\n- Make a retro text poster\n- A small demo of brightness-to-character mapping\n\n## FAQ\n\n- **Formats**: PNG / JPG / GIF / WebP — anything the browser can decode\n- **Width**: output is scaled to a character column count; rows are halved by image aspect (char aspect ≈ 2:1)\n- **Light/dark**: by default bright pixels become spaces and dark ones @; flip it for dark backgrounds\n- **Privacy**: the image is read and processed locally, nothing is uploaded"
+    }
+  },
+  {
     "id": "audio_convert",
     "name": {
       "zh": "音频转换",
@@ -571,6 +598,35 @@
     "guide": {
       "zh": "## 功能\n\n按设定长度（4-128）和勾选的字符集（大写、小写、数字、符号、是否排除易混淆字符）生成随机密码，使用浏览器原生 crypto.getRandomValues 保证真随机性，可一键复制。\n\n## 使用场景\n\n- 注册新账号时生成高强度不可猜测的密码\n- 为数据库、API Key、服务令牌生成随机串\n- 演示密码强度与字符集、长度之间的关系\n\n## 常见问题\n\n- **安全吗**：使用 crypto.getRandomValues 真随机，比 Math.random 安全得多\n- **默认排除哪些字符**：勾选「排除易混淆」后会去掉 O 0 I l 1 等形似字符\n- **会上传吗**：不会，密码在浏览器本地生成后不发送任何地方",
       "en": "## Features\n\nGenerate random passwords with configurable length (4-128) and selectable character sets — uppercase, lowercase, digits, symbols, and whether to exclude ambiguous characters. Uses the browser's native crypto.getRandomValues for true randomness, with one-click copy.\n\n## Use cases\n\n- Generate strong, unguessable passwords when registering new accounts\n- Create random strings for databases, API keys and service tokens\n- Demonstrate how password strength relates to length and character set\n\n## FAQ\n\n- **Is it secure**: it uses crypto.getRandomValues for true randomness, far safer than Math.random\n- **Which characters are excluded by default**: enabling exclude-ambiguous removes look-alike characters like O 0 I l 1\n- **Is it uploaded**: no, the password is generated locally and never sent anywhere"
+    }
+  },
+  {
+    "id": "pixel-art",
+    "name": {
+      "zh": "像素画板",
+      "en": "Pixel Art"
+    },
+    "category": {
+      "zh": "设计",
+      "en": "Design"
+    },
+    "icon": "🖌️",
+    "keywords": [
+      "pixel",
+      "art",
+      "像素",
+      "画板",
+      "涂色",
+      "像素画",
+      "retro",
+      "grid",
+      "flood fill",
+      "填充"
+    ],
+    "desc": "在线像素画板，N×N 网格涂色，支持选色盘、自定义色、橡皮擦、填充桶、撤销与 PNG 导出，纯前端运行。",
+    "guide": {
+      "zh": "## 功能\n\n在 N×N 像素网格上按住拖动涂色，支持选色盘取色、自定义颜色、橡皮擦、填充桶（连通同色区域一键换色）、撤销与重做，完成后导出 PNG。\n\n## 使用场景\n\n- 绘制复古像素风头像 / 小图标 / 表情\n- 快速做像素小稿用于游戏素材或贴纸\n- 给小朋友涂色玩\n\n## 常见问题\n\n- **涂色方式**：按住鼠标 / 手指在网格上拖动即可连续涂色\n- **橡皮擦**：选中橡皮擦后涂色即清除该格（变回底色）\n- **填充桶**：点击某格，与其连通的同色区域一次性换为当前色\n- **撤销**：每次落笔（按下到抬起为一次笔触）记一条历史，撤销逐笔回退\n- **导出**：按网格实际像素导出无网格线的 PNG\n- **数据安全**：画作仅存于浏览器，不上传服务器",
+      "en": "## Features\n\nPaint on an N×N pixel grid by press-dragging; pick from a palette or a custom color, erase, flood-fill connected same-color regions, undo per stroke, and export a PNG.\n\n## Use cases\n\n- Draw retro pixel avatars, icons, or emojis\n- Sketch quick pixel art for game assets or stickers\n- A simple coloring toy for kids\n\n## FAQ\n\n- **Painting**: press and drag across the grid to paint continuously\n- **Eraser**: select the eraser, then paint to clear cells back to the background\n- **Fill bucket**: click a cell to recolor every connected cell of the same color\n- **Undo**: each press-to-release stroke is one history entry; undo steps back one stroke\n- **Export**: PNG is exported at native pixel resolution without grid lines\n- **Privacy**: your artwork stays in the browser, nothing is uploaded"
     }
   },
   {
