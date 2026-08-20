@@ -3,7 +3,7 @@
 // 不用 quiz.js（正误计分型）；Likert 1-5 自建表单。无纪念卡（非分数型）。
 // 语言切换重渲染时用模块级 snapshot 恢复结果与申请态；刷新清空回选择入口。
 
-import { t, getLang } from '/core/i18n.js';
+import { t, getLang, tFor } from '/core/i18n.js';
 import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-report.js';
 import { renderChoice, subsetPerDim } from '/core/personality.js';
 import { radarSVG, barHTML } from '/core/radar.js';
@@ -41,11 +41,16 @@ function renderByVersion(el, snap, lang) {
 // renderFullBait 完整版结果：仅主导维度+档位作诱饵（画像/雷达/子维/金卡付费确认后邮件附件送达）
 function renderFullBait(el, snap, lang) {
   const L = (o) => o[lang] || o.zh;
+  const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
+  const olang = lang === 'en' ? 'zh' : 'en';
   const top = [...DIMS].sort((a, b) => snap.pcts[b] - snap.pcts[a])[0];
+  const main = `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(snap.pcts[top]))}`;
+  const sub = `${OL(data.dims[top].name)} · ${tFor('ps.band' + bandKey(snap.pcts[top]), olang)}`;
   el.innerHTML = `
     <div class="quiz-result ok">
       <p class="muted">${t('bf.yourProfile')}</p>
-      <h3 class="ps-bait">${esc(L(data.dims[top].name))} · ${t('ps.band' + bandKey(snap.pcts[top]))}</h3>
+      <h3 class="ps-bait">${esc(main)}</h3>
+      <p class="muted ps-bait-en">${esc(sub)}</p>
       <p class="muted">${t('ps.fullPaywallHint')}</p>
     </div>`;
   renderActions(el, snap, lang);
@@ -241,12 +246,16 @@ function computeSubPcts(facets, ratings) {
 // buildShareOpts 构造大五分享卡渲染参数（主导维度+band 为类型标签，五维雷达）
 function buildShareOpts(snap, lang) {
   const L = (o) => o[lang] || o.zh;
+  const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
+  const olang = lang === 'en' ? 'zh' : 'en';
   const top = [...DIMS].sort((a, b) => snap.pcts[b] - snap.pcts[a])[0];
   return {
     themeKey: 'personality-bigfive',
     name: 'Big Five',
     personality: {
       typeLabel: `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(snap.pcts[top]))}`,
+      typeLabelEn: `${OL(data.dims[top].name)} · ${tFor('ps.band' + bandKey(snap.pcts[top]), olang)}`,
+      typeCode: top,
       dims: DIMS.map((d) => ({ name: L(data.dims[d].name), pct: snap.pcts[d] })),
       accent: ACCENT,
     },

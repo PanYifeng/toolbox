@@ -1071,6 +1071,11 @@ export function t(key) {
   return (dict[lang] && dict[lang][key]) || key;
 }
 
+// tFor 取指定语言文案（用于双语副标题取"另一语言"串，如大五 band 标签配英文）
+export function tFor(key, l) {
+  return (dict[l] && dict[l][key]) || key;
+}
+
 // tr 取多语言对象字段（用于 manifest name: {zh, en}）
 export function tr(obj) {
   if (obj && typeof obj === 'object') return obj[lang] || obj.zh || obj.en || '';

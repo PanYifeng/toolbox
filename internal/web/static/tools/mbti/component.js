@@ -43,10 +43,14 @@ function renderByVersion(el, snap, lang) {
 function renderFullBait(el, snap, lang) {
   const tp = data.types[snap.code] || data.types.INTJ;
   const L = (o) => o[lang] || o.zh;
+  const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
+  const main = `${snap.code} · ${L(tp.nick)}`;
+  const sub = `${snap.code} · ${OL(tp.nick)}`;
   el.innerHTML = `
     <div class="quiz-result ok">
       <p class="muted">${t('mbti.yourType')}</p>
-      <h3 class="ps-bait">${snap.code} · ${esc(L(tp.nick))}</h3>
+      <h3 class="ps-bait">${esc(main)}</h3>
+      <p class="muted ps-bait-en">${esc(sub)}</p>
       <p class="muted">${t('ps.fullPaywallHint')}</p>
     </div>`;
   renderActions(el, snap, lang);
@@ -239,11 +243,14 @@ function computeSubPcts(facets, answers) {
 function buildShareOpts(snap, lang) {
   const tp = data.types[snap.code] || data.types.INTJ;
   const L = (o) => o[lang] || o.zh;
+  const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
   return {
     themeKey: 'personality-mbti',
     name: snap.code,
     personality: {
       typeLabel: `${snap.code} · ${L(tp.nick)}`,
+      typeLabelEn: `${snap.code} · ${OL(tp.nick)}`,
+      typeCode: snap.code,
       dims: DIMS.map((d) => {
         const dm = data.dims[d];
         const [a, b] = snap.tally[d];

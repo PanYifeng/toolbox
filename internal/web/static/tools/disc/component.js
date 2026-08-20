@@ -39,12 +39,16 @@ function renderByVersion(el, snap, lang) {
 // renderFullBait 完整版结果：仅主导风格+blend 作诱饵（画像/雷达/子维/金卡付费确认后邮件附件送达）
 function renderFullBait(el, snap, lang) {
   const L = (o) => o[lang] || o.zh;
+  const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
   const dm = data.dims[snap.primary];
   const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
+  const main = `${L(dm.name)} · ${L(blend.name)}`;
+  const sub = `${OL(dm.name)} · ${OL(blend.name)}`;
   el.innerHTML = `
     <div class="quiz-result ok">
       <p class="muted">${t('disc.primary')}</p>
-      <h3 class="ps-bait">${esc(L(dm.name))} · ${esc(L(blend.name))}</h3>
+      <h3 class="ps-bait">${esc(main)}</h3>
+      <p class="muted ps-bait-en">${esc(sub)}</p>
       <p class="muted">${t('ps.fullPaywallHint')}</p>
     </div>`;
   renderActions(el, snap, lang);
@@ -247,6 +251,7 @@ function bandKey(pct) {
 // buildShareOpts 构造 DISC 分享卡渲染参数（主导+blend 为标签，四维雷达）
 function buildShareOpts(snap, lang) {
   const L = (o) => o[lang] || o.zh;
+  const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
   const dm = data.dims[snap.primary];
   const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
   return {
@@ -254,6 +259,8 @@ function buildShareOpts(snap, lang) {
     name: snap.primary,
     personality: {
       typeLabel: `${L(dm.name)} · ${L(blend.name)}`,
+      typeLabelEn: `${OL(dm.name)} · ${OL(blend.name)}`,
+      typeCode: snap.primary,
       dims: DIMS.map((d) => ({ name: d, pct: snap.pcts[d] })),
       accent: ACCENT,
     },

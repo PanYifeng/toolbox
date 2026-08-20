@@ -468,20 +468,41 @@ function drawBody(ctx, W, opts, theme, displayTime) {
   drawMessage(ctx, W, theme, opts, y + 18);
 }
 
-// drawPersonalityBody 人格分享卡中部：大类型标签 + 完成时间 + canvas 雷达图 + 寄语（无姓名/分数行）
+// drawPersonalityBody 人格分享卡中部：类型代号水印 + 大类型标签 + 英文副标题 + 完成时间 + canvas 雷达图 + 寄语（无姓名/分数行）
 function drawPersonalityBody(ctx, opts, theme, displayTime) {
   const W = 1000; // 卡面固定宽度（纪念卡画布恒为 1000×1414）
   const p = opts.personality || {};
+  drawTypeWatermark(ctx, p, theme, W); // 不同类型呈现不同背景标识
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = theme.secondary;
   ctx.font = 'bold 54px "PingFang SC","Microsoft YaHei",serif';
-  ctx.fillText(p.typeLabel || '', W / 2, 360);
+  ctx.fillText(p.typeLabel || '', W / 2, 350);
+  if (p.typeLabelEn) { // 英文副标题，与主标签配对
+    ctx.fillStyle = theme.primary;
+    ctx.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(p.typeLabelEn, W / 2, 400);
+  }
   ctx.fillStyle = theme.primary;
   ctx.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
-  ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, 410);
+  ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, 444);
   drawPersonalityRadar(ctx, { cx: W / 2, cy: 720, radius: 230, dims: p.dims || [], accent: p.accent || theme.primary, theme });
-  drawMessage(ctx, W, theme, opts, 1020);
+  drawMessage(ctx, W, theme, opts, 1060); // 较原 1020 下移 40px，与雷达底部轴标签留出呼吸空间
+}
+
+// drawTypeWatermark 类型代号水印：大号极淡的类型代号作背景标识，不同类型呈现不同标识（DISC 单字母 / MBTI 四字母 / 大五主导维度字母）
+function drawTypeWatermark(ctx, p, theme, W) {
+  const code = p.typeCode || '';
+  if (!code) return;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = p.accent || theme.primary;
+  ctx.globalAlpha = 0.08;
+  const size = code.length <= 1 ? 400 : code.length <= 2 ? 300 : 180; // 单字母放大、多字母按宽度递减
+  ctx.font = `bold ${size}px "PingFang SC","Microsoft YaHei",serif`;
+  ctx.fillText(code, W / 2, 710);
+  ctx.restore();
 }
 
 // drawPersonalityRadar canvas 雷达：4 环网格 + 轴线 + 数据多边形 + 顶点圆点 + 轴标签（名称+百分比）
