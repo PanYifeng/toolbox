@@ -71,12 +71,55 @@ export default {
     { a: { zh: '桌面井井有条', en: 'My desk is tidy' }, b: { zh: '桌面杂乱随性', en: 'My desk is happily messy' }, dim: 'JP' },
     { a: { zh: '我把任务拆成排期步骤', en: 'I break tasks into scheduled steps' }, b: { zh: '我凭兴致推进', en: 'I move by inspiration' }, dim: 'JP' },
   ],
+  // facets: 每维度 3 个子面（各 5 题，按 questions 数组绝对索引分组）；sub = 该面 a 票数占比
+  facets: {
+    EI: [
+      { name: { zh: '社交活跃', en: 'Sociability' }, aPole: { zh: '爱社交、广接触', en: 'Sociable, broad contact' }, bPole: { zh: '少社交、重独处', en: 'Low social, solitude-prone' }, items: [0, 2, 5, 8, 10] },
+      { name: { zh: '外显表达', en: 'Expressiveness' }, aPole: { zh: '话多、爱表达', en: 'Talkative, expressive' }, bPole: { zh: '内敛、少言', en: 'Reserved, quiet' }, items: [1, 6, 11, 12, 14] },
+      { name: { zh: '内外取向', en: 'Orientation' }, aPole: { zh: '外向主动', en: 'Outward, proactive' }, bPole: { zh: '内向审慎', en: 'Inward, observant' }, items: [3, 4, 7, 9, 13] },
+    ],
+    SN: [
+      { name: { zh: '细节事实', en: 'Detail & Fact' }, aPole: { zh: '重具体细节', en: 'Concrete detail' }, bPole: { zh: '重整体印象', en: 'Overall impression' }, items: [15, 19, 21, 27, 29] },
+      { name: { zh: '经验流程', en: 'Experience & Procedure' }, aPole: { zh: '循经验与流程', en: 'Proven routines' }, bPole: { zh: '爱新思路与尝试', en: 'Fresh approaches' }, items: [16, 17, 18, 20, 28] },
+      { name: { zh: '可能想象', en: 'Possibility & Imagination' }, aPole: { zh: '信实证与当下', en: 'Present, empirical' }, bPole: { zh: '信预感与未来', en: 'Future, intuitive' }, items: [22, 23, 24, 25, 26] },
+    ],
+    TF: [
+      { name: { zh: '公正规则', en: 'Fairness & Rules' }, aPole: { zh: '重公正与统一标准', en: 'Fair, uniform standard' }, bPole: { zh: '重和谐与因人而异', en: 'Harmony, per person' }, items: [30, 31, 37, 40, 44] },
+      { name: { zh: '真相直率', en: 'Truth & Directness' }, aPole: { zh: '直言、追真相', en: 'Blunt, truth-seeking' }, bPole: { zh: '委婉、护感受', en: 'Tactful, feeling-aware' }, items: [32, 35, 39, 41, 42] },
+      { name: { zh: '任务能力', en: 'Task & Competence' }, aPole: { zh: '任务与逻辑优先', en: 'Task and logic first' }, bPole: { zh: '关系与感受优先', en: 'Relationship and feeling first' }, items: [33, 34, 36, 38, 43] },
+    ],
+    JP: [
+      { name: { zh: '计划条理', en: 'Planning & Order' }, aPole: { zh: '列计划、有条理', en: 'Plans, orderly' }, bPole: { zh: '随性、留弹性', en: 'Spontaneous, flexible' }, items: [45, 48, 50, 54, 58] },
+      { name: { zh: '提前收尾', en: 'Punctuality & Ahead' }, aPole: { zh: '提前完成、守时', en: 'Early, punctual' }, bPole: { zh: '临期冲刺、踩点', en: 'Last-minute, on the dot' }, items: [46, 51, 53, 55, 57] },
+      { name: { zh: '确定闭合', en: 'Closure & Certainty' }, aPole: { zh: '要结论与确定', en: 'Wants closure' }, bPole: { zh: '享受开放与模糊', en: 'Enjoys openness' }, items: [47, 49, 52, 56, 59] },
+    ],
+  },
   // 维度极标签（用于结果展示）
   dims: {
-    EI: { first: 'E', second: 'I', name: { zh: '外向 / 内向', en: 'Extraversion / Introversion' } },
-    SN: { first: 'S', second: 'N', name: { zh: '实感 / 直觉', en: 'Sensing / Intuition' } },
-    TF: { first: 'T', second: 'F', name: { zh: '思考 / 情感', en: 'Thinking / Feeling' } },
-    JP: { first: 'J', second: 'P', name: { zh: '判断 / 感知', en: 'Judging / Perceiving' } },
+    EI: {
+      first: 'E', second: 'I', name: { zh: '外向 / 内向', en: 'Extraversion / Introversion' },
+      relationship: { zh: '外向者让关系热烈、节奏快，但可能盖过内向伴侣的表达；内向者带来深度，但需被主动邀请。', en: 'Extraverts warm relationships quickly but may talk over an introverted partner; introverts bring depth but need to be invited in.' },
+      stress: { zh: '外向者压力下找人倾诉、易冲动决策；内向者压力下退回独处复盘、易内耗。', en: 'Under stress extraverts seek others and may decide impulsively; introverts withdraw to process alone and may overthink.' },
+      growth: { zh: '外向者练习独处复盘；内向者刻意安排高质量社交。', en: 'Extraverts—practice solo reflection; introverts—intentionally schedule high-quality social time.' },
+    },
+    SN: {
+      first: 'S', second: 'N', name: { zh: '实感 / 直觉', en: 'Sensing / Intuition' },
+      relationship: { zh: '实感型带来踏实与细节，但可能让直觉型觉得被框住；直觉型带来想象与远景，但可能让实感型觉得不落地。', en: 'Sensing types bring grounding and detail but may box in intuitive partners; intuitive types bring vision but can seem ungrounded to sensors.' },
+      stress: { zh: '实感者压力下执着细节与既有经验；直觉者压力下放大可能、易忽略当下事实。', en: 'Under stress sensors cling to detail and past routines; intuitives spin out possibilities and miss present facts.' },
+      growth: { zh: '实感者偶尔为远景留白；直觉者把想象落地为下一步具体动作。', en: 'Sensors—sometimes leave room for the big picture; intuitives—ground vision in a next concrete step.' },
+    },
+    TF: {
+      first: 'T', second: 'F', name: { zh: '思考 / 情感', en: 'Thinking / Feeling' },
+      relationship: { zh: '思考型直率求真，可能让情感型觉得冷；情感型体贴和谐，可能让思考型觉得不够直接。', en: 'Thinking types are blunt and truth-seeking, which can feel cold; feeling types are considerate, which can feel indirect to thinkers.' },
+      stress: { zh: '思考者压力下据理力争、就事论事；情感者压力下回避冲突、积压情绪。', en: 'Under stress thinkers argue the case head-on; feelers avoid conflict and stockpile emotion.' },
+      growth: { zh: '思考者在亲密关系里多一份柔软；情感者练习温和而坚定地直说需求。', en: 'Thinkers—bring more softness to close ties; feelers—practice gentle, firm honesty about needs.' },
+    },
+    JP: {
+      first: 'J', second: 'P', name: { zh: '判断 / 感知', en: 'Judging / Perceiving' },
+      relationship: { zh: '判断型要确定与计划，可能让感知型觉得被束缚；感知型保留弹性，可能让判断型觉得不可靠。', en: 'Judging types want closure and plans, which can confine perceivers; perceiving types keep options open, which can seem unreliable to judgers.' },
+      stress: { zh: '判断者压力下排满计划、被失控逼疯；感知者压力下随性应变、易临期失序。', en: 'Under stress judgers over-schedule and unravel at loss of control; perceivers improvise and risk last-minute disorder.' },
+      growth: { zh: '判断者给计划留缓冲与弹性；感知者用最小结构托底（如一个截止）。', en: 'Judgers—build buffers and flexibility into plans; perceivers—use minimal structure (one deadline) as a floor.' },
+    },
   },
   types: {
     INTJ: { nick: { zh: '建筑师', en: 'Architect' }, brief: { zh: '独立理性的战略思考者，长于远见与系统构建。', en: 'Independent, rational strategic thinker with long-range vision.' }, full: { zh: '你是 INTJ 建筑师：擅长把抽象远景拆解为可执行系统，对自己要求高，独立而专注。优势是战略眼光与深度分析；盲点是易低估情感与人际微妙，显得冷漠。职场建议选择能长期钻研的复杂领域；关系里多表达肯定，让对方感到被看见。', en: 'You are an INTJ Architect: you break abstract visions into executable systems, hold yourself to high standards, and work independently and with focus. Strengths: strategic sight and deep analysis. Blind spots: underweighting emotions and nuance, seeming cold. Career: pick a complex domain for long-term mastery. In relationships, voice appreciation so others feel seen.' } },

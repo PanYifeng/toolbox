@@ -6,12 +6,16 @@
 import { t, getLang } from '/core/i18n.js';
 import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-report.js';
 import { renderChoice, subsetPerDim } from '/core/personality.js';
+import { radarSVG, barHTML } from '/core/radar.js';
+import { renderMemorialCard, downloadPng } from '/core/cert.js';
 import data from './data.js';
 
 const FULL = Object.entries(data).filter(([k]) => /^[OCENA]\d{1,2}$/.test(k)).map(([k, v]) => ({ k, ...v })); // 完整版（全部 60 题，每维度 12 题）
 const FREE_PER_DIM = 4; // 免费版每维度取 4 题（共 20）
 const AMOUNT = 5;
 const DIMS = ['O', 'C', 'E', 'A', 'N'];
+const ACCENT = '#0E7C86'; // 大五主题强调色（靑绿），用于条/雷达/分享卡
+const KEY2IDX = Object.fromEntries(FULL.map((it, i) => [it.k, i])); // item 键 → FULL 索引，供子维度按面取分
 
 // snapshot { version:'free'|'full', ratings:number[], pcts:object, fullStage, claimId?, email? }
 let snapshot = null;
@@ -100,27 +104,47 @@ function level(pct) {
   return pct >= 66 ? 'high' : pct <= 33 ? 'low' : 'mid';
 }
 
-// renderResult 免费画像 +（完整版）付费入口/已提交态 或（免费版）升级入口 + 重新测试
+// renderResult 雷达 + 主维条+band +（完整版）子维条 + 分享卡按钮 + 付费/升级入口 + 重新测试
 function renderResult(el, snap, lang) {
   const L = (o) => o[lang] || o.zh;
+  const $radar = document.createElement('div');
+  radarSVG($radar, { axes: DIMS.map((d) => ({ label: L(data.dims[d].name), pct: snap.pcts[d] })), accent: ACCENT, size: 280 });
+  const dimsHTML = DIMS.map((d) => {
+    const dm = data.dims[d];
+    const pct = snap.pcts[d];
+    let row = `<div class="ps-bar"><span class="ps-bar-label">${esc(L(dm.name))} <span class="ps-band">${t('ps.band' + bandKey(pct))}</span><b>${pct}%</b></span><span class="ps-bar-track"><span class="ps-bar-fill" style="width:${pct}%;background:${ACCENT}"></span></span></div>`;
+    if (snap.version === 'full' && data.facets) {
+      row += computeSubPcts(data.facets[d], snap.ratings).map((sf, i) => barHTML(sf.pct, '· ' + L(data.facets[d][i].name), ACCENT)).join('');
+    }
+    return `<div class="ps-dim">${row}</div>`;
+  }).join('');
   el.innerHTML = `
     <div class="quiz-result ok">
       <p class="muted">${snap.version === 'full' ? t('bf.yourProfile') : t('bf.yourProfileFree')}</p>
-      ${DIMS.map((d) => {
-        const dm = data.dims[d];
-        const pct = snap.pcts[d];
-        return `<p class="bf-row"><b>${esc(L(dm.name))}</b> <span class="bf-pct">${pct}%</span> <span class="muted">${esc(L(dm[level(pct)]))}</span></p>`;
-      }).join('')}
+      <div id="bf-radar"></div>
+      ${dimsHTML}
+      <p class="ps-band-note">${t('ps.bandNote')}</p>
     </div>`;
+  el.querySelector('#bf-radar').appendChild($radar);
+  renderActions(el, snap, lang);
+}
+
+// renderActions 分享卡按钮 +（完整版）付费入口/已提交 或（免费版）升级 + 重新测试
+function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
   $actions.className = 'kq-actions';
+  const share = document.createElement('button');
+  share.className = 'btn-soft';
+  share.textContent = t('ps.downloadCard');
+  share.onclick = () => downloadShareCard(snap, lang);
+  $actions.appendChild(share);
   if (snap.version === 'full') {
     if (snap.fullStage === 'submitted') {
       renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
     } else {
       renderPaidReportEntry($actions, {
         feature: t('bf.fullFeature'), title: t('bf.fullTitle'), amount: AMOUNT,
-        report: buildFullReport(snap.pcts, lang),
+        report: buildFullReport(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
     }
@@ -139,17 +163,77 @@ function renderResult(el, snap, lang) {
   el.appendChild($actions);
 }
 
-// buildFullReport 客户端按当前语言生成完整版报告文本（随申请落盘，确认后原样邮件送达）
-function buildFullReport(pcts, lang) {
+// buildFullReport 客户端按当前语言生成完整版报告文本（分段：画像/维度详解/子维度/人际/压力/成长）
+function buildFullReport(snap, lang) {
   const L = (o) => o[lang] || o.zh;
-  let s = `${t('bf.yourProfile')}\n\n`;
+  const pcts = snap.pcts;
+  const top = [...DIMS].sort((a, b) => pcts[b] - pcts[a])[0];
+  let s = `== ${t('ps.secProfile')} ==\n`;
+  s += `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(pcts[top]))}\n${L(data.dims[top][level(pcts[top])])}\n\n`;
+  s += `== ${t('ps.secDim')} ==\n`;
   DIMS.forEach((d) => {
     const dm = data.dims[d];
-    const pct = pcts[d];
-    const lv = level(pct);
-    s += `${L(dm.name)}: ${pct}%（${lv}）\n${L(dm.full)}\n\n`;
+    s += `${L(dm.name)} ${pcts[d]}% [${t('ps.band' + bandKey(pcts[d]))}]\n${L(dm.full)}\n\n`;
   });
+  s += `== ${t('ps.secSub')} ==\n`;
+  DIMS.forEach((d) => {
+    const subs = computeSubPcts(data.facets[d], snap.ratings);
+    s += `${L(data.dims[d].name)}: ${subs.map((sf, i) => `${L(data.facets[d][i].name)} ${sf.pct}%`).join(' / ')}\n`;
+  });
+  s += `\n== ${t('ps.secRelation')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].relationship)}\n`; });
+  s += `\n== ${t('ps.secStress')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
+  s += `\n== ${t('ps.secGrowth')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
   return s.trim();
+}
+
+// bandKey 大五量表带位：≥75 很高 / 55-74 偏高 / 45-54 中等 / 26-44 偏低 / ≤25 很低
+function bandKey(pct) {
+  if (pct >= 75) return 'VeryHigh';
+  if (pct >= 55) return 'High';
+  if (pct >= 45) return 'Mid';
+  if (pct >= 26) return 'Low';
+  return 'VeryLow';
+}
+
+// computeSubPcts 某维度各子面百分比（按 facet.items 键取分，复用 (sum-min)/(4n) 反向计分）
+function computeSubPcts(facets, ratings) {
+  return facets.map((f) => {
+    let sum = 0, n = 0;
+    f.items.forEach((k) => {
+      const idx = KEY2IDX[k];
+      if (idx == null) return;
+      const raw = ratings[idx];
+      if (raw <= 0) return;
+      sum += data[k].reverse ? 6 - raw : raw;
+      n++;
+    });
+    return { pct: n === 0 ? 0 : Math.round(((sum - n) / (n * 4)) * 100) };
+  });
+}
+
+// buildShareOpts 构造大五分享卡渲染参数（主导维度+band 为类型标签，五维雷达）
+function buildShareOpts(snap, lang) {
+  const L = (o) => o[lang] || o.zh;
+  const top = [...DIMS].sort((a, b) => snap.pcts[b] - snap.pcts[a])[0];
+  return {
+    themeKey: 'personality-bigfive',
+    name: 'Big Five',
+    personality: {
+      typeLabel: `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(snap.pcts[top]))}`,
+      dims: DIMS.map((d) => ({ name: L(data.dims[d].name), pct: snap.pcts[d] })),
+      accent: ACCENT,
+    },
+    showDonate: false,
+  };
+}
+
+// downloadShareCard 生成并下载 PNG 分享卡
+async function downloadShareCard(snap, lang) {
+  const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
+  downloadPng(dataUrl, `bigfive-${Date.now()}.png`);
 }
 
 export default (el) => render(el);

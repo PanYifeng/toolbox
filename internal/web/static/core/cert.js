@@ -3,6 +3,9 @@
 // 卡面文字中英双语；寄语依主题而定，契合各宗教 / 游戏风格。
 // 二维码图片同源加载，不会污染 canvas；吉祥符号作为独立徽章绘制在二维码旁边，绝不覆盖码图。
 
+// radarPoints 雷达顶点数学（SVG 与 canvas 共享），人格分享卡复用以绘制雷达多边形
+import { radarPoints } from '/core/radar.js';
+
 // THEMES 各宗教 + 各游戏独立主题：主色 / 辅色 / 底色 / 主符号 / 吉祥符号 / 标题 / 寄语 / 纹样类型
 export const THEMES = {
   buddhism: {
@@ -108,6 +111,28 @@ export const THEMES = {
     title: { zh: '通关纪念卡', en: 'Clear Stage Memorial Card' },
     message: { zh: '玩得开心，愿你常保欢喜之心。', en: 'Well played — may you keep a joyful heart.' },
     sampleDate: '2025-01-01',
+  },
+  // 人格测试分享卡（非纪念卡：无分数/无二维码，大类型标签 + 雷达图 + 寄语）
+  'personality-mbti': {
+    primary: '#5B4B9A', secondary: '#3D2E6B', bg: '#F4F1FB', symbol: '🧠', auspicious: '★', pattern: 'dots',
+    title: { zh: 'MBTI 人格分享卡', en: 'MBTI Personality Card' },
+    message: { zh: '类型不是标签，而是认识自己的入口；愿你拥抱自身的丰富。', en: 'A type is not a label but a doorway to knowing yourself; may you embrace your own fullness.' },
+    // 样例完成时间：Briggs 与 Myers 首次发表 MBTI 问卷（1944 年）
+    sampleDate: '1944-01-01',
+  },
+  'personality-bigfive': {
+    primary: '#0E7C86', secondary: '#095560', bg: '#EAF6F6', symbol: '⬟', auspicious: '★', pattern: 'dots',
+    title: { zh: '大五人格分享卡', en: 'Big Five Personality Card' },
+    message: { zh: '五维勾勒性情，分数高低皆是独特；愿你以自识走向自在。', en: 'Five facets sketch your temperament; high or low, each is your own; may self-knowledge lead to ease.' },
+    // 样例完成时间：Costa 与 McCrae 发布 NEO-PI（1985 年，大五人格量表代表）
+    sampleDate: '1985-01-01',
+  },
+  'personality-disc': {
+    primary: '#D9762A', secondary: '#A05618', bg: '#FDF4EC', symbol: '◆', auspicious: '★', pattern: 'dots',
+    title: { zh: 'DISC 行为风格分享卡', en: 'DISC Style Card' },
+    message: { zh: '风格无高下，皆是你的行事节奏；愿你知长补短，与人相得。', en: 'No style ranks above another; each is your own rhythm; may you know your strengths and harmonize with others.' },
+    // 样例完成时间：Marston《正常人的情绪》出版（1928 年，DISC 理论源头）
+    sampleDate: '1928-01-01',
   },
 };
 
@@ -256,7 +281,8 @@ export async function renderMemorialCard(opts) {
   if (opts.recordCode || opts.recordPending) drawRecordBanner(ctx, W, H, theme);
   else if (opts.perfect) drawPerfectBanner(ctx, W, H, theme);
   drawHeader(ctx, W, theme);
-  drawBody(ctx, W, opts, theme, displayTime);
+  if (opts.personality) drawPersonalityBody(ctx, opts, theme, displayTime);
+  else drawBody(ctx, W, opts, theme, displayTime);
   await drawFooter(ctx, W, H, theme, opts.showDonate);
   drawAntiFake(ctx, W, H, code, gold);
   if (opts.preview) drawPreviewWatermark(ctx, W, H);
@@ -439,6 +465,80 @@ function drawBody(ctx, W, opts, theme, displayTime) {
   });
   ctx.textBaseline = 'alphabetic';
   drawMessage(ctx, W, theme, opts, y + 18);
+}
+
+// drawPersonalityBody 人格分享卡中部：大类型标签 + 完成时间 + canvas 雷达图 + 寄语（无姓名/分数行）
+function drawPersonalityBody(ctx, opts, theme, displayTime) {
+  const W = 1000; // 卡面固定宽度（纪念卡画布恒为 1000×1414）
+  const p = opts.personality || {};
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = theme.secondary;
+  ctx.font = 'bold 54px "PingFang SC","Microsoft YaHei",serif';
+  ctx.fillText(p.typeLabel || '', W / 2, 360);
+  ctx.fillStyle = theme.primary;
+  ctx.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, 410);
+  drawPersonalityRadar(ctx, { cx: W / 2, cy: 720, radius: 230, dims: p.dims || [], accent: p.accent || theme.primary, theme });
+  drawMessage(ctx, W, theme, opts, 1020);
+}
+
+// drawPersonalityRadar canvas 雷达：4 环网格 + 轴线 + 数据多边形 + 顶点圆点 + 轴标签（名称+百分比）
+function drawPersonalityRadar(ctx, cfg) {
+  const { cx, cy, radius, dims, accent, theme } = cfg;
+  const n = dims.length;
+  if (n < 3) return;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeStyle = theme.primary;
+  ctx.globalAlpha = 0.35;
+  ctx.lineWidth = 1.5;
+  for (let ring = 1; ring <= 4; ring++) {
+    const r = (radius * ring) / 4;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const a = (Math.PI * 2 * i) / n - Math.PI / 2;
+      const px = cx + r * Math.cos(a), py = cy + r * Math.sin(a);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.stroke();
+  }
+  for (let i = 0; i < n; i++) {
+    const a = (Math.PI * 2 * i) / n - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const pts = radarPoints(dims.map((d) => d.pct), radius, cx, cy);
+  ctx.beginPath();
+  pts.forEach((pt, i) => { if (i === 0) ctx.moveTo(pt[0], pt[1]); else ctx.lineTo(pt[0], pt[1]); });
+  ctx.closePath();
+  ctx.fillStyle = accent;
+  ctx.globalAlpha = 0.28;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  pts.forEach((pt) => {
+    ctx.beginPath(); ctx.arc(pt[0], pt[1], 5, 0, Math.PI * 2);
+    ctx.fillStyle = accent; ctx.fill();
+  });
+  dims.forEach((d, i) => {
+    const a = (Math.PI * 2 * i) / n - Math.PI / 2;
+    const lr = radius + 36;
+    const lx = cx + lr * Math.cos(a), ly = cy + lr * Math.sin(a);
+    ctx.fillStyle = theme.secondary;
+    ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(d.name, lx, ly - 12);
+    ctx.fillStyle = accent;
+    ctx.font = 'bold 20px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(`${d.pct}%`, lx, ly + 14);
+  });
+  ctx.restore();
 }
 
 // drawMessage 寄语区：中英双语，依主题而定

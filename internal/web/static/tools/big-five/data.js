@@ -75,9 +75,40 @@ export default {
     zh: ['很不符合', '不太符合', '一般', '比较符合', '很符合'],
     en: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
   },
+  // facets: 每维度 3 个子面（各 4 题，按 item 键分组）；sub-pct 复用 (sum-min)/(max-min) 按面算
+  facets: {
+    O: [
+      { name: { zh: '想象力', en: 'Imagination' }, low: { zh: '思路偏实，少做联想', en: 'Practical, seldom associative' }, high: { zh: '想象活跃，常联想新点子', en: 'Vivid imagination, connects ideas' }, items: ['O1', 'O3', 'O7', 'O11'] },
+      { name: { zh: '审美与求知', en: 'Aesthetics & Curiosity' }, low: { zh: '对艺术与新知兴趣不大', en: 'Little interest in art or new ideas' }, high: { zh: '热爱艺术美与新观念', en: 'Drawn to art, beauty, new ideas' }, items: ['O2', 'O5', 'O6', 'O9'] },
+      { name: { zh: '求新破例', en: 'Novelty & Open-mindedness' }, low: { zh: '守旧传统，偏好熟悉', en: 'Traditional, prefers the familiar' }, high: { zh: '愿尝新、不拘传统', en: 'Open to novelty, breaks routine' }, items: ['O4', 'O8', 'O10', 'O12'] },
+    ],
+    C: [
+      { name: { zh: '条理', en: 'Order' }, low: { zh: '随性不整', en: 'Casual, untidy' }, high: { zh: '条理清晰、整齐有序', en: 'Organized, tidy, orderly' }, items: ['C1', 'C3', 'C8', 'C9'] },
+      { name: { zh: '自律守诺', en: 'Discipline' }, low: { zh: '易拖易爽约', en: 'Prone to delay, breaks promises' }, high: { zh: '自律守时、说到做到', en: 'Self-disciplined, keeps promises' }, items: ['C2', 'C5', 'C6', 'C11'] },
+      { name: { zh: '坚持', en: 'Persistence' }, low: { zh: '易半途而废', en: 'Quits halfway easily' }, high: { zh: '遇阻坚持、有始有终', en: 'Persists through difficulty' }, items: ['C4', 'C7', 'C10', 'C12'] },
+    ],
+    E: [
+      { name: { zh: '社交活跃', en: 'Sociability' }, low: { zh: '少主动社交', en: 'Rarely initiates socializing' }, high: { zh: '爱社交、主动结交', en: 'Sociable, actively connects' }, items: ['E1', 'E4', 'E5', 'E6'] },
+      { name: { zh: '活力热情', en: 'Energy' }, low: { zh: '内敛低能量', en: 'Reserved, low energy' }, high: { zh: '充满活力与热情', en: 'Energetic, warm' }, items: ['E2', 'E7', 'E9', 'E11'] },
+      { name: { zh: '外向', en: 'Outgoing' }, low: { zh: '偏好独处安静', en: 'Prefers solitude, quiet' }, high: { zh: '外向活跃、爱聚会', en: 'Outgoing, enjoys gatherings' }, items: ['E3', 'E8', 'E10', 'E12'] },
+    ],
+    A: [
+      { name: { zh: '信任助人', en: 'Trust & Help' }, low: { zh: '少信人、不主动助人', en: 'Wary, seldom helps' }, high: { zh: '易信人、乐于助人合作', en: 'Trusting, eager to help' }, items: ['A2', 'A3', 'A5', 'A7'] },
+      { name: { zh: '体谅利他', en: 'Empathy & Altruism' }, low: { zh: '少替人着想', en: 'Seldom considers others' }, high: { zh: '体谅他人、愿为他人付出', en: 'Empathetic, sacrifices for others' }, items: ['A1', 'A6', 'A9', 'A11'] },
+      { name: { zh: '顺从让步', en: 'Compliance' }, low: { zh: '多疑、直率、据理力争', en: 'Suspicious, blunt, argumentative' }, high: { zh: '信人、圆融、愿让步少争执', en: 'Trusting, tactful, compromising' }, items: ['A4', 'A8', 'A10', 'A12'] },
+    ],
+    N: [
+      { name: { zh: '焦虑担忧', en: 'Anxiety' }, low: { zh: '少焦虑担忧', en: 'Seldom anxious' }, high: { zh: '易焦虑、常担忧', en: 'Easily anxious, often worries' }, items: ['N1', 'N3', 'N6', 'N7'] },
+      { name: { zh: '情绪波动', en: 'Mood Volatility' }, low: { zh: '情绪平稳', en: 'Even-tempered' }, high: { zh: '情绪起伏明显', en: 'Notable mood swings' }, items: ['N2', 'N5', 'N9', 'N11'] },
+      { name: { zh: '稳定', en: 'Stability' }, low: { zh: '易被压力扰动', en: 'Easily rattled by stress' }, high: { zh: '压力下泰然自若', en: 'Calm and steady under stress' }, items: ['N4', 'N8', 'N10', 'N12'] },
+    ],
+  },
   dims: {
     O: {
       name: { zh: '开放性', en: 'Openness' },
+      relationship: { zh: '你对伴侣的好奇与开放让关系充满新意，但可能给求稳的对方不确定感。', en: 'Your curiosity and openness keep relationships fresh, but may unsettle a partner who craves stability.' },
+      stress: { zh: '压力下你倾向用新点子或沉浸艺术来自我纾解。', en: 'Under stress you self-soothe through new ideas or art.' },
+      growth: { zh: '把天马行空的灵感落地为一两个具体行动，避免停在想象。', en: 'Ground flights of fancy in concrete action; avoid stopping at imagination.' },
       low: { zh: '你务实、传统，偏好熟悉与既有方式。', en: 'You are practical and traditional, favoring the familiar.' },
       mid: { zh: '你在务实与好奇之间平衡，既守成也愿尝新。', en: 'You balance pragmatism with curiosity, steady yet open to new.' },
       high: { zh: '你富于想象、好奇、爱探索新想法与艺术。', en: 'You are imaginative, curious, drawn to new ideas and art.' },
@@ -85,6 +116,9 @@ export default {
     },
     C: {
       name: { zh: '尽责性', en: 'Conscientiousness' },
+      relationship: { zh: '你的可靠守诺是关系的稳定锚，但高标准也可能让对方有压力。', en: 'Your reliability anchors relationships, but high standards can pressure partners.' },
+      stress: { zh: '压力下你靠列清单、推进任务稳住自己，但易过度追求完美而内耗。', en: 'Under stress you steady yourself with lists and progress, but may burn out chasing perfection.' },
+      growth: { zh: '允许"够好即可"，把精力留给真正重要的少数事。', en: 'Allow "good enough"; save energy for the few things that truly matter.' },
       low: { zh: '你随性灵活，偏好即兴与弹性。', en: 'You are easygoing and flexible, preferring spontaneity.' },
       mid: { zh: '你在自律与弹性间平衡，能按需调整。', en: 'You balance discipline and flexibility, adapting as needed.' },
       high: { zh: '你自律、有条理、注重细节与目标。', en: 'You are self-disciplined, organized, detail- and goal-oriented.' },
@@ -92,6 +126,9 @@ export default {
     },
     E: {
       name: { zh: '外向性', en: 'Extraversion' },
+      relationship: { zh: '你热情主动，能迅速拉近距离，但可能忽略对方需要的安静空间。', en: 'Your warmth builds closeness fast, but you may overlook a partner needing quiet space.' },
+      stress: { zh: '压力下你倾向找人倾诉、用社交充电，也易冲动决策。', en: 'Under stress you seek people to talk it out and recharge, and may decide impulsively.' },
+      growth: { zh: '给自己留独处复盘时间，深度对话比广泛社交更滋养。', en: 'Schedule solo reflection; deep talks nourish more than wide socializing.' },
       low: { zh: '你内向安静，从独处中获取能量。', en: 'You are introverted and quiet, recharging in solitude.' },
       mid: { zh: '你在独处与社交间灵活切换。', en: 'You move flexibly between solitude and socializing.' },
       high: { zh: '你外向活跃，从社交中获取能量。', en: 'You are outgoing and active, energized by socializing.' },
@@ -99,6 +136,9 @@ export default {
     },
     A: {
       name: { zh: '宜人性', en: 'Agreeableness' },
+      relationship: { zh: '你体谅合作，关系和谐，但易忽视自身边界、难说不。', en: 'You are considerate and cooperative, but may neglect your own boundaries and struggle to say no.' },
+      stress: { zh: '压力下你倾向照顾他人情绪、回避冲突，但易积攒委屈。', en: 'Under stress you tend to the feelings of others and avoid conflict, but may bottle up grievances.' },
+      growth: { zh: '练习温和而坚定地拒绝，关系对等比一味迁就更长久。', en: 'Practice gentle, firm refusal; mutual footing outlasts constant accommodation.' },
       low: { zh: '你直言直行，倾向竞争与质疑。', en: 'You are blunt and competitive, prone to question.' },
       mid: { zh: '你在合作与坚持间寻求平衡。', en: 'You balance cooperation with firmness.' },
       high: { zh: '你温和体谅，倾向合作与信任。', en: 'You are warm and empathetic, inclined to cooperate and trust.' },
@@ -106,6 +146,9 @@ export default {
     },
     N: {
       name: { zh: '神经质', en: 'Neuroticism' },
+      relationship: { zh: '你的敏感让你共情强，但情绪起伏易让对方如履薄冰。', en: 'Your sensitivity makes you empathetic, but mood swings can make partners tread carefully.' },
+      stress: { zh: '压力下你敏感内耗，易反复思虑；建立稳定作息与求助渠道很重要。', en: 'Under stress you ruminate and internalize; stable routines and a support network matter.' },
+      growth: { zh: '用正念与规律作息管理情绪起伏，把预警敏感转化为提前准备。', en: 'Manage mood swings with mindfulness and routine; turn your early-warning sensitivity into preparation.' },
       low: { zh: '你情绪稳定，从容面对压力。', en: 'You are emotionally stable, calm under stress.' },
       mid: { zh: '你情绪有起伏但总体可控。', en: 'Your moods fluctuate but stay mostly manageable.' },
       high: { zh: '你对压力敏感，情绪起伏明显。', en: 'You are stress-sensitive with notable mood swings.' },

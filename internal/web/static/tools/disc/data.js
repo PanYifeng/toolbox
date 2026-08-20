@@ -38,6 +38,9 @@ export default {
   dims: {
     D: {
       name: { zh: '支配型 D', en: 'Dominance (D)' },
+      relationship: { zh: '你直率果决、目标导向，关系中爱主导，但可能让对方觉得被压、缺温情。', en: 'Direct and decisive, you like to lead in relationships, but may press your partner and lack warmth.' },
+      stress: { zh: '压力下你加速推进、独自扛事，易急躁、对慢节奏零容忍。', en: 'Under stress you accelerate and shoulder things alone, easily irritable, with zero patience for a slow pace.' },
+      growth: { zh: '在亲密关系里放慢半拍、多问对方感受，让强势与温度并存。', en: 'In close ties, slow down half a beat and ask how the other feels—let drive and warmth coexist.' },
       low: { zh: '你倾向协作与共识，少主动掌控。', en: 'You prefer consensus and collaboration, rarely taking charge.' },
       mid: { zh: '你在掌控与协作间视情境切换。', en: 'You switch between leading and collaborating by context.' },
       high: { zh: '你果断直接、目标导向、爱掌控。', en: 'You are decisive, direct, goal-driven, take charge.' },
@@ -45,6 +48,9 @@ export default {
     },
     I: {
       name: { zh: '影响型 I', en: 'Influence (I)' },
+      relationship: { zh: '你热情善交际，让关系轻松有活力，但可能回避深度与冲突、被情绪牵着走。', en: 'Warm and sociable, you keep relationships light and lively, but may avoid depth and conflict, led by mood.' },
+      stress: { zh: '压力下你靠社交充电、用乐观盖过问题，也易分心失约。', en: 'Under stress you recharge through people and paper over problems with optimism, easily distracted or breaking plans.' },
+      growth: { zh: '给关系留深度对话，把热情落到稳定的承诺上。', en: 'Make room for deep talk; turn warmth into steady commitment.' },
       low: { zh: '你偏沉稳内敛，少主动表达。', en: 'You are reserved, less prone to self-expression.' },
       mid: { zh: '你在表达与倾听间平衡。', en: 'You balance expression with listening.' },
       high: { zh: '你热情善交际，富感染力与说服力。', en: 'You are warm and sociable, infectious and persuasive.' },
@@ -52,6 +58,9 @@ export default {
     },
     S: {
       name: { zh: '稳健型 S', en: 'Steadiness (S)' },
+      relationship: { zh: '你温和忠诚、善协作，是可靠伴侣，但易过度迁就、不善表达自身需要。', en: 'Gentle, loyal, cooperative—a reliable partner, but you over-accommodate and struggle to voice your own needs.' },
+      stress: { zh: '压力下你默默承受、抗拒突变，积压情绪到极限才爆发。', en: 'Under stress you absorb quietly, resist sudden change, and stockpile emotion until a breaking point.' },
+      growth: { zh: '练习温和而坚定地表达底线与需要，别把牺牲当默认。', en: 'Practice gentle, firm expression of your limits and needs; do not default to sacrifice.' },
       low: { zh: '你爱变化与快节奏，少求稳。', en: 'You enjoy change and pace, less stability-seeking.' },
       mid: { zh: '你在稳定与变化间灵活调适。', en: 'You flex between stability and change.' },
       high: { zh: '你稳定耐心、协作忠诚、可靠支持。', en: 'You are steady, patient, cooperative, a reliable supporter.' },
@@ -59,10 +68,28 @@ export default {
     },
     C: {
       name: { zh: '严谨型 C', en: 'Conscientiousness (C)' },
+      relationship: { zh: '你严谨可靠、重承诺，但高标准与挑细节可能让对方觉得被审视、有距离感。', en: 'Rigorous and reliable, you honor commitments, but high standards and nitpicking can make partners feel judged and distant.' },
+      stress: { zh: '压力下你钻细节、反复检查、难放权，易陷入完美主义内耗。', en: 'Under stress you fixate on detail, recheck endlessly, struggle to delegate, and burn out on perfectionism.' },
+      growth: { zh: '允许"够好"先行、细节后修，把标准用在关键处而非处处。', en: 'Let "good enough" go first and refine later; apply standards where it matters, not everywhere.' },
       low: { zh: '你凭直觉、不拘小节。', en: 'You act on intuition, casual about detail.' },
       mid: { zh: '你在严谨与灵活间平衡。', en: 'You balance rigor with flexibility.' },
       high: { zh: '你精确分析、遵循规则、注重质量。', en: 'You are precise, analytical, rule-following, quality-focused.' },
       full: { zh: '严谨型（C）精确分析、遵循规则、注重质量与逻辑。优势是准确与严谨；盲点是过度完美、纠结细节、犹豫。沟通：给数据与依据、少情绪；管理：明确标准、容许思考时间；适合研发、财务、质控、合规。', en: 'Conscientiousness (C) is precise and analytical, rule-following, valuing quality and logic. Strengths: accuracy and rigor. Blind spots: perfectionism, fixating on detail, hesitation. Communication: give data and rationale, less emotion. Management: set clear standards, allow thinking time. Suited to R&D, finance, quality, compliance.' },
     },
+  },
+  // blends: 主导 + 次导风格的组合解读（primary=most 最高，secondary=次高）
+  blends: {
+    DI: { name: { zh: '开拓者', en: 'Trailblazer' }, desc: { zh: '目标驱动又善社交，既冲结果又能带动人，适合开疆拓土。', en: 'Goal-driven yet sociable, you push results and rally people—suited to opening new ground.' } },
+    DS: { name: { zh: '护航者', en: 'Guardian' }, desc: { zh: '强势但有耐心，护团队底线又能稳住局面。', en: 'Assertive yet patient, you guard the team baseline and steady the situation.' } },
+    DC: { name: { zh: '督办者', en: 'Enforcer' }, desc: { zh: '既追结果又抓标准，决断且严谨，是效率与质量的把关人。', en: 'Driving results and standards, decisive and rigorous—a gatekeeper of efficiency and quality.' } },
+    ID: { name: { zh: '鼓动者', en: 'Motivator' }, desc: { zh: '热情外放又目标明确，善感染并推进，是团队的发动机。', en: 'Warm and outward yet goal-clear, you inspire and drive—an engine for the team.' } },
+    IS: { name: { zh: '凝聚者', en: 'Harmonizer' }, desc: { zh: '温暖又耐心，善把人拢到一起，营造和谐氛围。', en: 'Warm and patient, you draw people together and build harmony.' } },
+    IC: { name: { zh: '演说家', en: 'Presenter' }, desc: { zh: '表达力强又重细节，能把复杂讲清楚、做扎实。', en: 'Expressive yet detail-minded, you explain the complex clearly and execute solidly.' } },
+    SD: { name: { zh: '实干家', en: 'Achiever' }, desc: { zh: '稳健又有冲劲，可靠地推进目标，少话多干。', en: 'Steady yet driven, you advance goals reliably—less talk, more doing.' } },
+    SI: { name: { zh: '守护者', en: 'Supporter' }, desc: { zh: '温和忠诚善协作，是团队不可或缺的粘合剂。', en: 'Gentle, loyal, collaborative—an indispensable glue for the team.' } },
+    SC: { name: { zh: '参谋者', en: 'Specialist' }, desc: { zh: '稳重又严谨，可靠地把事做对，是可靠的执行大脑。', en: 'Steady and rigorous, you get things right—a reliable execution mind.' } },
+    CD: { name: { zh: '修正者', en: 'Corrector' }, desc: { zh: '严谨果断，把标准与效率兼顾，专治混乱与将就。', en: 'Rigorous and decisive, balancing standards with efficiency—curing chaos and cutting corners.' } },
+    CI: { name: { zh: '顾问者', en: 'Consultant' }, desc: { zh: '重数据又会沟通，分析加说服，能把理讲进人心里。', en: 'Data-minded yet communicative, you analyze and persuade, getting logic into hearts.' } },
+    CS: { name: { zh: '工匠', en: 'Craftsman' }, desc: { zh: '严谨又踏实，默默把活做精，是质量的守门人。', en: 'Rigorous and grounded, you quietly hone the work—a guardian of quality.' } },
   },
 };

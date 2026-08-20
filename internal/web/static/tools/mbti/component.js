@@ -7,12 +7,15 @@
 import { t, getLang } from '/core/i18n.js';
 import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-report.js';
 import { renderChoice, subsetPerDim } from '/core/personality.js';
+import { dichotomyHTML, barHTML } from '/core/radar.js';
+import { renderMemorialCard, downloadPng } from '/core/cert.js';
 import data from './data.js';
 
 const FULL = data.questions; // 完整版题集（全部，60 题，每维度 15 题）
 const FREE_PER_DIM = 5; // 免费版每维度取 5 题（共 20）
 const AMOUNT = 5; // 完整版详细解读定价 ¥5
 const DIMS = ['EI', 'SN', 'TF', 'JP'];
+const ACCENT = '#5B4B9A'; // MBTI 主题强调色（靛紫），用于滑块/分享卡
 
 // snapshot 交卷后快照：跨语言切换恢复结果与申请态；刷新清空
 // { version:'free'|'full', answers:number[], code:string, tally:object, fullStage:'pending'|'submitted', claimId?, email? }
@@ -101,35 +104,54 @@ function computeTally(items, answers) {
   return tally;
 }
 
-// renderResult 免费简版结果 + 维度倾向 +（完整版）付费入口/已提交态 或（免费版）升级入口 + 重新测试
+// renderResult 类型+昵称+简版 + 四 dichotomy 滑块+清晰度band +（完整版）子维条 + 分享卡 + 付费/升级
 function renderResult(el, snap, lang) {
   const tp = data.types[snap.code] || data.types.INTJ;
   const L = (o) => o[lang] || o.zh;
+  const dichosHTML = DIMS.map((d) => {
+    const dm = data.dims[d];
+    const [a, b] = snap.tally[d];
+    const total = a + b || 1;
+    const pctA = Math.round((a / total) * 100);
+    const winPct = Math.round((Math.max(a, b) / total) * 100);
+    let row = dichotomyHTML(pctA, dm.first, dm.second, ACCENT) + `<span class="ps-band">${t('ps.clar' + clarKey(winPct))}</span>`;
+    if (snap.version === 'full' && data.facets) {
+      row += computeSubPcts(data.facets[d], snap.answers).map((sf, i) => barHTML(sf.pct, '· ' + L(data.facets[d][i].name), ACCENT)).join('');
+    }
+    return `<div class="ps-dim">${row}</div>`;
+  }).join('');
   el.innerHTML = `
     <div class="quiz-result ok">
       <p class="muted">${snap.version === 'full' ? t('mbti.yourType') : t('mbti.yourTypeFree')}</p>
       <h3 class="mbti-type">${snap.code} · ${esc(L(tp.nick))}</h3>
       <p>${esc(L(tp.brief))}</p>
-      <p class="muted mbti-dim">${t('mbti.dimBreakdown')}</p>
-      ${dimRows(snap.tally, lang)}
+      <p class="muted">${t('ps.clarLabel')}</p>
+      ${dichosHTML}
+      <p class="ps-band-note">${t('ps.bandNote')}</p>
     </div>`;
+  renderActions(el, snap, lang);
+}
+
+// renderActions 分享卡按钮 +（完整版）付费入口/已提交 或（免费版）升级 + 重新测试
+function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
   $actions.className = 'kq-actions';
+  const share = document.createElement('button');
+  share.className = 'btn-soft';
+  share.textContent = t('ps.downloadCard');
+  share.onclick = () => downloadShareCard(snap, lang);
+  $actions.appendChild(share);
   if (snap.version === 'full') {
-    // 完整版：付费详细解读入口（或已提交态）
     if (snap.fullStage === 'submitted') {
       renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
     } else {
       renderPaidReportEntry($actions, {
-        feature: t('mbti.fullFeature'),
-        title: t('mbti.fullTitle'),
-        amount: AMOUNT,
-        report: buildFullReport(snap.code, snap.tally, lang),
+        feature: t('mbti.fullFeature'), title: t('mbti.fullTitle'), amount: AMOUNT,
+        report: buildFullReport(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
     }
   } else {
-    // 免费版：软推完整版（重测取全部题，更准确，完成后可付费看详解）
     const up = document.createElement('button');
     up.className = 'btn';
     up.textContent = t('ps.upgrade');
@@ -144,25 +166,76 @@ function renderResult(el, snap, lang) {
   el.appendChild($actions);
 }
 
-// dimRows 维度倾向条：E 3 / I 2 之类
-function dimRows(tally, lang) {
+// buildFullReport 客户端按当前语言生成完整版报告文本（分段：画像/维度详解/子维度/人际/压力/成长）
+function buildFullReport(snap, lang) {
+  const tp = data.types[snap.code] || data.types.INTJ;
   const L = (o) => o[lang] || o.zh;
-  return DIMS.map((d) => {
-    const dm = data.dims[d];
-    return `<p class="muted">${esc(L(dm.name))}: <b>${dm.first} ${tally[d][0]}</b> / <b>${dm.second} ${tally[d][1]}</b></p>`;
-  }).join('');
-}
-
-// buildFullReport 客户端按当前语言生成完整版报告文本（随申请落盘，确认后原样邮件送达）
-function buildFullReport(code, tally, lang) {
-  const tp = data.types[code] || data.types.INTJ;
-  const L = (o) => o[lang] || o.zh;
-  let s = `${code} ${L(tp.nick)}\n\n${L(tp.full)}\n\n${t('mbti.dimBreakdown')}\n`;
+  let s = `== ${t('ps.secProfile')} ==\n${snap.code} ${L(tp.nick)}\n${L(tp.full)}\n\n`;
+  s += `== ${t('ps.secDim')} ==\n`;
   DIMS.forEach((d) => {
     const dm = data.dims[d];
-    s += `${L(dm.name)}: ${dm.first} ${tally[d][0]} / ${dm.second} ${tally[d][1]}\n`;
+    const [a, b] = snap.tally[d];
+    const total = a + b || 1;
+    const winPct = Math.round((Math.max(a, b) / total) * 100);
+    s += `${L(dm.name)}: ${dm.first} ${a} / ${dm.second} ${b} [${t('ps.clar' + clarKey(winPct))}]\n`;
   });
-  return s;
+  s += `\n== ${t('ps.secSub')} ==\n`;
+  DIMS.forEach((d) => {
+    const dm = data.dims[d];
+    const subs = computeSubPcts(data.facets[d], snap.answers);
+    s += `${L(dm.name)}: ${subs.map((sf, i) => `${L(data.facets[d][i].name)} ${dm.first}${sf.pct}/${dm.second}${100 - sf.pct}`).join(' / ')}\n`;
+  });
+  s += `\n== ${t('ps.secRelation')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].relationship)}\n`; });
+  s += `\n== ${t('ps.secStress')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
+  s += `\n== ${t('ps.secGrowth')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
+  return s.trim();
+}
+
+// clarKey MBTI 偏好清晰度带位（胜出极占比）：≥80 清晰 / 60-79 中等 / 53-59 轻微 / ≤52 几乎居中
+function clarKey(pct) {
+  if (pct >= 80) return 'VeryHigh';
+  if (pct >= 60) return 'High';
+  if (pct >= 53) return 'Mid';
+  return 'Low';
+}
+
+// computeSubPcts 某 dichotomy 各子面 a 票占比（按 facet.items 绝对索引取 answers）
+function computeSubPcts(facets, answers) {
+  return facets.map((f) => {
+    let a = 0;
+    f.items.forEach((idx) => { if (answers[idx] === 0) a++; });
+    return { pct: Math.round((a / f.items.length) * 100) };
+  });
+}
+
+// buildShareOpts 构造 MBTI 分享卡渲染参数（类型+昵称为标签，四极清晰度雷达）
+function buildShareOpts(snap, lang) {
+  const tp = data.types[snap.code] || data.types.INTJ;
+  const L = (o) => o[lang] || o.zh;
+  return {
+    themeKey: 'personality-mbti',
+    name: snap.code,
+    personality: {
+      typeLabel: `${snap.code} · ${L(tp.nick)}`,
+      dims: DIMS.map((d) => {
+        const dm = data.dims[d];
+        const [a, b] = snap.tally[d];
+        const total = a + b || 1;
+        return { name: a >= b ? dm.first : dm.second, pct: Math.round((Math.max(a, b) / total) * 100) };
+      }),
+      accent: ACCENT,
+    },
+    showDonate: false,
+  };
+}
+
+// downloadShareCard 生成并下载 PNG 分享卡
+async function downloadShareCard(snap, lang) {
+  const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
+  downloadPng(dataUrl, `mbti-${Date.now()}.png`);
 }
 
 // 默认导出：app.js loadComponent 通过 mod.default(body) 挂载，入口即 render

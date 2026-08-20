@@ -920,6 +920,27 @@ pre {
 .disc-radio input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent, #2A5DB0); }
 .disc-radio:has(input:checked) { background: var(--accent-bg, #eef3fc); border-radius: 4px; }
 
+/* 人格测试结果可视化（雷达/进度条/二分条/分享卡按钮） */
+.ps-radar { display: block; max-width: 300px; width: 100%; margin: 8px auto 4px; }
+.ps-bar { margin: 6px 0; }
+.ps-bar-label { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: 3px; color: var(--fg, #333); }
+.ps-bar-label b { color: var(--accent, #2A5DB0); }
+.ps-bar-track { display: block; height: 8px; background: var(--accent-bg, #eef3fc); border-radius: 4px; overflow: hidden; }
+.ps-bar-fill { display: block; height: 100%; border-radius: 4px; transition: width .3s ease; }
+.ps-band { display: inline-block; font-size: .78rem; color: var(--muted, #888); margin-left: 6px; }
+.ps-dicho { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; gap: 8px; margin: 8px 0; }
+.ps-dicho-side { font-size: .85rem; color: var(--muted, #888); }
+.ps-dicho-side b { color: var(--accent, #2A5DB0); }
+.ps-dicho-track { display: block; height: 8px; background: var(--border, #e2e2e2); border-radius: 4px; overflow: hidden; }
+.ps-dicho-fill { display: block; height: 100%; border-radius: 4px; }
+.ps-band-note { font-size: .76rem; color: var(--muted, #888); margin: 6px 0 2px; }
+.ps-share { margin-top: 4px; }
+@media (max-width: 540px) {
+  .ps-radar { max-width: 240px; }
+  .ps-dicho { grid-template-columns: 1fr 1.4fr 1fr; gap: 4px; }
+  .ps-dicho-side { font-size: .8rem; }
+}
+
 /* Wordle 猜词（game-wordle） */
 .wordle-grid { display: grid; gap: 6px; justify-content: center; margin: 12px 0; }
 .wordle-row { display: flex; gap: 6px; justify-content: center; }

@@ -5,12 +5,15 @@
 import { t, getLang } from '/core/i18n.js';
 import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-report.js';
 import { renderChoice } from '/core/personality.js';
+import { radarSVG, barHTML } from '/core/radar.js';
+import { renderMemorialCard, downloadPng } from '/core/cert.js';
 import data from './data.js';
 
 const FULL = data.groups; // 完整版（全部 28 组迫选）
 const FREE_GROUPS = 14; // 免费版取前 14 组
 const AMOUNT = 5;
 const DIMS = ['D', 'I', 'S', 'C'];
+const ACCENT = '#D9762A'; // DISC 主题强调色（暖橙），用于条/雷达/分享卡
 
 // snapshot { version:'free'|'full', mosts:number[], leasts:number[], tallyMost, tallyLeast, pcts, primary, fullStage, claimId?, email? }
 let snapshot = null;
@@ -106,7 +109,7 @@ function onSubmit(el, mosts, leasts, groups, version, lang) {
   if (incomplete) { alert(t('disc.needMostLeast')); return; }
   if (!confirm(t('disc.confirmSubmit'))) return;
   const tally = computeTally(mosts, leasts, groups);
-  snapshot = { version, mosts: [...mosts], leasts: [...leasts], tallyMost: tally.most, tallyLeast: tally.least, pcts: tally.pcts, primary: tally.primary, fullStage: 'pending' };
+  snapshot = { version, mosts: [...mosts], leasts: [...leasts], tallyMost: tally.most, tallyLeast: tally.least, pcts: tally.pcts, primary: tally.primary, secondary: tally.secondary, fullStage: 'pending' };
   renderResult(el, snapshot, lang);
 }
 
@@ -123,25 +126,46 @@ function computeTally(mosts, leasts, groups) {
   const pcts = {};
   DIMS.forEach((d) => { pcts[d] = Math.round((most[d] / total) * 100); });
   const primary = DIMS.reduce((a, b) => (most[b] > most[a] ? b : a), 'D');
-  return { most, least, pcts, primary };
+  const rest = DIMS.filter((d) => d !== primary);
+  const secondary = rest.reduce((a, b) => (most[b] > most[a] ? b : a), rest[0]);
+  return { most, least, pcts, primary, secondary };
 }
 
-// renderResult 免费解读 + 主导风格 +（完整版）付费入口/已提交态 或（免费版）升级入口 + 重新测试
+// renderResult 主导+blend 名 + 4 轴雷达 + 各维条+band + 分享卡 + 付费/升级入口 + 重新测试
 function renderResult(el, snap, lang) {
   const L = (o) => o[lang] || o.zh;
   const dm = data.dims[snap.primary];
+  const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
+  const $radar = document.createElement('div');
+  radarSVG($radar, { axes: DIMS.map((d) => ({ label: d, pct: snap.pcts[d] })), accent: ACCENT, size: 280 });
+  const dimsHTML = DIMS.map((d) => {
+    const x = data.dims[d];
+    const pct = snap.pcts[d];
+    return `<div class="ps-dim"><div class="ps-bar"><span class="ps-bar-label">${esc(L(x.name))} <span class="ps-band">${t('ps.band' + bandKey(pct))}</span><b>${pct}%</b></span><span class="ps-bar-track"><span class="ps-bar-fill" style="width:${pct}%;background:${ACCENT}"></span></span></div></div>`;
+  }).join('');
   el.innerHTML = `
     <div class="quiz-result ok">
       <p class="muted">${snap.version === 'full' ? t('disc.primary') : t('disc.primaryFree')}</p>
-      <h3 class="disc-primary">${esc(L(dm.name))}</h3>
+      <h3 class="disc-primary">${esc(L(dm.name))} · ${esc(L(blend.name))}</h3>
       <p>${esc(L(dm.high))}</p>
-      ${DIMS.map((d) => {
-        const x = data.dims[d];
-        return `<p class="disc-row"><b>${esc(L(x.name))}</b> <span class="disc-pct">${snap.pcts[d]}%</span></p>`;
-      }).join('')}
+      <p class="muted">${esc(L(blend.desc))}</p>
+      <div id="disc-radar"></div>
+      ${dimsHTML}
+      <p class="ps-band-note">${t('ps.bandNote')}</p>
     </div>`;
+  el.querySelector('#disc-radar').appendChild($radar);
+  renderActions(el, snap, lang);
+}
+
+// renderActions 分享卡按钮 +（完整版）付费入口/已提交 或（免费版）升级 + 重新测试
+function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
   $actions.className = 'kq-actions';
+  const share = document.createElement('button');
+  share.className = 'btn-soft';
+  share.textContent = t('ps.downloadCard');
+  share.onclick = () => downloadShareCard(snap, lang);
+  $actions.appendChild(share);
   if (snap.version === 'full') {
     if (snap.fullStage === 'submitted') {
       renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
@@ -167,15 +191,55 @@ function renderResult(el, snap, lang) {
   el.appendChild($actions);
 }
 
-// buildFullReport 客户端按当前语言生成完整版报告文本（随申请落盘，确认后原样邮件送达）
+// buildFullReport 客户端按当前语言生成完整版报告文本（分段：画像/维度详解/人际/压力/成长）
 function buildFullReport(snap, lang) {
   const L = (o) => o[lang] || o.zh;
   const dm = data.dims[snap.primary];
-  let s = `${t('disc.primary')}: ${L(dm.name)}\n${L(dm.full)}\n\n${t('disc.dimBreakdown')}\n`;
+  const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
+  let s = `== ${t('ps.secProfile')} ==\n${L(dm.name)} · ${L(blend.name)}\n${L(dm.full)}\n${L(blend.desc)}\n\n`;
+  s += `== ${t('ps.secDim')} ==\n`;
   DIMS.forEach((d) => {
-    s += `${L(data.dims[d].name)}: 最像 ${snap.tallyMost[d]} / 最不像 ${snap.tallyLeast[d]}（${snap.pcts[d]}%）\n`;
+    const x = data.dims[d];
+    s += `${L(x.name)} ${snap.pcts[d]}% [${t('ps.band' + bandKey(snap.pcts[d]))}] 最像${snap.tallyMost[d]} / 最不像${snap.tallyLeast[d]}\n`;
   });
+  s += `\n== ${t('ps.secRelation')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].relationship)}\n`; });
+  s += `\n== ${t('ps.secStress')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
+  s += `\n== ${t('ps.secGrowth')} ==\n`;
+  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
   return s.trim();
+}
+
+// bandKey DISC 份额带位（4 维和=100）：≥35 主导 / 20-34 明显 / 15-19 中等 / ≤14 较低
+function bandKey(pct) {
+  if (pct >= 35) return 'VeryHigh';
+  if (pct >= 20) return 'High';
+  if (pct >= 15) return 'Mid';
+  return 'Low';
+}
+
+// buildShareOpts 构造 DISC 分享卡渲染参数（主导+blend 为标签，四维雷达）
+function buildShareOpts(snap, lang) {
+  const L = (o) => o[lang] || o.zh;
+  const dm = data.dims[snap.primary];
+  const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
+  return {
+    themeKey: 'personality-disc',
+    name: snap.primary,
+    personality: {
+      typeLabel: `${L(dm.name)} · ${L(blend.name)}`,
+      dims: DIMS.map((d) => ({ name: d, pct: snap.pcts[d] })),
+      accent: ACCENT,
+    },
+    showDonate: false,
+  };
+}
+
+// downloadShareCard 生成并下载 PNG 分享卡
+async function downloadShareCard(snap, lang) {
+  const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
+  downloadPng(dataUrl, `disc-${Date.now()}.png`);
 }
 
 export default (el) => render(el);
