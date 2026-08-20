@@ -467,9 +467,8 @@ const dict = {
     'wordle.customFail': '未找到有效 5 字母词',
     'wordle.poolSize': '当前词库 {n} 词',
     // —— 合成水果 Suika（game-suika）——
-    'suika.howto': '点按某一列让水果下落，相邻同种自动合并升级，分数越高越好。',
+    'suika.howto': '移动指针选定位置，点按释放水果下落；同种水果接触即合并升级，越过顶部警戒线即结束。',
     'suika.next': '下一颗：{e}',
-    'suika.colFull': '该列已满，请选其他列',
     'suika.over': '游戏结束，得分 ',
   },
   en: {
@@ -939,9 +938,8 @@ const dict = {
     'wordle.customFail': 'No valid 5-letter words found',
     'wordle.poolSize': 'Pool: {n} words',
     // —— Suika Fruit Merge (game-suika) ——
-    'suika.howto': 'Tap a column to drop a fruit; same adjacent fruits auto-merge into the next tier. Higher is better.',
+    'suika.howto': 'Move the pointer to aim, tap to drop a fruit; same fruits touching merge into the next tier; crossing the top danger line ends the game.',
     'suika.next': 'Next: {e}',
-    'suika.colFull': 'Column full, pick another',
     'suika.over': 'Game over, score ',
   },
 };
