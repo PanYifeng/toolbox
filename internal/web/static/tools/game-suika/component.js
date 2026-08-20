@@ -5,12 +5,14 @@ import { t } from '/core/i18n.js';
 import { mountGameCard } from '/core/game-card.js';
 
 const W = 360, H = 430; // 画布宽高（游戏场）
-const GRAV = 0.5; // 重力（每固定步像素/步²）
+const GRAV = 0.38; // 重力（每固定步像素/步²），偏慢便于操控
+const VY_CAP = 12; // 下落速度上限，防高速穿透
 const DAMP = 0.25; // 反弹系数（墙与水果间，低则堆叠稳）
 const AIR = 0.999, GROUND = 0.9; // 空中/触地水平阻尼
 const ITER = 6; // 每帧碰撞迭代次数（位置修正稳定性）
 const FIXED = 1 / 60; // 固定物理步长
 const DEATH_Y = 6; // 顶部警戒线：水果顶部静止越过即结束
+const REST_LIMIT = 0.5; // 顶部静止持续秒数达此值才判结束（避免落果误判）
 const EMOJI = ['🍒', '🍓', '🍇', '🍊', '🍎', '🍉'];
 const RADII = [13, 18, 24, 31, 39, 48]; // 各级半径
 const POINTS = [2, 4, 8, 16, 32, 64]; // 合并到该级得分
@@ -70,27 +72,32 @@ export default function (el) {
     dropX = Math.max(RADII[nextTier], Math.min(W - RADII[nextTier], x));
   }
 
-  // onPick 点按 → 落果（冷却 + 静止双重门控）
+  // onPick 点按 → 落果（冷却 + 落点上方无果双重门控）
   function onPick(e) {
     e.preventDefault();
     onMove(e);
     if (over) { newGame(); return; }
-    if (dropCool > 0 || !settled()) return;
+    if (dropCool > 0 || !spawnClear()) return;
     drop(dropX);
   }
 
-  // settled 判定全局是否足够静止（允许下落）
-  function settled() {
-    for (const f of fruits) if (Math.abs(f.vx) + Math.abs(f.vy) > 1.2) return false;
+  // spawnClear 判定落点正上方是否无果（允许连落，不必全场静止）
+  function spawnClear() {
+    const r = RADII[nextTier];
+    const top = r * 2 + 4; // 顶部留余量
+    for (const f of fruits) {
+      if (f.merged) continue;
+      if (f.y - f.r < top && Math.abs(f.x - dropX) < f.r + r) return false;
+    }
     return true;
   }
 
   // drop 在顶部生成新水果
   function drop(x) {
     const r = RADII[nextTier];
-    fruits.push({ x, y: -r, vx: 0, vy: 0, r, tier: nextTier, merged: false });
+    fruits.push({ x, y: -r, vx: 0, vy: 0, r, tier: nextTier, merged: false, rest: 0 });
     nextTier = pickTier();
-    dropCool = 0.35;
+    dropCool = 0.25;
     $next.textContent = t('suika.next').replace('{e}', EMOJI[nextTier]);
   }
 
@@ -107,9 +114,9 @@ export default function (el) {
     raf = requestAnimationFrame(loop);
   }
 
-  // step 单步物理：积分 → 墙壁 → 碰撞迭代 → 清理已合并
+  // step 单步物理：积分 → 限速 → 墙壁 → 碰撞迭代 → 清理已合并
   function step() {
-    for (const f of fruits) { if (f.merged) continue; f.vy += GRAV; f.x += f.vx; f.y += f.vy; f.vx *= AIR; }
+    for (const f of fruits) { if (f.merged) continue; f.vy += GRAV; if (f.vy > VY_CAP) f.vy = VY_CAP; f.x += f.vx; f.y += f.vy; f.vx *= AIR; }
     for (const f of fruits) {
       if (f.merged) continue;
       if (f.x - f.r < 0) { f.x = f.r; f.vx = Math.abs(f.vx) * DAMP; }
@@ -153,11 +160,20 @@ export default function (el) {
     b.merged = true; score += POINTS[a.tier];
   }
 
-  // checkOver 任一水果顶部静止越过警戒线即结束
+  // checkOver 水果顶部持续静止越过警戒线达 REST_LIMIT 秒才结束
+  // （落果刚生成时虽在警戒线上方且 vy=0，但很快加速下落、rest 归零，不会误判）
   function checkOver() {
     if (over) return;
     for (const f of fruits) {
-      if (f.y - f.r < DEATH_Y && Math.abs(f.vy) < 0.8) { finish(); return; }
+      if (f.merged) continue;
+      const above = f.y - f.r < DEATH_Y;
+      const slow = Math.abs(f.vy) < 0.8 && Math.abs(f.vx) < 0.8;
+      if (above && slow) {
+        f.rest += FIXED;
+        if (f.rest >= REST_LIMIT) { finish(); return; }
+      } else {
+        f.rest = 0;
+      }
     }
   }
 
@@ -176,7 +192,7 @@ export default function (el) {
     ctx.strokeStyle = 'rgba(220,38,38,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.moveTo(0, DEATH_Y); ctx.lineTo(W, DEATH_Y); ctx.stroke(); ctx.setLineDash([]);
     // 落点预览（仅可落时）
-    if (!over && dropCool <= 0 && settled()) {
+    if (!over && dropCool <= 0 && spawnClear()) {
       const r = RADII[nextTier];
       ctx.globalAlpha = 0.4; ctx.font = `${r * 1.6}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(EMOJI[nextTier], dropX, r);

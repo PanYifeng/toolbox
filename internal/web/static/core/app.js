@@ -3,6 +3,7 @@ import { t, tr, getLang, setLang } from '/core/i18n.js';
 import { enhanceLined } from '/core/lined.js';
 import { renderMarkdown } from '/core/md.js';
 import { aboutPageHTML } from '/core/about.js';
+import { openFeedback } from '/core/feedback.js';
 
 const app = document.getElementById('app');
 let currentId = null;
@@ -85,6 +86,7 @@ function shell() {
         <input id="search" class="search" placeholder="${t('app.search')}" value="${escapeAttr(query)}" />
         <div class="topbar-actions">
           ${showSponsor ? `<button id="sponsor-btn" class="btn-soft sponsor-btn">${t('footer.sponsor')}</button>` : ''}
+          <button id="fb-btn" class="fb-btn" title="${t('fb.open')}" aria-label="${t('fb.open')}">💬</button>
           <button id="lang-toggle" class="lang-toggle" title="Switch language"></button>
         </div>
       </header>
@@ -95,9 +97,7 @@ function shell() {
       </main>
     </div>
     <footer class="footer">
-      <span>${t('footer.coop')}:
-        <a href="mailto:904379134@qq.com">904379134@qq.com</a>
-      </span>
+      <button id="footer-feedback" class="footer-feedback">${t('footer.coop')}</button>
       ${showSponsor ? `<a href="#" id="footer-sponsor" class="footer-sponsor">${t('footer.sponsor')}</a>` : ''}
       <a href="/about" id="footer-about" class="footer-about">${t('footer.about')}</a>
       ${showSignature ? `<span class="footer-love">${t('footer.love')}</span>` : ''}
@@ -109,6 +109,10 @@ function shell() {
   if (sp) sp.onclick = () => openDonation();
   const fs = app.querySelector('#footer-sponsor');
   if (fs) fs.onclick = (e) => { e.preventDefault(); openDonation(); };
+  const fbb = app.querySelector('#fb-btn');
+  if (fbb) fbb.onclick = () => openFeedback(currentId);
+  const ff = app.querySelector('#footer-feedback');
+  if (ff) ff.onclick = (e) => { e.preventDefault(); openFeedback(currentId); };
   const fa = app.querySelector('#footer-about');
   if (fa) fa.onclick = (e) => { e.preventDefault(); history.pushState({}, '', '/about'); route(); window.scrollTo(0, 0); };
   updateLangButton();

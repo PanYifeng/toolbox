@@ -39,6 +39,7 @@ type Server struct {
 	pr         *paidReportStore
 	lbRL       *rateLimiter
 	payRL      *rateLimiter
+	fbRL       *rateLimiter
 }
 
 // NewServer 创建服务
@@ -58,6 +59,7 @@ func NewServer(cfg *config.Config) *Server {
 		pr:         newPaidReportStore("./paid-reports.json"),
 		lbRL:       newRateLimiter(5, 10*time.Minute), // 排行榜提交每 IP 每 10 分钟最多 5 次，防刷榜
 		payRL:      newRateLimiter(5, 10*time.Minute), // 支付对账通知每 IP 每 10 分钟最多 5 次，防刷通知
+		fbRL:       newRateLimiter(5, 10*time.Minute), // 用户反馈每 IP 每 10 分钟最多 5 次，防刷反馈
 	}
 	s.routes()
 	return s
@@ -91,9 +93,10 @@ func (s *Server) routes() {
 			mux.HandleFunc("GET /api/game/record-confirm", s.handleRecordConfirm)
 		}
 	}
-	// 支付对账通知：未配置邮件/站主邮箱时不注册该端点（前端 best-effort，404 静默）
+	// 支付对账通知与用户反馈：未配置邮件/站主邮箱时不注册（前端 best-effort，404 静默）
 	if s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" {
 		mux.HandleFunc("POST /api/pay/notify", s.handlePayNotify)
+		mux.HandleFunc("POST /api/feedback", s.handleFeedback)
 	}
 	// 错题解析付费解锁核销（站主确认门）：未配邮件/站主邮箱/确认密钥或 errata 关闭时不注册
 	if s.cfg.EffectiveFeatures().Errata && s.cfg.Mail.Configured() && s.cfg.Pro.AdminEmail != "" && s.cfg.Pro.AdminSecret != "" {

@@ -195,6 +195,10 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 
 > 需配置 `mail`（SMTP）、`pro.adminEmail`、`pro.adminSecret` 三项；任一缺失则对应端点不注册（前端 best-effort 静默）。合规严格模式下纪念卡 / 排行榜 / 错题解析自动关闭。
 
+### 反馈渠道
+
+页头 💬 按钮与页脚"合作 / 反馈"打开留言浮层：访客填写留言 + 联系邮箱（必填），提交后转发邮件给站主（`pro.adminEmail`）；邮件正文自动带上来源模块（当前所在工具）与提交语言，便于站主定位与回复。复用 `mail` + `pro.adminEmail` 配置，无需 `adminSecret`（无确认门，直发即处理）；每 IP 每 10 分钟限 5 条防刷。
+
 ## 配置说明
 
 | 字段 | 说明 | 默认值 |
