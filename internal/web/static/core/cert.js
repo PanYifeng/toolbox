@@ -483,12 +483,14 @@ function drawBody(ctx, W, opts, theme, displayTime) {
   drawMessage(ctx, W, theme, opts, y + 18);
 }
 
-// drawPersonalityBody 人格分享卡中部：类型代号水印 + 大类型标签 + 英文副标题 + 金句 tagline + 完成时间 + canvas 雷达图 + 寄语（无姓名/分数行）
+// drawPersonalityBody 人格分享卡中部：姓名(可选) + 类型代号水印 + 大类型标签 + 英文副标题 + 金句 tagline + 完成时间 + canvas 雷达图 + 寄语
 // 金卡额外绘制人物形象（男女一对），增强付费差异化
+// 姓名置于大类型标签之下，英文副标题之上，与金卡底部 drawCertInfo 的姓名形成呼应
 function drawPersonalityBody(ctx, opts, theme, displayTime) {
   const W = 1000; // 卡面固定宽度（纪念卡画布恒为 1000×1414）
   const p = opts.personality || {};
   const isGold = !!(opts.gold);
+  const userName = opts.name || '';
   drawTypeWatermark(ctx, p, theme, W); // 不同类型呈现不同背景标识
   // 金卡在分隔线与类型标签之间绘制人物形象（男女一对），增强付费差异化
   // 人物位于 y=315，size=40 刚好嵌入 80px 间隙（header 分隔线 y=270 至主标签 y=350）
@@ -501,21 +503,29 @@ function drawPersonalityBody(ctx, opts, theme, displayTime) {
   ctx.fillStyle = theme.secondary;
   ctx.font = 'bold 54px "PingFang SC","Microsoft YaHei",serif';
   ctx.fillText(p.typeLabel || '', W / 2, 350);
+  if (userName) { // 姓名：置于大类型标签之下，英文副标题之上（金卡底部 drawCertInfo 已有姓名，此处也展示以保持分享卡一致性）
+    ctx.fillStyle = theme.primary;
+    ctx.globalAlpha = 0.8;
+    ctx.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(`${BILABEL.name.zh} · ${BILABEL.name.en}: ${userName}`, W / 2, 395);
+    ctx.globalAlpha = 1;
+  }
+  const nameAdj = userName ? 0 : 30; // 无姓名时英文标题上移 30px
   if (p.typeLabelEn) { // 英文副标题，与主标签配对
     ctx.fillStyle = theme.primary;
     ctx.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText(p.typeLabelEn, W / 2, 400);
+    ctx.fillText(p.typeLabelEn, W / 2, 420 - nameAdj);
   }
   if (p.tagline) { // 金句 tagline：社交货币 + 传播钩子
     ctx.fillStyle = theme.secondary;
     ctx.globalAlpha = 0.75;
     ctx.font = 'italic 20px "PingFang SC","Microsoft YaHei",serif';
-    ctx.fillText(`${p.tagline}`, W / 2, 434);
+    ctx.fillText(`${p.tagline}`, W / 2, 454 - nameAdj);
     ctx.globalAlpha = 1;
   }
   ctx.fillStyle = theme.primary;
   ctx.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
-  const timeY = p.tagline ? 466 : 444;
+  const timeY = p.tagline ? 486 - nameAdj : 464 - nameAdj;
   ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, timeY);
   drawPersonalityRadar(ctx, { cx: W / 2, cy: 720, radius: 230, dims: p.dims || [], accent: p.accent || theme.primary, theme });
   drawMessage(ctx, W, theme, opts, 1060);

@@ -267,13 +267,14 @@ function buildShareOpts(snap, lang) {
 
 // downloadShareCard 生成并下载 PNG 分享卡
 async function downloadShareCard(snap, lang) {
-  const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
+  const name = prompt(t('ps.enterName')) || '';
+  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang), name });
   downloadPng(dataUrl, `bigfive-${Date.now()}.png`);
 }
 
 // buildGoldPng 生成完整版金纪念卡 PNG dataURL（复用分享卡参数 + gold 标记），付费后作邮件附件送达
-async function buildGoldPng(snap, lang) {
-  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang), gold: true });
+async function buildGoldPng(snap, lang, userName) {
+  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang), name: userName || '', gold: true });
   return dataUrl;
 }
 

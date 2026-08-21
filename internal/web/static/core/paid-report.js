@@ -46,7 +46,7 @@ export function renderPaidReportSubmitted(container, { claimId, email, amount } 
   container.appendChild(wrap);
 }
 
-// renderClaimForm 申请态：开价 + 预览(首段) + 收款码 + TXID 备注 + 邮箱 + 提交按钮
+// renderClaimForm 申请态：开价 + 预览(首段) + 收款码 + TXID 备注 + 姓名 + 邮箱 + 提交按钮
 function renderClaimForm(container, { feature, title, amount, report, preview, lang, onSubmitted, getPng }) {
   const txid = genTxid('PR');
   const previewHTML = preview ? `<div class="pr-preview"><blockquote>${esc(preview)}</blockquote><p class="muted">${t('pr.previewNote')}</p></div>` : '';
@@ -61,6 +61,7 @@ function renderClaimForm(container, { feature, title, amount, report, preview, l
           <div><img src="/img/donate-wechat.png" alt="WeChat Pay"><p class="lb-pay-name">${t('pay.wechat')}</p><p class="muted">${t('pr.payHint')}</p></div>
         </div>
         ${remarkHint(txid)}
+        <label>${t('pr.nameLabel')} <input id="pr-name" type="text" maxlength="30" placeholder="${t('pr.namePh')}"></label>
         <label>${t('pr.emailLabel')} <input id="pr-email" type="email" placeholder="${t('pr.emailPh')}"></label>
         <button id="pr-submit" class="btn">${t('pr.submitClaim')}</button>
         <p class="muted lb-upgrade-foot">${t('pr.foot')}</p>
@@ -73,11 +74,12 @@ function renderClaimForm(container, { feature, title, amount, report, preview, l
 async function submitClaim(container, { feature, title, amount, report, txid, lang, onSubmitted, getPng }) {
   const email = (container.querySelector('#pr-email')?.value || '').trim();
   if (!email || !/.+@.+\..+/.test(email)) { alert(t('pr.needEmail')); return; }
+  const name = (container.querySelector('#pr-name')?.value || '').trim();
   const $btn = container.querySelector('#pr-submit');
   if ($btn) $btn.disabled = true;
-  // 金纪念卡 PNG（人格测试完整版）：提交前异步生成，失败则不附带（服务端回退纯文本邮件）
+  // 金纪念卡 PNG（人格测试完整版）：提交前异步生成（含姓名），失败则不附带（服务端回退纯文本邮件）
   let png = null;
-  try { png = getPng ? await getPng() : null; } catch (_) { png = null; }
+  try { png = getPng ? await getPng(name) : null; } catch (_) { png = null; }
   const payload = { feature, title, amount, email, txId: txid, lang, report };
   if (png) payload.png = png;
   let d;

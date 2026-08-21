@@ -243,13 +243,13 @@ function computeSubPcts(facets, answers) {
 }
 
 // buildShareOpts 构造 MBTI 分享卡渲染参数（类型+昵称为标签，四极清晰度雷达）
-function buildShareOpts(snap, lang) {
+function buildShareOpts(snap, lang, userName) {
   const tp = data.types[snap.code] || data.types.INTJ;
   const L = (o) => o[lang] || o.zh;
   const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
   return {
     themeKey: 'personality-mbti',
-    name: `${snap.code} · ${L(tp.nick)}`,
+    name: userName || '',
     personality: {
       typeLabel: `${snap.code} · ${L(tp.nick)}`,
       typeLabelEn: `${snap.code} · ${OL(tp.nick)}`,
@@ -269,13 +269,14 @@ function buildShareOpts(snap, lang) {
 
 // downloadShareCard 生成并下载 PNG 分享卡
 async function downloadShareCard(snap, lang) {
-  const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang));
+  const name = prompt(t('ps.enterName')) || '';
+  const { dataUrl } = await renderMemorialCard(buildShareOpts(snap, lang, name));
   downloadPng(dataUrl, `mbti-${Date.now()}.png`);
 }
 
 // buildGoldPng 生成完整版金纪念卡 PNG dataURL（复用分享卡参数 + gold 标记），付费后作邮件附件送达
-async function buildGoldPng(snap, lang) {
-  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang), gold: true });
+async function buildGoldPng(snap, lang, userName) {
+  const { dataUrl } = await renderMemorialCard({ ...buildShareOpts(snap, lang, userName || ''), gold: true });
   return dataUrl;
 }
 

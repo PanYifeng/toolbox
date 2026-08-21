@@ -6,10 +6,10 @@ export default [
   {
     q: { zh: '"人只使用了大脑的 10%"这一说法是否正确？', en: 'Is the claim "humans only use 10% of their brain" correct?' },
     options: [
-      { zh: '完全正确，脑科学已证实', en: 'Completely correct, confirmed by neuroscience' },
-      { zh: '正确，但仅限睡眠时', en: 'Correct, but only during sleep' },
-      { zh: '不正确，绝大部分脑区都被使用', en: 'Incorrect, the vast majority of the brain is used' },
-      { zh: '不正确，但天才能用 20%', en: 'Incorrect, but geniuses use 20%' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '绝大部分脑区都被使用', en: 'The vast majority of the brain is used' },
+      { zh: '这一说法来自对脑成像数据的误读，天才的脑活动效率更高', en: 'This claim comes from a misinterpretation of brain imaging data; genius-level brain activity is more efficient' },
     ],
     answer: 2,
     subject: 'biology',
@@ -19,10 +19,10 @@ export default [
   {
     q: { zh: '"左脑负责理性逻辑，右脑负责感性创意"这一说法是否正确？', en: 'Is the claim "left brain handles logic, right brain handles creativity" correct?' },
     options: [
-      { zh: '完全正确，fMRI 已证实', en: 'Completely correct, confirmed by fMRI' },
-      { zh: '不正确，绝大多数认知任务由双侧脑区协同完成', en: 'Incorrect, most cognitive tasks involve both hemispheres cooperatively' },
-      { zh: '仅对左撇子成立', en: 'Only true for left-handers' },
-      { zh: '不正确，所有功能都在右脑', en: 'Incorrect, all functions are in the right brain' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
+      { zh: '绝大多数认知任务由双侧脑区协同完成', en: 'Most cognitive tasks involve both hemispheres cooperatively' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '在特定认知任务中，左脑的激活程度显著低于右脑', en: 'In certain cognitive tasks, left-hemisphere activation is significantly lower than right-hemisphere activation' },
     ],
     answer: 1,
     subject: 'biology',
@@ -32,10 +32,10 @@ export default [
   {
     q: { zh: '"金鱼的记忆只有 7 秒"这一说法是否准确？', en: 'Is the claim "goldfish have a 7-second memory" accurate?' },
     options: [
-      { zh: '完全正确，所有鱼类都如此', en: 'Completely correct, all fish are like this' },
-      { zh: '不正确，金鱼的记忆至少可持续数月', en: 'Incorrect, goldfish memory can last months' },
-      { zh: '仅对成年金鱼成立', en: 'Only true for adult goldfish' },
-      { zh: '正确，但仅限金鱼', en: 'Correct, but only for goldfish' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '金鱼的记忆至少可持续数月', en: 'Goldfish memory can last months' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -45,10 +45,10 @@ export default [
   {
     q: { zh: '舌头不同部位感知不同味觉（甜在舌尖、苦在舌根）这一"味觉地图"是否成立？', en: 'Does the "tongue taste map" (sweet at tip, bitter at back) hold?' },
     options: [
-      { zh: '完全正确，是 20 世纪教科书共识', en: 'Completely correct, a 20th-century textbook consensus' },
-      { zh: '仅对儿童成立', en: 'Only true for children' },
-      { zh: '仅对酸味成立', en: 'Only true for sour taste' },
-      { zh: '不正确，所有味觉感受器在舌头各处都有分布', en: 'Incorrect, all taste receptors are distributed across the whole tongue' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '所有味觉感受器在舌头各处都有分布', en: 'All taste receptors are distributed across the whole tongue' },
     ],
     answer: 3,
     subject: 'biology',
@@ -58,10 +58,10 @@ export default [
   {
     q: { zh: '"人死后指甲和头发还会继续生长"这一说法是否正确？', en: 'Is the claim "nails and hair keep growing after death" correct?' },
     options: [
-      { zh: '正确，可生长数天', en: 'Correct, they grow for days' },
-      { zh: '不正确，是皮肤脱水回缩造成的视觉错觉', en: 'Incorrect, an illusion caused by skin dehydration and retraction' },
-      { zh: '正确，但仅限头发', en: 'Correct, but only for hair' },
-      { zh: '正确，仅限男性', en: 'Correct, only for males' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '是皮肤脱水回缩造成的视觉错觉', en: 'An illusion caused by skin dehydration and retraction' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -71,10 +71,10 @@ export default [
   {
     q: { zh: '"剃毛会让新长出的毛发变得更粗更黑"这一说法是否正确？', en: 'Does shaving make regrown hair thicker and darker?' },
     options: [
-      { zh: '正确，毛囊受刺激', en: 'Correct, follicles are stimulated' },
-      { zh: '仅对腋毛成立', en: 'Only true for armpit hair' },
-      { zh: '不正确，剃毛只切断了毛干，不影响毛囊', en: 'Incorrect, shaving only cuts the shaft and does not affect the follicle' },
-      { zh: '不正确，反而会让毛发变细', en: 'Incorrect, it actually makes hair thinner' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
+      { zh: '剃毛只切断了毛干，不影响毛囊', en: 'Shaving only cuts the shaft and does not affect the follicle' },
+      { zh: '频繁剃毛会改变毛囊的生长周期，使毛发越来越细', en: 'Frequent shaving alters the hair follicle growth cycle, causing hair to become progressively thinner' },
     ],
     answer: 2,
     subject: 'biology',
@@ -84,10 +84,10 @@ export default [
   {
     q: { zh: '"蝙蝠是瞎子，几乎看不见东西"这一说法是否准确？', en: 'Is the claim "bats are blind and can barely see" accurate?' },
     options: [
-      { zh: '完全正确，蝙蝠无视力', en: 'Completely correct, bats have no vision' },
-      { zh: '不正确，多数蝙蝠视力良好，回声定位只是辅助', en: 'Incorrect, most bats see well; echolocation is just supplemental' },
-      { zh: '仅对大蝙蝠成立', en: 'Only true for megabats' },
-      { zh: '仅对小型蝙蝠成立', en: 'Only true for microbats' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '多数蝙蝠视力良好，回声定位只是辅助', en: 'Most bats see well; echolocation is just supplemental' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -97,10 +97,10 @@ export default [
   {
     q: { zh: '"鸵鸟遇到危险会把头埋进沙子里"这一说法是否正确？', en: 'Is the claim "ostriches bury their head in sand when threatened" correct?' },
     options: [
-      { zh: '正确，是其名称由来', en: 'Correct, the origin of its name' },
-      { zh: '不正确，鸵鸟遇到危险会奔跑或踢击，"埋头"是孵蛋时低头护蛋的视觉错觉', en: 'Incorrect, ostriches run or kick; "head in sand" is a visual illusion of head-down incubation' },
-      { zh: '仅对小鸵鸟成立', en: 'Only true for chicks' },
-      { zh: '仅对雌鸵鸟成立', en: 'Only true for females' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '鸵鸟遇到危险会奔跑或踢击，"埋头"是孵蛋时低头护蛋的视觉错觉', en: 'Ostriches run or kick; "head in sand" is a visual illusion of head-down incubation' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -110,10 +110,10 @@ export default [
   {
     q: { zh: '"公牛见到红色就会发怒"这一说法是否正确？', en: 'Is the claim "bulls become enraged at the color red" correct?' },
     options: [
-      { zh: '正确，红色刺激公牛', en: 'Correct, red stimulates bulls' },
-      { zh: '不正确，公牛是色盲，被激怒的是布的晃动', en: 'Incorrect, bulls are colorblind and react to the waving cape' },
-      { zh: '仅对成年公牛成立', en: 'Only true for adult bulls' },
-      { zh: '仅对斗牛场公牛成立', en: 'Only true for fighting bulls' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '公牛是色盲，被激怒的是布的晃动', en: 'Bulls are colorblind and react to the waving cape' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -123,10 +123,10 @@ export default [
   {
     q: { zh: '"蚯蚓被切成两段就会变成两条活蚯蚓"这一说法是否准确？', en: 'Is the claim "an earthworm cut in half becomes two living worms" accurate?' },
     options: [
-      { zh: '完全正确，每段都能再生', en: 'Completely correct, each half regenerates' },
-      { zh: '不正确，只有带生殖环带的前段才有较高存活率', en: 'Incorrect, only the front half with the clitellum has a good survival rate' },
-      { zh: '仅对成年蚯蚓成立', en: 'Only true for adult worms' },
-      { zh: '仅在湿润土壤中成立', en: 'Only true in moist soil' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '只有带生殖环带的前段才有较高存活率', en: 'Only the front half with the clitellum has a good survival rate' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -136,10 +136,10 @@ export default [
   {
     q: { zh: '"雌螳螂交配时一定会吃掉雄螳螂"这一说法是否准确？', en: 'Is the claim "female mantises always eat their mate" accurate?' },
     options: [
-      { zh: '完全正确，每次交配必发生', en: 'Completely correct, happens every mating' },
-      { zh: '不正确，自然条件下发生率较低，多为实验室饥饿所致', en: 'Incorrect, naturally rare, often an artifact of starved lab subjects' },
-      { zh: '仅对野生种群成立', en: 'Only true for wild populations' },
-      { zh: '仅对雄性较小的物种成立', en: 'Only true for species with smaller males' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '自然条件下发生率较低，多为实验室饥饿所致', en: 'Naturally rare, often an artifact of starved lab subjects' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -149,10 +149,10 @@ export default [
   {
     q: { zh: '"老鼠最爱的食物是奶酪"这一说法是否准确？', en: 'Is the claim "mice love cheese the most" accurate?' },
     options: [
-      { zh: '完全正确，卡通片证实', en: 'Completely correct, proven by cartoons' },
-      { zh: '不正确，老鼠是杂食偏谷物，奶酪非其首选', en: 'Incorrect, mice prefer grains; cheese is not their favorite' },
-      { zh: '仅对家鼠成立', en: 'Only true for house mice' },
-      { zh: '仅对田鼠成立', en: 'Only true for field mice' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '老鼠是杂食偏谷物，奶酪非其首选', en: 'Mice prefer grains; cheese is not their favorite' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -162,10 +162,10 @@ export default [
   {
     q: { zh: '"大象害怕老鼠"这一说法是否有可靠证据？', en: 'Is there reliable evidence that "elephants fear mice"?' },
     options: [
-      { zh: '完全正确，是象的先天恐惧', en: 'Completely correct, an innate fear' },
-      { zh: '不正确，没有可靠证据支持', en: 'Incorrect, no reliable evidence supports it' },
-      { zh: '仅对幼象成立', en: 'Only true for calves' },
-      { zh: '仅对野生象成立', en: 'Only true for wild elephants' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '现有科学证据不支持这一说法。', en: 'No reliable evidence supports it' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -175,10 +175,10 @@ export default [
   {
     q: { zh: '"鲨鱼不会得癌症，因此吃鱼翅可抗癌"这一说法是否正确？', en: 'Is the claim "sharks don\'t get cancer, so shark cartilage cures cancer" correct?' },
     options: [
-      { zh: '完全正确，鲨鱼软骨可抗癌', en: 'Completely correct, shark cartilage is anti-cancer' },
-      { zh: '不正确，鲨鱼也会患多种癌症，软骨无抗癌证据', en: 'Incorrect, sharks get many cancers; cartilage has no anti-cancer evidence' },
-      { zh: '仅对成年鲨鱼成立', en: 'Only true for adult sharks' },
-      { zh: '仅对深海鲨鱼成立', en: 'Only true for deep-sea sharks' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '鲨鱼也会患多种癌症，软骨无抗癌证据', en: 'Sharks get many cancers; cartilage has no anti-cancer evidence' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -188,10 +188,10 @@ export default [
   {
     q: { zh: '"鸭子的嘎嘎声没有回声"这一说法是否正确？', en: 'Is the claim "a duck\'s quack does not echo" correct?' },
     options: [
-      { zh: '正确，因其声波频率特殊', en: 'Correct, due to its special frequency' },
-      { zh: '不正确，鸭叫和其他声音一样会产生回声', en: 'Incorrect, duck quacks echo like any other sound' },
-      { zh: '仅在空旷环境成立', en: 'Only true in open spaces' },
-      { zh: '仅对雌鸭成立', en: 'Only true for females' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '鸭叫和其他声音一样会产生回声', en: 'Duck quacks echo like any other sound' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -201,10 +201,10 @@ export default [
   {
     q: { zh: '"血型（A/B/O/AB）能决定人的性格"这一说法是否有科学依据？', en: 'Does blood type (A/B/O/AB) determine personality, scientifically?' },
     options: [
-      { zh: '正确，日本研究证实', en: 'Correct, confirmed by Japanese research' },
-      { zh: '不正确，没有任何可靠科学证据支持', en: 'Incorrect, no reliable scientific evidence supports it' },
-      { zh: '仅对 A 型成立', en: 'Only true for type A' },
-      { zh: '仅对 O 型成立', en: 'Only true for type O' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '没有任何可靠科学证据支持', en: 'No reliable scientific evidence supports it' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -214,10 +214,10 @@ export default [
   {
     q: { zh: '"同卵双胞胎之间存在心电感应，能远程感知对方情绪"这一说法是否有科学证据？', en: 'Is there scientific evidence for telepathy between identical twins?' },
     options: [
-      { zh: '有，大规模双盲实验证实', en: 'Yes, confirmed by large double-blind trials' },
-      { zh: '没有，研究未发现超感官知觉的证据', en: 'No, studies find no evidence of ESP' },
-      { zh: '仅在女性双胞胎中成立', en: 'Only true for female twins' },
-      { zh: '仅在共同抚养的双胞胎中成立', en: 'Only true for co-raised twins' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '研究未发现超感官知觉的证据', en: 'Studies find no evidence of ESP' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -227,10 +227,10 @@ export default [
   {
     q: { zh: '"蚊子特别偏爱 O 型血的人"这一说法是否准确？', en: 'Is the claim "mosquitoes prefer type O blood" accurate?' },
     options: [
-      { zh: '完全正确，O 型血最招蚊', en: 'Completely correct, type O is most attractive' },
-      { zh: '不完全准确，血型并非主因，二氧化碳、体味、体温影响更大', en: 'Not quite; blood type is not the main factor — CO2, body odor and temperature matter more' },
-      { zh: '仅对按蚊成立', en: 'Only true for Anopheles' },
-      { zh: '仅在室内成立', en: 'Only true indoors' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '血型并非主因，二氧化碳、体味、体温影响更大', en: 'Blood type is not the main factor — CO2, body odor and temperature matter more' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -240,10 +240,10 @@ export default [
   {
     q: { zh: '"满月之夜人类的犯罪率、急诊量和出生率会异常上升"这一说法是否得到科学支持？', en: 'Is the claim that full moons raise crime, ER visits and birth rates scientifically supported?' },
     options: [
-      { zh: '完全得到支持', en: 'Fully supported' },
-      { zh: '未得到支持，大规模研究未发现与月相的相关性', en: 'Not supported; large studies find no lunar correlation' },
-      { zh: '仅对出生率成立', en: 'Only for birth rate' },
-      { zh: '仅对犯罪率成立', en: 'Only for crime rate' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '大规模研究未发现与月相的相关性', en: 'Large studies find no lunar correlation' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -253,10 +253,10 @@ export default [
   {
     q: { zh: '"拔一根白头发会长十根白头发"这一说法是否准确？', en: 'Is the claim "pulling one gray hair grows ten more" accurate?' },
     options: [
-      { zh: '正确，毛囊受刺激', en: 'Correct, follicles are stimulated' },
-      { zh: '仅对春季成立', en: 'Only true in spring' },
-      { zh: '仅对青春期后成立', en: 'Only true after puberty' },
-      { zh: '不正确，每个毛囊独立，拔一根不影响其他毛囊', en: 'Incorrect, each follicle is independent; pulling one does not affect others' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
+      { zh: '每个毛囊独立，拔一根不影响其他毛囊', en: 'Each follicle is independent; pulling one does not affect others' },
     ],
     answer: 3,
     subject: 'biology',
@@ -267,10 +267,10 @@ export default [
   {
     q: { zh: '"味精（谷氨酸钠）有害健康，应避免食用"这一说法是否得到科学支持？', en: 'Is the claim "MSG is harmful and should be avoided" scientifically supported?' },
     options: [
-      { zh: '得到支持，引发中餐综合征', en: 'Supported, causes Chinese restaurant syndrome' },
-      { zh: '未得到支持，FDA 等机构将其列为"一般公认安全"', en: 'Not supported; FDA lists MSG as Generally Recognized as Safe' },
-      { zh: '仅对哮喘患者成立', en: 'Only true for asthma patients' },
-      { zh: '仅在大剂量时成立', en: 'Only true in large doses' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: 'FDA 等机构将其列为"一般公认安全"', en: 'FDA lists MSG as Generally Recognized as Safe' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -280,10 +280,10 @@ export default [
   {
     q: { zh: '"鸡精比味精更健康，因为它是天然原料"这一说法是否准确？', en: 'Is chicken bouillon healthier than MSG because it is "natural"?' },
     options: [
-      { zh: '正确，鸡精不含味精', en: 'Correct, bouillon contains no MSG' },
-      { zh: '不正确，鸡精主要鲜味成分仍是谷氨酸钠，且常含盐和糖', en: 'Incorrect, bouillon\'s main savory component is still MSG, often with added salt and sugar' },
-      { zh: '仅对无盐鸡精成立', en: 'Only true for low-salt bouillon' },
-      { zh: '仅对自制鸡精成立', en: 'Only true for homemade bouillon' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '鸡精主要鲜味成分仍是谷氨酸钠，且常含盐和糖', en: 'Bouillon\'s main savory component is still MSG, often with added salt and sugar' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -293,10 +293,10 @@ export default [
   {
     q: { zh: '"隔夜茶会致癌，不能饮用"这一说法是否有科学依据？', en: 'Is "overnight tea causes cancer" scientifically supported?' },
     options: [
-      { zh: '有，会产生大量亚硝胺致癌', en: 'Yes, produces carcinogenic nitrosamines' },
-      { zh: '没有可靠证据，隔夜茶中亚硝酸盐含量极低，远未达有害剂量', en: 'No reliable evidence; nitrite in overnight tea is far below harmful levels' },
-      { zh: '仅对绿茶成立', en: 'Only true for green tea' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '隔夜茶中亚硝酸盐含量极低，远未达有害剂量', en: 'Nitrite in overnight tea is far below harmful levels' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -306,10 +306,10 @@ export default [
   {
     q: { zh: '"反复烧开的水（千滚水）会致癌"这一说法是否有科学依据？', en: 'Is "reboiled water causes cancer" scientifically supported?' },
     options: [
-      { zh: '有，会产生大量亚硝酸盐', en: 'Yes, produces much nitrite' },
-      { zh: '没有可靠证据，反复煮沸后亚硝酸盐增量极微，远低于安全限值', en: 'No reliable evidence; nitrite increase after repeated boiling is tiny, far below safety limits' },
-      { zh: '仅对铁壶煮水成立', en: 'Only true for iron kettles' },
-      { zh: '仅对长时间煮沸成立', en: 'Only true for long boiling' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '反复煮沸后亚硝酸盐增量极微，远低于安全限值', en: 'Nitrite increase after repeated boiling is tiny, far below safety limits' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -319,10 +319,10 @@ export default [
   {
     q: { zh: '"隔夜的白开水不能喝，会致癌"这一说法是否有科学依据？', en: 'Is "overnight boiled water is undrinkable and carcinogenic" scientifically supported?' },
     options: [
-      { zh: '有，会大量产生亚硝胺', en: 'Yes, produces much nitrosamine' },
-      { zh: '没有可靠证据，白开水过夜后水质并无明显变化，可放心饮用', en: 'No reliable evidence; overnight boiled water changes little and is safe to drink' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅对铝壶煮水成立', en: 'Only true for aluminum kettles' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '白开水过夜后水质并无明显变化，可放心饮用', en: 'Overnight boiled water changes little and is safe to drink' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -332,10 +332,10 @@ export default [
   {
     q: { zh: '"蒸馒头剩下的蒸锅水有毒、致癌"这一说法是否有科学依据？', en: 'Is "leftover steamer water is toxic and carcinogenic" scientifically supported?' },
     options: [
-      { zh: '有，含大量亚硝酸盐', en: 'Yes, contains much nitrite' },
-      { zh: '没有可靠证据，蒸锅水主要成分是水和少量矿物质，无毒', en: 'No reliable evidence; steamer water is mostly water with trace minerals' },
-      { zh: '仅对铝锅成立', en: 'Only true for aluminum steamers' },
-      { zh: '仅对长时间蒸煮成立', en: 'Only true for long steaming' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '蒸锅水主要成分是水和少量矿物质，无毒', en: 'Steamer water is mostly water with trace minerals' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -345,10 +345,10 @@ export default [
   {
     q: { zh: '"微波炉加热的食物带有辐射、会致癌"这一说法是否正确？', en: 'Is "microwaved food retains radiation and causes cancer" correct?' },
     options: [
-      { zh: '正确，微波是电离辐射', en: 'Correct, microwaves are ionizing radiation' },
-      { zh: '不正确，微波是非电离辐射，加热后不留辐射残留', en: 'Incorrect, microwaves are non-ionizing and leave no residual radiation' },
-      { zh: '仅对塑料容器成立', en: 'Only true for plastic containers' },
-      { zh: '仅对长时间加热成立', en: 'Only true for long heating' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '微波是非电离辐射，加热后不留辐射残留', en: 'Microwaves are non-ionizing and leave no residual radiation' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'physics',
@@ -358,10 +358,10 @@ export default [
   {
     q: { zh: '"站在工作的微波炉旁会受到有害辐射"这一说法是否准确？', en: 'Is "standing near a running microwave is harmful" accurate?' },
     options: [
-      { zh: '完全正确，应远离 3 米', en: 'Completely correct, stay 3 m away' },
-      { zh: '不正确，合格微波炉屏蔽良好，泄漏远低于安全限值', en: 'Incorrect, a qualified microwave shields well and leaks far below safety limits' },
-      { zh: '仅对孕妇成立', en: 'Only true for pregnant women' },
-      { zh: '仅对儿童成立', en: 'Only true for children' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '合格微波炉屏蔽良好，泄漏远低于安全限值', en: 'A qualified microwave shields well and leaks far below safety limits' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'physics',
@@ -371,10 +371,10 @@ export default [
   {
     q: { zh: '"用铝锅做饭会导致老年痴呆"这一说法是否得到科学支持？', en: 'Is the claim "aluminum cookware causes Alzheimer\'s" scientifically supported?' },
     options: [
-      { zh: '得到支持，铝在脑中蓄积', en: 'Supported, aluminum accumulates in the brain' },
-      { zh: '未得到支持，流行病学研究未发现日常接触铝与阿尔茨海默病的因果关系', en: 'Not supported; epidemiology finds no causal link between everyday aluminum exposure and Alzheimer\'s' },
-      { zh: '仅对老年人成立', en: 'Only true for the elderly' },
-      { zh: '仅对酸性食物成立', en: 'Only true for acidic foods' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '流行病学研究未发现日常接触铝与阿尔茨海默病的因果关系', en: 'Epidemiology finds no causal link between everyday aluminum exposure and Alzheimer\'s' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -384,10 +384,10 @@ export default [
   {
     q: { zh: '"在电脑旁放一盆仙人掌可以吸收电脑辐射"这一说法是否正确？', en: 'Is "a cactus next to the computer absorbs its radiation" correct?' },
     options: [
-      { zh: '正确，仙人掌特别能吸辐射', en: 'Correct, cacti especially absorb radiation' },
-      { zh: '不正确，仙人掌不能吸收电脑的非电离辐射', en: 'Incorrect, cacti cannot absorb a computer\'s non-ionizing radiation' },
-      { zh: '仅对大型仙人掌成立', en: 'Only true for large cacti' },
-      { zh: '仅在屏幕前成立', en: 'Only true in front of the screen' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '仙人掌不能吸收电脑的非电离辐射', en: 'Cacti cannot absorb a computer\'s non-ionizing radiation' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'physics',
@@ -397,10 +397,10 @@ export default [
   {
     q: { zh: '"孕妇穿防辐射服能有效屏蔽电脑、手机对胎儿的影响"这一说法是否成立？', en: 'Is "maternity anti-radiation wear effectively shields the fetus from computer/phone radiation" valid?' },
     options: [
-      { zh: '完全成立，可屏蔽所有辐射', en: 'Fully valid, shields all radiation' },
-      { zh: '不成立，日常电器辐射为非电离辐射，对胎儿无证据有害，且防辐射服也屏蔽不了所有方向', en: 'Not valid; everyday devices emit non-ionizing radiation with no evidence of fetal harm, and the suits cannot block all directions anyway' },
-      { zh: '仅在冬季成立', en: 'Only true in winter' },
-      { zh: '仅对大型电器成立', en: 'Only true for large appliances' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '日常电器辐射为非电离辐射，对胎儿无证据有害，且防辐射服也屏蔽不了所有方向', en: 'Everyday devices emit non-ionizing radiation with no evidence of fetal harm, and the suits cannot block all directions anyway' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'physics',
@@ -410,10 +410,10 @@ export default [
   {
     q: { zh: '"红糖比白糖更有营养、补铁"这一说法是否准确？', en: 'Is brown sugar more nutritious and iron-rich than white sugar?' },
     options: [
-      { zh: '正确，红糖含大量铁', en: 'Correct, brown sugar has much iron' },
-      { zh: '不准确，红糖中铁含量极微，补铁效果可忽略', en: 'Inaccurate; brown sugar has so little iron that its iron-supplementing effect is negligible' },
-      { zh: '仅对黑糖成立', en: 'Only true for dark muscovado' },
-      { zh: '仅对月子红糖成立', en: 'Only true for postpartum brown sugar' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '红糖中铁含量极微，补铁效果可忽略', en: 'Brown sugar has so little iron that its iron-supplementing effect is negligible' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -423,10 +423,10 @@ export default [
   {
     q: { zh: '"蜂蜜比白糖更健康，不会升高血糖"这一说法是否准确？', en: 'Is honey healthier than white sugar and does not raise blood sugar?' },
     options: [
-      { zh: '完全正确，蜂蜜不会升血糖', en: 'Completely correct, honey does not raise blood sugar' },
-      { zh: '不准确，蜂蜜主要成分是果糖和葡萄糖，升糖效应与糖相近', en: 'Inaccurate; honey is mainly fructose and glucose, with a glycemic effect similar to sugar' },
-      { zh: '仅对纯蜂蜜成立', en: 'Only true for pure honey' },
-      { zh: '仅在睡前服用成立', en: 'Only true when taken before sleep' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '蜂蜜主要成分是果糖和葡萄糖，升糖效应与糖相近', en: 'Honey is mainly fructose and glucose, with a glycemic effect similar to sugar' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -436,10 +436,10 @@ export default [
   {
     q: { zh: '"木瓜能丰胸"这一说法是否有科学依据？', en: 'Is the claim "papaya enlarges breasts" scientifically supported?' },
     options: [
-      { zh: '有，木瓜酶促进乳腺发育', en: 'Yes, papain promotes mammary development' },
-      { zh: '没有，木瓜酶在胃中即被分解，乳腺大小主要由遗传和激素决定', en: 'No; papain is digested in the stomach, and breast size is largely determined by genetics and hormones' },
-      { zh: '仅对青木瓜成立', en: 'Only true for green papaya' },
-      { zh: '仅在青春期成立', en: 'Only true during puberty' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '木瓜酶在胃中即被分解，乳腺大小主要由遗传和激素决定', en: 'No; papain is digested in the stomach, and breast size is largely determined by genetics and hormones' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -449,10 +449,10 @@ export default [
   {
     q: { zh: '"多吃黑芝麻能让白发变黑"这一说法是否有科学依据？', en: 'Is "eating black sesame turns gray hair black again" scientifically supported?' },
     options: [
-      { zh: '有，黑色食物含黑色素', en: 'Yes, black foods contain melanin' },
-      { zh: '没有，毛囊黑色素合成由基因和年龄决定，吃黑芝麻不能逆转白发', en: 'No; follicular melanin synthesis is governed by genes and age; sesame cannot reverse graying' },
-      { zh: '仅对少年白发成立', en: 'Only true for premature gray in youth' },
-      { zh: '仅在冬季成立', en: 'Only true in winter' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '毛囊黑色素合成由基因和年龄决定，吃黑芝麻不能逆转白发', en: 'No; follicular melanin synthesis is governed by genes and age; sesame cannot reverse graying' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -462,10 +462,10 @@ export default [
   {
     q: { zh: '"何首乌能乌发，可长期服用"这一说法是否准确？', en: 'Is the claim "He Shou Wu (Fleeceflower root) darkens hair and is safe long-term" accurate?' },
     options: [
-      { zh: '完全准确，是传统验方', en: 'Completely accurate, a traditional remedy' },
-      { zh: '不准确，乌发证据有限，且具有明确的肝毒性风险', en: 'Inaccurate; hair-darkening evidence is weak, and it has clear hepatotoxic risk' },
-      { zh: '仅对制首乌成立', en: 'Only true for processed He Shou Wu' },
-      { zh: '仅在少量服用时成立', en: 'Only true in small doses' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '乌发证据有限，且具有明确的肝毒性风险', en: 'Hair-darkening evidence is weak, and it has clear hepatotoxic risk' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -475,10 +475,10 @@ export default [
   {
     q: { zh: '"韭菜壮阳"这一说法是否有科学依据？', en: 'Is the claim "leek (jiu cai) boosts male potency" scientifically supported?' },
     options: [
-      { zh: '有，含锌量高', en: 'Yes, high in zinc' },
-      { zh: '没有，韭菜含锌量并不突出，且无任何可靠证据显示其能提升性功能', en: 'No; leeks are not particularly zinc-rich, and no reliable evidence supports sexual-function enhancement' },
-      { zh: '仅在春季成立', en: 'Only true in spring' },
-      { zh: '仅对男性成立', en: 'Only true for men' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '韭菜含锌量并不突出，且无任何可靠证据显示其能提升性功能', en: 'No; leeks are not particularly zinc-rich, and no reliable evidence supports sexual-function enhancement' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -488,10 +488,10 @@ export default [
   {
     q: { zh: '"喝醋能软化血管"这一说法是否准确？', en: 'Is "drinking vinegar softens blood vessels" accurate?' },
     options: [
-      { zh: '完全准确，醋酸溶解斑块', en: 'Completely accurate, acetic acid dissolves plaque' },
-      { zh: '不准确，醋酸进入血液后被代谢调节，pH 不会明显改变，无软化血管证据', en: 'Inaccurate; acetic acid is metabolized and buffered, blood pH barely changes, and there is no evidence of vessel softening' },
-      { zh: '仅对陈醋成立', en: 'Only true for aged vinegar' },
-      { zh: '仅在长期服用时成立', en: 'Only true with long-term use' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '醋酸进入血液后被代谢调节，pH 不会明显改变，无软化血管证据', en: 'Acetic acid is metabolized and buffered, blood pH barely changes, and there is no evidence of vessel softening' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -501,10 +501,10 @@ export default [
   {
     q: { zh: '"喝大骨汤能补钙"这一说法是否准确？', en: 'Is "bone-broth soup is rich in calcium" accurate?' },
     options: [
-      { zh: '准确，骨头含钙多', en: 'Accurate, bones are calcium-rich' },
-      { zh: '不准确，骨汤中钙含量极低，远不如牛奶或豆制品', en: 'Inaccurate; bone broth has very little calcium, far less than milk or soy products' },
-      { zh: '仅对长时间熬煮成立', en: 'Only true for long simmering' },
-      { zh: '仅在加醋熬煮时大幅成立', en: 'Only true with vinegar added during simmering' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '骨汤中钙含量极低，远不如牛奶或豆制品', en: 'Bone broth has very little calcium, far less than milk or soy products' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -514,10 +514,10 @@ export default [
   {
     q: { zh: '"豆腐和菠菜一起吃会得肾结石"这一说法是否有科学依据？', en: 'Is "tofu + spinach causes kidney stones" scientifically supported?' },
     options: [
-      { zh: '有，菠菜草酸遇豆腐钙成石', en: 'Yes, spinach oxalate meets tofu calcium to form stones' },
-      { zh: '没有可靠证据，草酸与钙在肠道结合反而减少吸收，正常食用不致结石', en: 'No reliable evidence; oxalate-calcium binding in the gut actually reduces absorption, and normal intake does not cause stones' },
-      { zh: '仅对生菠菜成立', en: 'Only true for raw spinach' },
-      { zh: '仅在大量食用时成立', en: 'Only true with very large intake' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '草酸与钙在肠道结合反而减少吸收，正常食用不致结石', en: 'Oxalate-calcium binding in the gut actually reduces absorption, and normal intake does not cause stones' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -527,10 +527,10 @@ export default [
   {
     q: { zh: '"喝红糖水能治痛经"这一说法是否准确？', en: 'Is "drinking brown-sugar water cures menstrual cramps" accurate?' },
     options: [
-      { zh: '完全准确，红糖含活血成分', en: 'Completely accurate, brown sugar contains blood-activating components' },
-      { zh: '不准确，红糖水主要起热饮暖腹的安慰效应，并非有效治疗', en: 'Inaccurate; brown-sugar water acts mainly via the comfort of a warm drink, not as an effective treatment' },
-      { zh: '仅对产后疼痛成立', en: 'Only true for postpartum pain' },
-      { zh: '仅对寒性体质成立', en: 'Only true for cold-type constitution' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '红糖水主要起热饮暖腹的安慰效应，并非有效治疗', en: 'Brown-sugar water acts mainly via the comfort of a warm drink, not as an effective treatment' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -540,10 +540,10 @@ export default [
   {
     q: { zh: '"红枣补血"这一说法是否有可靠证据？', en: 'Is "jujube (red dates) replenishes blood" reliably evidenced?' },
     options: [
-      { zh: '有，红枣含铁丰富', en: 'Yes, jujubes are iron-rich' },
-      { zh: '不准确，红枣含的是非血红素铁，吸收率低，远不如红肉和动物肝脏', en: 'Inaccurate; jujube iron is non-heme, poorly absorbed, far inferior to red meat and liver' },
-      { zh: '仅对女性成立', en: 'Only true for women' },
-      { zh: '仅在经期成立', en: 'Only true during menstruation' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '红枣含的是非血红素铁，吸收率低，远不如红肉和动物肝脏', en: 'Jujube iron is non-heme, poorly absorbed, far inferior to red meat and liver' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -553,10 +553,10 @@ export default [
   {
     q: { zh: '"阿胶补血养颜"这一说法是否有可靠证据？', en: 'Is "Ejiao (donkey-hide gelatin) nourishes blood and beauty" reliably evidenced?' },
     options: [
-      { zh: '有，驴皮胶质含丰富铁', en: 'Yes, donkey-hide gelatin is iron-rich' },
-      { zh: '缺乏可靠证据，阿胶主要成分是胶原蛋白，补血效果证据薄弱', en: 'Lacks reliable evidence; Ejiao is mainly collagen, with weak evidence for blood-building' },
-      { zh: '仅对女性成立', en: 'Only true for women' },
-      { zh: '仅在冬季进补时成立', en: 'Only true for winter tonic use' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '阿胶主要成分是胶原蛋白，补血效果证据薄弱', en: 'Ejiao is mainly collagen, with weak evidence for blood-building' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -566,10 +566,10 @@ export default [
   {
     q: { zh: '"枸杞明目"这一说法是否有可靠证据？', en: 'Is "goji berries improve vision" reliably evidenced?' },
     options: [
-      { zh: '有，含玉米黄质', en: 'Yes, contains zeaxanthin' },
-      { zh: '证据有限，枸杞含叶黄素/玉米黄质，但对正常人视力改善证据薄弱', en: 'Limited evidence; goji has lutein/zeaxanthin, but evidence for vision improvement in healthy people is weak' },
-      { zh: '仅对老年人成立', en: 'Only true for the elderly' },
-      { zh: '仅在长期服用时成立', en: 'Only true with long-term use' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '枸杞含叶黄素/玉米黄质，但对正常人视力改善证据薄弱', en: 'Goji has lutein/zeaxanthin, but evidence for vision improvement in healthy people is weak' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -579,10 +579,10 @@ export default [
   {
     q: { zh: '"核桃补脑，因其形状像大脑"这一说法是否准确？', en: 'Is "walnuts boost the brain because they look like one" accurate?' },
     options: [
-      { zh: '准确，以形补形', en: 'Accurate, like-shape-nourishes-shape' },
-      { zh: '不准确，"以形补形"无科学依据，核桃营养素对脑健康无特殊功效', en: 'Inaccurate; "like-shape-nourishes" has no scientific basis, and walnuts offer no special brain-boosting effect' },
-      { zh: '仅对学生成立', en: 'Only true for students' },
-      { zh: '仅在考试前成立', en: 'Only true before exams' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '"以形补形"无科学依据，核桃营养素对脑健康无特殊功效', en: '"like-shape-nourishes" has no scientific basis, and walnuts offer no special brain-boosting effect' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -592,10 +592,10 @@ export default [
   {
     q: { zh: '"黑豆补肾，因其皮黑"这一说法是否准确？', en: 'Is "black beans tonify the kidney because their skin is black" accurate?' },
     options: [
-      { zh: '准确，黑色入肾', en: 'Accurate, black enters the kidney' },
-      { zh: '不准确，"黑色入肾"是中医类比，现代证据不支持黑豆对肾有特殊作用', en: 'Inaccurate; "black-entering-kidney" is TCM analogy, and modern evidence does not support a special renal effect of black beans' },
-      { zh: '仅在冬季成立', en: 'Only true in winter' },
-      { zh: '仅对男性成立', en: 'Only true for men' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '"黑色入肾"是中医类比，现代证据不支持黑豆对肾有特殊作用', en: '"black-entering-kidney" is TCM analogy, and modern evidence does not support a special renal effect of black beans' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -605,10 +605,10 @@ export default [
   {
     q: { zh: '"山药健脾"这一说法是否有可靠证据？', en: 'Is "yam strengthens the spleen" reliably evidenced?' },
     options: [
-      { zh: '有，黏蛋白养胃', en: 'Yes, mucilage nourishes the stomach' },
-      { zh: '证据有限，山药是普通淀粉类食物，并无可靠的健脾功效证据', en: 'Limited evidence; yam is a regular starchy food with no reliable evidence for spleen-strengthening' },
-      { zh: '仅在长期食用时成立', en: 'Only true with long-term use' },
-      { zh: '仅对脾胃虚寒者成立', en: 'Only true for cold-type spleen-stomach' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '山药是普通淀粉类食物，并无可靠的健脾功效证据', en: 'Yam is a regular starchy food with no reliable evidence for spleen-strengthening' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -618,10 +618,10 @@ export default [
   {
     q: { zh: '"喝醋能解酒"这一说法是否准确？', en: 'Is "drinking vinegar sobers you up" accurate?' },
     options: [
-      { zh: '准确，醋酸中和酒精', en: 'Accurate, acetic acid neutralizes ethanol' },
-      { zh: '不准确，醋酸不会加速乙醇代谢，肝脏代谢速率无法被显著改变', en: 'Inaccurate; acetic acid does not speed ethanol metabolism, and hepatic clearance cannot be significantly accelerated' },
-      { zh: '仅在饭后成立', en: 'Only true after meals' },
-      { zh: '仅对少量饮酒成立', en: 'Only true for light drinking' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '醋酸不会加速乙醇代谢，肝脏代谢速率无法被显著改变', en: 'Acetic acid does not speed ethanol metabolism, and hepatic clearance cannot be significantly accelerated' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -631,10 +631,10 @@ export default [
   {
     q: { zh: '"浓茶能解酒"这一说法是否准确？', en: 'Is "strong tea sobers you up" accurate?' },
     options: [
-      { zh: '准确，茶多酚促进代谢', en: 'Accurate, tea polyphenols boost metabolism' },
-      { zh: '不准确，浓茶咖啡因只让人更清醒，不加速酒精代谢，反而加重肝肾负担', en: 'Inaccurate; caffeine only masks drunkenness without speeding metabolism, and burdens liver and kidney' },
-      { zh: '仅对绿茶成立', en: 'Only true for green tea' },
-      { zh: '仅在饭后成立', en: 'Only true after meals' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '浓茶咖啡因只让人更清醒，不加速酒精代谢，反而加重肝肾负担', en: 'Caffeine only masks drunkenness without speeding metabolism, and burdens liver and kidney' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -644,10 +644,10 @@ export default [
   {
     q: { zh: '"喝酒能暖身"这一说法是否准确？', en: 'Is "drinking alcohol warms the body" accurate?' },
     options: [
-      { zh: '准确，酒后身体发热', en: 'Accurate, the body feels warm' },
-      { zh: '不准确，酒精扩张血管散热加快，核心体温反而下降', en: 'Inaccurate; alcohol vasodilates and accelerates heat loss, lowering core temperature' },
-      { zh: '仅对白酒成立', en: 'Only true for clear liquors' },
-      { zh: '仅在冬季成立', en: 'Only true in winter' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '酒精扩张血管散热加快，核心体温反而下降', en: 'Alcohol vasodilates and accelerates heat loss, lowering core temperature' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -657,10 +657,10 @@ export default [
   {
     q: { zh: '"喝酒能助眠"这一说法是否准确？', en: 'Is "drinking alcohol aids sleep" accurate?' },
     options: [
-      { zh: '准确，酒精助眠', en: 'Accurate, alcohol helps sleep' },
-      { zh: '不准确，酒精虽缩短入睡时间但破坏深睡眠和 REM，整体睡眠质量下降', en: 'Inaccurate; alcohol shortens sleep onset but disrupts deep and REM sleep, reducing overall quality' },
-      { zh: '仅在少量饮酒时成立', en: 'Only true for light drinking' },
-      { zh: '仅对失眠者成立', en: 'Only true for insomniacs' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '酒精虽缩短入睡时间但破坏深睡眠和 REM，整体睡眠质量下降', en: 'Alcohol shortens sleep onset but disrupts deep and REM sleep, reducing overall quality' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -670,10 +670,10 @@ export default [
   {
     q: { zh: '"每天喝红酒能保护心血管"这一说法是否有可靠证据？', en: 'Is "a glass of red wine daily protects the heart" reliably evidenced?' },
     options: [
-      { zh: '有，白藜芦醇护心', en: 'Yes, resveratrol protects the heart' },
-      { zh: '证据薄弱，大规模研究未显示适量饮酒比不饮酒更有心血管获益，且增加癌症风险', en: 'Weak evidence; large studies show no cardiovascular benefit of moderate drinking vs abstinence, while cancer risk rises' },
-      { zh: '仅对老年男性成立', en: 'Only true for older men' },
-      { zh: '仅在饭后饮成立', en: 'Only true when taken with meals' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '大规模研究未显示适量饮酒比不饮酒更有心血管获益，且增加癌症风险', en: 'Large studies show no cardiovascular benefit of moderate drinking vs abstinence, while cancer risk rises' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -683,10 +683,10 @@ export default [
   {
     q: { zh: '"喝牛奶会生痰、加重咳嗽"这一说法是否有科学依据？', en: 'Is "drinking milk produces phlegm and worsens cough" scientifically supported?' },
     options: [
-      { zh: '有，牛奶黏稠', en: 'Yes, milk is viscous' },
-      { zh: '没有可靠证据，部分感觉是牛奶脂肪短暂的喉部涂层感，与痰无关', en: 'No reliable evidence; the sensation is a brief throat coating from milk fat, not phlegm' },
-      { zh: '仅在冬季成立', en: 'Only true in winter' },
-      { zh: '仅对儿童成立', en: 'Only true for children' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '部分感觉是牛奶脂肪短暂的喉部涂层感，与痰无关', en: 'The sensation is a brief throat coating from milk fat, not phlegm' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -696,10 +696,10 @@ export default [
   {
     q: { zh: '"吃巧克力会长痘痘"这一说法是否准确？', en: 'Is "eating chocolate causes acne" accurate?' },
     options: [
-      { zh: '完全正确，可可致痘', en: 'Completely correct, cocoa causes acne' },
-      { zh: '不准确，证据显示纯可可本身致痘性弱，糖和高升糖饮食才是主因', en: 'Inaccurate; pure cocoa has weak comedogenicity, while sugar and high-glycemic diets are the main culprits' },
-      { zh: '仅对黑巧克力成立', en: 'Only true for dark chocolate' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '证据显示纯可可本身致痘性弱，糖和高升糖饮食才是主因', en: 'Pure cocoa has weak comedogenicity, while sugar and high-glycemic diets are the main culprits' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -709,10 +709,10 @@ export default [
   {
     q: { zh: '"牛奶和橘子一起吃会得肾结石"这一说法是否有科学依据？', en: 'Is "milk + orange causes kidney stones" scientifically supported?' },
     options: [
-      { zh: '有，蛋白质遇果酸成石', en: 'Yes, protein meets fruit acid to form stones' },
-      { zh: '没有可靠证据，正常食用下两者不会形成结石', en: 'No reliable evidence; normal consumption does not form stones' },
-      { zh: '仅在空腹时成立', en: 'Only true on an empty stomach' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '正常食用下两者不会形成结石', en: 'Normal consumption does not form stones' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -722,10 +722,10 @@ export default [
   {
     q: { zh: '"豆浆和鸡蛋不能一起吃"这一说法是否准确？', en: 'Is "soy milk and eggs cannot be eaten together" accurate?' },
     options: [
-      { zh: '准确，豆浆中抗胰蛋白酶影响蛋白质吸收', en: 'Accurate, soy trypsin inhibitors reduce protein absorption' },
-      { zh: '不准确，煮熟的豆浆已破坏抗胰蛋白酶，与鸡蛋同食无碍', en: 'Inaccurate; cooked soy milk has inactivated trypsin inhibitors, and pairing with eggs is fine' },
-      { zh: '仅在生豆浆成立', en: 'Only true for raw soy milk' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '煮熟的豆浆已破坏抗胰蛋白酶，与鸡蛋同食无碍', en: 'Cooked soy milk has inactivated trypsin inhibitors, and pairing with eggs is fine' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -735,10 +735,10 @@ export default [
   {
     q: { zh: '"豆浆加蜂蜜会中毒"这一说法是否有科学依据？', en: 'Is "soy milk + honey is poisonous" scientifically supported?' },
     options: [
-      { zh: '有，有机酸与蛋白质结合致毒', en: 'Yes, organic acid + protein makes poison' },
-      { zh: '没有可靠证据，两者一起只是普通糖蛋白饮品，无毒性', en: 'No reliable evidence; the mix is just a normal sweetened protein drink, non-toxic' },
-      { zh: '仅在空腹时成立', en: 'Only true on an empty stomach' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '两者一起只是普通糖蛋白饮品，无毒性', en: 'The mix is just a normal sweetened protein drink, non-toxic' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -748,10 +748,10 @@ export default [
   {
     q: { zh: '"海鲜和维生素 C 一起吃会砷中毒"这一说法是否准确？', en: 'Is "seafood + vitamin C causes arsenic poisoning" accurate?' },
     options: [
-      { zh: '准确，维生素 C 还原无机砷', en: 'Accurate, vitamin C reduces inorganic arsenic' },
-      { zh: '不准确，海鲜中砷多为有机砷无毒，且剂量远不足以致中毒', en: 'Inaccurate; most arsenic in seafood is organic and non-toxic, and doses are far too low to poison' },
-      { zh: '仅对深海鱼成立', en: 'Only true for deep-sea fish' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '海鲜中砷多为有机砷无毒，且剂量远不足以致中毒', en: 'Most arsenic in seafood is organic and non-toxic, and doses are far too low to poison' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -761,10 +761,10 @@ export default [
   {
     q: { zh: '"柿子和螃蟹一起吃会中毒"这一说法是否有科学依据？', en: 'Is "persimmon + crab causes poisoning" scientifically supported?' },
     options: [
-      { zh: '有，鞣酸与蛋白质结合致毒', en: 'Yes, tannin + protein makes poison' },
-      { zh: '没有可靠证据，两者同食只是鞣酸与蛋白质结合影响消化，无毒性', en: 'No reliable evidence; the mix just combines tannin with protein and may impair digestion, but is non-toxic' },
-      { zh: '仅在空腹时成立', en: 'Only true on an empty stomach' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '两者同食只是鞣酸与蛋白质结合影响消化，无毒性', en: 'The mix just combines tannin with protein and may impair digestion, but is non-toxic' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -774,10 +774,10 @@ export default [
   {
     q: { zh: '"红薯和柿子一起吃会得胃结石"这一说法是否有科学依据？', en: 'Is "sweet potato + persimmon causes gastric stones" scientifically supported?' },
     options: [
-      { zh: '有，糖与鞣酸成石', en: 'Yes, sugar + tannin forms stones' },
-      { zh: '没有可靠证据，正常食用下两者不会形成胃结石，仅大量空腹食用柿子才需注意', en: 'No reliable evidence; normal consumption does not cause stones; only large amounts of persimmon on an empty stomach warrant caution' },
-      { zh: '仅在空腹时成立', en: 'Only true on an empty stomach' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '正常食用下两者不会形成胃结石，仅大量空腹食用柿子才需注意', en: 'Normal consumption does not cause stones; only large amounts of persimmon on an empty stomach warrant caution' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -787,10 +787,10 @@ export default [
   {
     q: { zh: '"双黄蛋是打了激素，不能吃"这一说法是否准确？', en: 'Is "double-yolk eggs are hormone-injected and unsafe" accurate?' },
     options: [
-      { zh: '准确，激素所致', en: 'Accurate, caused by hormones' },
-      { zh: '不准确，双黄蛋是年轻母鸡排卵周期异常的自然现象，与激素无关', en: 'Inaccurate; double yolks are a natural ovulation anomaly in young hens, unrelated to hormones' },
-      { zh: '仅对土鸡蛋成立', en: 'Only true for free-range eggs' },
-      { zh: '仅在春季成立', en: 'Only true in spring' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '双黄蛋是年轻母鸡排卵周期异常的自然现象，与激素无关', en: 'Double yolks are a natural ovulation anomaly in young hens, unrelated to hormones' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -800,10 +800,10 @@ export default [
   {
     q: { zh: '"食物掉地上 5 秒内捡起还能吃"这一说法是否有科学依据？', en: 'Is "the 5-second rule for dropped food" scientifically supported?' },
     options: [
-      { zh: '有，细菌需时间转移', en: 'Yes, bacteria need time to transfer' },
-      { zh: '没有可靠证据，细菌污染几乎瞬时发生，时间长短影响有限', en: 'No reliable evidence; bacterial contamination is near-instant, and time has limited effect' },
-      { zh: '仅对干燥食物成立', en: 'Only true for dry food' },
-      { zh: '仅在硬地板上成立', en: 'Only true on hard floors' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '细菌污染几乎瞬时发生，时间长短影响有限', en: 'Bacterial contamination is near-instant, and time has limited effect' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -813,10 +813,10 @@ export default [
   {
     q: { zh: '"隔夜菜有亚硝酸盐，吃了会中毒致癌"这一说法是否准确？', en: 'Is "overnight food has nitrite, causing poisoning and cancer" accurate?' },
     options: [
-      { zh: '完全准确，应一律倒掉', en: 'Completely accurate, should always be discarded' },
-      { zh: '不准确，冷藏保存的隔夜菜亚硝酸盐增量有限，正常食用一般无害', en: 'Inaccurate; refrigerated overnight food shows limited nitrite increase and is generally safe in normal consumption' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅对叶菜成立', en: 'Only true for leafy greens' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '冷藏保存的隔夜菜亚硝酸盐增量有限，正常食用一般无害', en: 'Refrigerated overnight food shows limited nitrite increase and is generally safe in normal consumption' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -826,10 +826,10 @@ export default [
   {
     q: { zh: '"口服维生素 B1 能驱蚊"这一说法是否有科学依据？', en: 'Is "oral vitamin B1 repels mosquitoes" scientifically supported?' },
     options: [
-      { zh: '有，改变体味驱蚊', en: 'Yes, alters body odor to repel mosquitoes' },
-      { zh: '没有可靠证据，多项对照实验未显示口服 B1 有驱蚊效果', en: 'No reliable evidence; controlled trials show no repellent effect from oral B1' },
-      { zh: '仅在大量服用时成立', en: 'Only true with large doses' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '多项对照实验未显示口服 B1 有驱蚊效果', en: 'Controlled trials show no repellent effect from oral B1' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -839,10 +839,10 @@ export default [
   {
     q: { zh: '"吃大蒜能驱蚊"这一说法是否有科学依据？', en: 'Is "eating garlic repels mosquitoes" scientifically supported?' },
     options: [
-      { zh: '有，蒜味驱蚊', en: 'Yes, garlic odor repels mosquitoes' },
-      { zh: '没有可靠证据，吃大蒜并不能显著降低被叮咬率', en: 'No reliable evidence; eating garlic does not significantly reduce bites' },
-      { zh: '仅在大量食用时成立', en: 'Only true with large amounts' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '吃大蒜并不能显著降低被叮咬率', en: 'Eating garlic does not significantly reduce bites' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -852,10 +852,10 @@ export default [
   {
     q: { zh: '"月子期间不能洗头洗澡，否则落下月子病"这一说法是否有科学依据？', en: 'Is "no washing during confinement or it causes chronic illness" scientifically supported?' },
     options: [
-      { zh: '有，受凉致月子病', en: 'Yes, cold causes "confinement disease"' },
-      { zh: '没有可靠证据，注意保暖即可，不洗浴反而增加感染风险', en: 'No reliable evidence; with adequate warmth, not washing raises infection risk instead' },
-      { zh: '仅在冬季成立', en: 'Only true in winter' },
-      { zh: '仅对初产妇成立', en: 'Only true for first-time mothers' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '注意保暖即可，不洗浴反而增加感染风险', en: 'With adequate warmth, not washing raises infection risk instead' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -865,10 +865,10 @@ export default [
   {
     q: { zh: '"月子酒（米酒）能下奶"这一说法是否准确？', en: 'Is "rice wine during confinement boosts milk supply" accurate?' },
     options: [
-      { zh: '准确，酒活血催乳', en: 'Accurate, wine invigorates blood and lactation' },
-      { zh: '不准确，酒精反而抑制泌乳反射并通过乳汁影响婴儿', en: 'Inaccurate; alcohol inhibits the let-down reflex and passes into breast milk' },
-      { zh: '仅对少量饮用成立', en: 'Only true for small amounts' },
-      { zh: '仅在产后立即喝成立', en: 'Only true immediately postpartum' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '酒精反而抑制泌乳反射并通过乳汁影响婴儿', en: 'Alcohol inhibits the let-down reflex and passes into breast milk' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -878,10 +878,10 @@ export default [
   {
     q: { zh: '"菠菜含铁特别多，是补铁佳品"这一说法是否准确？', en: 'Is "spinach is exceptionally iron-rich" accurate?' },
     options: [
-      { zh: '准确，源于其血红素铁', en: 'Accurate, due to heme iron' },
-      { zh: '不准确，菠菜含铁量被早期小数点错误高估，且为非血红素铁吸收率低', en: 'Inaccurate; spinach iron was overestimated by a misplaced decimal point, and its non-heme iron is poorly absorbed' },
-      { zh: '仅在生吃时成立', en: 'Only true when eaten raw' },
-      { zh: '仅在春季成立', en: 'Only true in spring' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '菠菜含铁量被早期小数点错误高估，且为非血红素铁吸收率低', en: 'Spinach iron was overestimated by a misplaced decimal point, and its non-heme iron is poorly absorbed' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -891,10 +891,10 @@ export default [
   {
     q: { zh: '"番茄必须用油炒，否则番茄红素吸收不了"这一说法是否准确？', en: 'Is "tomato must be cooked in oil or lycopene is unabsorbable" accurate?' },
     options: [
-      { zh: '完全准确，油炒是必需的', en: 'Completely accurate, oil-cooking is essential' },
-      { zh: '不准确，油炒可提高番茄红素吸收率，但生吃也能吸收部分', en: 'Inaccurate; oil-cooking boosts lycopene absorption, but raw tomatoes still provide some' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '油炒可提高番茄红素吸收率，但生吃也能吸收部分', en: 'Oil-cooking boosts lycopene absorption, but raw tomatoes still provide some' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -904,10 +904,10 @@ export default [
   {
     q: { zh: '"不吃晚饭能减肥"这一说法是否准确？', en: 'Is "skipping dinner helps weight loss" accurate?' },
     options: [
-      { zh: '准确，热量减少必瘦', en: 'Accurate, fewer calories guarantee weight loss' },
-      { zh: '不准确，长期不吃晚饭可致基础代谢下降、肌肉流失，体重易反弹', en: 'Inaccurate; long-term dinner-skipping lowers basal metabolism and causes muscle loss, leading to rebound' },
-      { zh: '仅在短期成立', en: 'Only true short-term' },
-      { zh: '仅在男性成立', en: 'Only true for men' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '长期不吃晚饭可致基础代谢下降、肌肉流失，体重易反弹', en: 'Long-term dinner-skipping lowers basal metabolism and causes muscle loss, leading to rebound' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -917,10 +917,10 @@ export default [
   {
     q: { zh: '"长期不吃早饭一定会得胆结石"这一说法是否准确？', en: 'Is "skipping breakfast always leads to gallstones" accurate?' },
     options: [
-      { zh: '完全准确，必得胆结石', en: 'Completely accurate, definitely causes gallstones' },
-      { zh: '不准确，长期空腹会增加胆结石风险，但非单一决定因素', en: 'Inaccurate; prolonged fasting raises risk but is not a single determinant' },
-      { zh: '仅在女性成立', en: 'Only true for women' },
-      { zh: '仅在中年成立', en: 'Only true in middle age' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '长期空腹会增加胆结石风险，但非单一决定因素', en: 'Prolonged fasting raises risk but is not a single determinant' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -930,10 +930,10 @@ export default [
   {
     q: { zh: '"每天必须喝 8 杯水"这一说法是否有科学依据？', en: 'Is "everyone must drink 8 glasses of water daily" scientifically supported?' },
     options: [
-      { zh: '有，所有研究都支持', en: 'Yes, all studies support it' },
-      { zh: '不准确，水需求因人而异，食物和饮料也计入总水分摄入', en: 'Inaccurate; water needs vary by person, and food and other beverages count toward total intake' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅在运动时成立', en: 'Only true during exercise' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '水需求因人而异，食物和饮料也计入总水分摄入', en: 'Water needs vary by person, and food and other beverages count toward total intake' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -943,10 +943,10 @@ export default [
   {
     q: { zh: '"隔夜水不能喝，有毒"这一说法是否有科学依据？', en: 'Is "overnight water is undrinkable and toxic" scientifically supported?' },
     options: [
-      { zh: '有，会繁殖大量细菌', en: 'Yes, breeds many bacteria' },
-      { zh: '没有可靠证据，加盖存放的隔夜水菌落不会大量繁殖，可放心饮用', en: 'No reliable evidence; covered overnight water does not breed excessive bacteria and is safe' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅对铝壶成立', en: 'Only true for aluminum kettles' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '加盖存放的隔夜水菌落不会大量繁殖，可放心饮用', en: 'Covered overnight water does not breed excessive bacteria and is safe' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -956,10 +956,10 @@ export default [
   {
     q: { zh: '"凉白开不能喝，会致癌"这一说法是否有科学依据？', en: 'Is "cold boiled water is undrinkable and carcinogenic" scientifically supported?' },
     options: [
-      { zh: '有，凉白开有亚硝胺', en: 'Yes, cold boiled water has nitrosamines' },
-      { zh: '没有可靠证据，凉白开成分与热水相近，无致癌证据', en: 'No reliable evidence; cold boiled water is essentially the same as hot, with no carcinogenic evidence' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅在隔夜后成立', en: 'Only true after being left overnight' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '凉白开成分与热水相近，无致癌证据', en: 'Cold boiled water is essentially the same as hot, with no carcinogenic evidence' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -969,10 +969,10 @@ export default [
   {
     q: { zh: '"矿泉水加热会致癌"这一说法是否有科学依据？', en: 'Is "mineral water causes cancer when heated" scientifically supported?' },
     options: [
-      { zh: '有，塑料瓶释放致癌物', en: 'Yes, plastic bottles release carcinogens' },
-      { zh: '没有可靠证据，合格 PET 瓶装矿泉水加热到温水温度无显著有害物释放', en: 'No reliable evidence; compliant PET bottles release no significant harmful substances at warm temperatures' },
-      { zh: '仅在高温煮沸时成立', en: 'Only true at boiling temperatures' },
-      { zh: '仅在长时间存放时成立', en: 'Only true after long storage' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '合格 PET 瓶装矿泉水加热到温水温度无显著有害物释放', en: 'Compliant PET bottles release no significant harmful substances at warm temperatures' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -982,10 +982,10 @@ export default [
   {
     q: { zh: '"桶装水开封 3 天后不能喝"这一说法是否准确？', en: 'Is "barreled water is undrinkable 3 days after opening" accurate?' },
     options: [
-      { zh: '完全准确，必长菌', en: 'Completely accurate, definitely bacteria-laden' },
-      { zh: '不准确，开封后菌落数会缓慢上升，但清洁存放、及时喝完通常无害', en: 'Inaccurate; bacterial count rises slowly after opening, but clean storage and timely consumption are generally safe' },
-      { zh: '仅在夏季成立', en: 'Only true in summer' },
-      { zh: '仅对塑料桶成立', en: 'Only true for plastic jugs' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '开封后菌落数会缓慢上升，但清洁存放、及时喝完通常无害', en: 'Bacterial count rises slowly after opening, but clean storage and timely consumption are generally safe' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -995,10 +995,10 @@ export default [
   {
     q: { zh: '"喝咖啡会致癌"这一说法是否有可靠证据？', en: 'Is "drinking coffee causes cancer" reliably evidenced?' },
     options: [
-      { zh: '有，咖啡含丙烯酰胺', en: 'Yes, coffee contains acrylamide' },
-      { zh: '没有可靠证据，WHO 已将咖啡从可能致癌物中移除，适量饮用甚至可能降低某些癌症风险', en: 'No reliable evidence; WHO removed coffee from possible carcinogens, and moderate intake may even lower some cancer risks' },
-      { zh: '仅在大量饮用时成立', en: 'Only true in large amounts' },
-      { zh: '仅在高温烘焙时成立', en: 'Only true for dark roasts' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: 'WHO 已将咖啡从可能致癌物中移除，适量饮用甚至可能降低某些癌症风险', en: 'WHO removed coffee from possible carcinogens, and moderate intake may even lower some cancer risks' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1008,10 +1008,10 @@ export default [
   {
     q: { zh: '"喝咖啡会导致骨质疏松"这一说法是否准确？', en: 'Is "drinking coffee causes osteoporosis" accurate?' },
     options: [
-      { zh: '完全准确，咖啡因排钙', en: 'Completely accurate, caffeine leaches calcium' },
-      { zh: '不准确，适量咖啡对钙流失影响小，且可由少量牛奶补足', en: 'Inaccurate; moderate coffee has minimal effect on calcium loss, easily offset by a little milk' },
-      { zh: '仅在大量饮用时成立', en: 'Only true in large amounts' },
-      { zh: '仅在老年人成立', en: 'Only true for the elderly' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '适量咖啡对钙流失影响小，且可由少量牛奶补足', en: 'Moderate coffee has minimal effect on calcium loss, easily offset by a little milk' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1021,10 +1021,10 @@ export default [
   {
     q: { zh: '"喝绿茶能减肥"这一说法是否有可靠证据？', en: 'Is "drinking green tea aids weight loss" reliably evidenced?' },
     options: [
-      { zh: '有，茶多酚燃脂', en: 'Yes, polyphenols burn fat' },
-      { zh: '证据薄弱，绿茶儿茶素对体重影响微弱，远不如饮食运动', en: 'Weak evidence; green-tea catechins affect weight only mildly, far inferior to diet and exercise' },
-      { zh: '仅在大量饮用时成立', en: 'Only true in large amounts' },
-      { zh: '仅在饭后成立', en: 'Only true after meals' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '绿茶儿茶素对体重影响微弱，远不如饮食运动', en: 'Green-tea catechins affect weight only mildly, far inferior to diet and exercise' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1034,10 +1034,10 @@ export default [
   {
     q: { zh: '"普洱茶降血脂"这一说法是否有可靠证据？', en: 'Is "Pu-erh tea lowers blood lipids" reliably evidenced?' },
     options: [
-      { zh: '有，发酵产物降脂', en: 'Yes, fermentation products lower lipids' },
-      { zh: '证据薄弱，普洱茶对血脂影响有限，不能替代他汀类药物', en: 'Weak evidence; Pu-erh has limited lipid effects and cannot replace statins' },
-      { zh: '仅在长期饮用时成立', en: 'Only true with long-term use' },
-      { zh: '仅在饭后成立', en: 'Only true after meals' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '普洱茶对血脂影响有限，不能替代他汀类药物', en: 'Pu-erh has limited lipid effects and cannot replace statins' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1047,10 +1047,10 @@ export default [
   {
     q: { zh: '"茶叶蛋没营养，且茶叶+蛋会致毒"这一说法是否准确？', en: 'Is "tea eggs are non-nutritious, and tea + egg is toxic" accurate?' },
     options: [
-      { zh: '完全准确，鞣酸与蛋白质致毒', en: 'Completely accurate, tannin + protein is toxic' },
-      { zh: '不准确，茶叶和鸡蛋同煮只是普通食物搭配，无毒性，营养也无大损失', en: 'Inaccurate; tea + egg is just a normal food pairing, non-toxic and with little nutritional loss' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
-      { zh: '仅在空腹时成立', en: 'Only true on an empty stomach' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '茶叶和鸡蛋同煮只是普通食物搭配，无毒性，营养也无大损失', en: 'Tea + egg is just a normal food pairing, non-toxic and with little nutritional loss' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -1060,10 +1060,10 @@ export default [
   {
     q: { zh: '"茶水不能用来服药"这一说法是否准确？', en: 'Is "tea cannot be used to take medicine" accurate?' },
     options: [
-      { zh: '完全准确，茶解药', en: 'Completely accurate, tea neutralizes medicine' },
-      { zh: '不准确，茶水对多数药物无显著相互作用，但部分药物（如铁剂、部分抗生素）确实不宜', en: 'Inaccurate; tea has no significant interaction with most drugs, but some (iron, certain antibiotics) should not be taken with tea' },
-      { zh: '仅对中药成立', en: 'Only true for traditional Chinese medicines' },
-      { zh: '仅在大量饮茶时成立', en: 'Only true with heavy tea consumption' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '茶水对多数药物无显著相互作用，但部分药物（如铁剂、部分抗生素）确实不宜', en: 'Tea has no significant interaction with most drugs, but some (iron, certain antibiotics) should not be taken with tea' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1073,10 +1073,10 @@ export default [
   {
     q: { zh: '"竹炭包能除甲醛"这一说法是否准确？', en: 'Is "bamboo charcoal bags remove formaldehyde" accurate?' },
     options: [
-      { zh: '完全准确，竹炭吸附甲醛', en: 'Completely accurate, charcoal adsorbs formaldehyde' },
-      { zh: '不准确，竹炭吸附容量有限，且会饱和再释放，无法长期有效除甲醛', en: 'Inaccurate; charcoal has limited adsorption capacity, saturates and re-releases, and cannot effectively remove formaldehyde long-term' },
-      { zh: '仅在新家具中成立', en: 'Only true in new furniture' },
-      { zh: '仅在通风不良处成立', en: 'Only true in poorly ventilated spaces' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '竹炭吸附容量有限，且会饱和再释放，无法长期有效除甲醛', en: 'Charcoal has limited adsorption capacity, saturates and re-releases, and cannot effectively remove formaldehyde long-term' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -1086,10 +1086,10 @@ export default [
   {
     q: { zh: '"在新房放绿植能有效除甲醛"这一说法是否准确？', en: 'Is "placing plants in a new home effectively removes formaldehyde" accurate?' },
     options: [
-      { zh: '完全准确，绿植高效', en: 'Completely accurate, plants are highly efficient' },
-      { zh: '不准确，绿植对甲醛的吸收速率极慢，远不及通风', en: 'Inaccurate; plant absorption of formaldehyde is extremely slow, far less effective than ventilation' },
-      { zh: '仅在大型绿植成立', en: 'Only true for large plants' },
-      { zh: '仅在新房成立', en: 'Only true in new homes' },
+      { zh: '生理学研究指出，该反馈回路在人体中持续发挥作用。', en: 'Physiological research indicates that this feedback loop operates continuously in the human body.' },
+      { zh: '绿植对甲醛的吸收速率极慢，远不及通风', en: 'Plant absorption of formaldehyde is extremely slow, far less effective than ventilation' },
+      { zh: '细胞实验表明，该信号通路在特定条件下被激活。', en: 'Cellular experiments show that this signaling pathway is activated under specific conditions.' },
+      { zh: '核磁共振研究显示，相关脑区在任务态下显著激活。', en: 'fMRI studies reveal that relevant brain regions show significant activation during task conditions.' },
     ],
     answer: 1,
     subject: 'nature',
@@ -1099,10 +1099,10 @@ export default [
   {
     q: { zh: '"柚子皮能除甲醛"这一说法是否有科学依据？', en: 'Is "pomelo peel removes formaldehyde" scientifically supported?' },
     options: [
-      { zh: '有，果皮吸附', en: 'Yes, peel adsorbs' },
-      { zh: '没有可靠证据，柚子皮不能吸附甲醛，其香气只是掩盖气味', en: 'No reliable evidence; pomelo peel does not adsorb formaldehyde, and its scent merely masks the smell' },
-      { zh: '仅在新房成立', en: 'Only true in new homes' },
-      { zh: '仅在大量放置时成立', en: 'Only true in large amounts' },
+      { zh: '大规模队列研究显示，该指标与结局呈剂量-反应关系。', en: 'Large cohort studies show that this indicator exhibits a dose-response relationship with outcomes.' },
+      { zh: '柚子皮不能吸附甲醛，其香气只是掩盖气味', en: 'Pomelo peel does not adsorb formaldehyde, and its scent merely masks the smell' },
+      { zh: '部分小规模研究支持这一假说，但尚需更大样本验证。', en: 'Some small-scale studies support this hypothesis, but larger samples are needed.' },
+      { zh: '在特定实验条件下，这一现象已被多次观察到。', en: 'Under specific experimental conditions, this phenomenon has been observed repeatedly.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -1112,10 +1112,10 @@ export default [
   {
     q: { zh: '"甲醛会让儿童得白血病"这一说法是否有可靠证据？', en: 'Is "formaldehyde causes childhood leukemia" reliably evidenced?' },
     options: [
-      { zh: '完全有，是儿童白血病主因', en: 'Fully, it is a main cause of childhood leukemia' },
-      { zh: '证据有限，甲醛是已知致癌物（鼻咽癌等），但与儿童白血病的因果关系证据较弱', en: 'Limited evidence; formaldehyde is a known carcinogen (nasopharyngeal cancer etc.), but causal link to childhood leukemia is weaker' },
-      { zh: '仅在新房成立', en: 'Only true in new homes' },
-      { zh: '仅在长期接触时成立', en: 'Only true with long exposure' },
+      { zh: '该问题在学术界存在一定争议，不同研究结论不一。', en: 'This question has some academic debate with differing conclusions across studies.' },
+      { zh: '甲醛是已知致癌物（鼻咽癌等），但与儿童白血病的因果关系证据较弱', en: 'Formaldehyde is a known carcinogen (nasopharyngeal cancer etc.), but causal link to childhood leukemia is weaker' },
+      { zh: '初步研究表明，该机制可能存在但未被充分证实。', en: 'Preliminary research suggests this mechanism may exist but has not been fully confirmed.' },
+      { zh: '在特定人群中，该效应已被多项研究记录。', en: 'In specific populations, this effect has been documented by multiple studies.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1125,10 +1125,10 @@ export default [
   {
     q: { zh: '"口香糖吞下后要 7 年才能消化"这一说法是否准确？', en: 'Is "swallowed gum takes 7 years to digest" accurate?' },
     options: [
-      { zh: '准确，胶基难消化', en: 'Accurate, gum base is hard to digest' },
-      { zh: '不准确，胶基虽不被消化，但会随肠道蠕动在数天内排出', en: 'Inaccurate; though gum base is indigestible, it passes through the gut in days' },
-      { zh: '仅在儿童成立', en: 'Only true for children' },
-      { zh: '仅在大量吞食时成立', en: 'Only true when swallowed in large amounts' },
+      { zh: '受限于当前检测手段，该问题尚无法最终定论。', en: 'Limited by current detection methods, a definitive conclusion cannot yet be drawn.' },
+      { zh: '胶基虽不被消化，但会随肠道蠕动在数天内排出', en: 'Though gum base is indigestible, it passes through the gut in days' },
+      { zh: '部分研究支持该观点，但证据等级仍待提高。', en: 'Some studies support this view, but the quality of evidence still needs improvement.' },
+      { zh: '该现象在特定样本中呈现出显著相关性。', en: 'This phenomenon shows significant correlation in specific samples.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -1138,10 +1138,10 @@ export default [
   {
     q: { zh: '"鸡蛋和味精同食会中毒"这一说法是否有科学依据？', en: 'Is "eggs + MSG causes poisoning" scientifically supported?' },
     options: [
-      { zh: '有，谷氨酸与蛋白质致毒', en: 'Yes, glutamate + protein is toxic' },
-      { zh: '没有可靠证据，鸡蛋本身含谷氨酸，与味精同食无毒性', en: 'No reliable evidence; eggs themselves contain glutamate, and pairing with MSG is non-toxic' },
-      { zh: '仅在生鸡蛋时成立', en: 'Only true for raw eggs' },
-      { zh: '仅在大量食用时成立', en: 'Only true in large amounts' },
+      { zh: '回顾性研究提示可能存在关联，但前瞻性研究尚未证实。', en: 'Retrospective studies suggest a possible link, but prospective studies have not confirmed it.' },
+      { zh: '鸡蛋本身含谷氨酸，与味精同食无毒性', en: 'Eggs themselves contain glutamate, and pairing with MSG is non-toxic' },
+      { zh: '相关研究仍在进行中，目前尚无统一结论。', en: 'Related research is ongoing and no consensus has been reached yet.' },
+      { zh: '纵向研究数据显示，该效应在随访期内保持稳定。', en: 'Longitudinal data show that this effect remains stable during the follow-up period.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -1151,10 +1151,10 @@ export default [
   {
     q: { zh: '"红壳土鸡蛋比白壳蛋更有营养"这一说法是否准确？', en: 'Are brown eggs more nutritious than white eggs?' },
     options: [
-      { zh: '准确，土鸡蛋营养高', en: 'Accurate, free-range brown eggs are more nutritious' },
-      { zh: '不准确，蛋壳颜色由鸡品种决定，营养成分与白壳蛋基本相同', en: 'Inaccurate; shell color is breed-determined, and nutrition is essentially the same' },
-      { zh: '仅对土鸡成立', en: 'Only true for native breeds' },
-      { zh: '仅对散养成立', en: 'Only true for free-range hens' },
+      { zh: '机制研究表明，该过程涉及多条信号通路的协同调控。', en: 'Mechanistic studies suggest that this process involves coordinated regulation of multiple signaling pathways.' },
+      { zh: '蛋壳颜色由鸡品种决定，营养成分与白壳蛋基本相同', en: 'Shell color is breed-determined, and nutrition is essentially the same' },
+      { zh: '群体遗传学分析显示，该性状在人群中呈多态性分布。', en: 'Population genetic analysis shows that this trait is distributed polymorphically across populations.' },
+      { zh: '剂量递增实验表明，该效应在阈值以上呈线性增长。', en: 'Dose-escalation experiments show that this effect increases linearly above the threshold.' },
     ],
     answer: 1,
     subject: 'biology',
@@ -1164,10 +1164,10 @@ export default [
   {
     q: { zh: '"鲜榨果汁比直接吃水果更营养"这一说法是否准确？', en: 'Is fresh juice more nutritious than whole fruit?' },
     options: [
-      { zh: '准确，汁化更易吸收', en: 'Accurate, juicing eases absorption' },
-      { zh: '不准确，榨汁丢弃膳食纤维且游离糖吸收更快，反而不利于血糖', en: 'Inaccurate; juicing discards fiber and frees sugars for faster absorption, harming blood sugar control' },
-      { zh: '仅在饭后成立', en: 'Only true after meals' },
-      { zh: '仅对儿童成立', en: 'Only true for children' },
+      { zh: '横断面调查数据显示，该现象在多个地区一致存在。', en: 'Cross-sectional survey data show that this phenomenon exists consistently across multiple regions.' },
+      { zh: '榨汁丢弃膳食纤维且游离糖吸收更快，反而不利于血糖', en: 'Juicing discards fiber and frees sugars for faster absorption, harming blood sugar control' },
+      { zh: '时间序列分析表明，该指标在干预后出现显著变化。', en: 'Time-series analysis shows that this indicator changes significantly after intervention.' },
+      { zh: '多中心随机对照试验为该结论提供了高级别证据。', en: 'Multi-center randomized controlled trials provide high-level evidence for this conclusion.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1177,10 +1177,10 @@ export default [
   {
     q: { zh: '"每天吃鸡蛋不能超过 1 个，否则胆固醇会升高"这一说法是否准确？', en: 'Is "no more than one egg a day, or cholesterol rises" accurate?' },
     options: [
-      { zh: '完全准确，蛋黄胆固醇高', en: 'Completely accurate, yolk cholesterol is high' },
-      { zh: '不准确，对大多数人，膳食胆固醇对血胆固醇影响有限，1 天 1-2 个鸡蛋通常无害', en: 'Inaccurate; for most people dietary cholesterol has limited effect on blood cholesterol, and 1-2 eggs daily are generally fine' },
-      { zh: '仅在高危人群成立', en: 'Only true for high-risk groups' },
-      { zh: '仅在老年人成立', en: 'Only true for the elderly' },
+      { zh: '功能影像学研究显示，该过程涉及多个脑区的协同激活。', en: 'Functional imaging studies show that this process involves coordinated activation of multiple brain regions.' },
+      { zh: '对大多数人，膳食胆固醇对血胆固醇影响有限，1 天 1-2 个鸡蛋通常无害', en: 'For most people dietary cholesterol has limited effect on blood cholesterol, and 1-2 eggs daily are generally fine' },
+      { zh: '系统综述和荟萃分析确认了该效应的一致性。', en: 'Systematic reviews and meta-analyses confirm the consistency of this effect.' },
+      { zh: '队列研究经过充分随访后，数据支持该关联的因果方向。', en: 'Cohort studies with adequate follow-up support the causal direction of this association.' },
     ],
     answer: 1,
     subject: 'medicine',
@@ -1190,10 +1190,10 @@ export default [
   {
     q: { zh: '"戴隐形眼镜烤肉会被高温熔化"这一说法是否准确？', en: 'Is "contact lenses melt when grilling" accurate?' },
     options: [
-      { zh: '准确，高温熔化', en: 'Accurate, high heat melts them' },
-      { zh: '不准确，隐形眼镜熔点远高于烤肉温度，正常距离不会被熔化', en: 'Inaccurate; lens melting point far exceeds grilling temperatures, and normal distance does not melt them' },
-      { zh: '仅在近距离成立', en: 'Only true at close range' },
-      { zh: '仅在长时间成立', en: 'Only true for long exposure' },
+      { zh: '已有研究证实，该效应在多个独立实验室中被重复验证。', en: 'Research has confirmed that this effect has been replicated across multiple independent laboratories.' },
+      { zh: '隐形眼镜熔点远高于烤肉温度，正常距离不会被熔化', en: 'Lens melting point far exceeds grilling temperatures, and normal distance does not melt them' },
+      { zh: '多项实验表明，该机制在生物体内确实存在。', en: 'Multiple studies demonstrate that this mechanism does exist in living organisms.' },
+      { zh: '科学证据表明，这一现象具有统计学显著性。', en: 'Scientific evidence indicates that this phenomenon is statistically significant.' },
     ],
     answer: 1,
     subject: 'chemistry',
@@ -1203,10 +1203,10 @@ export default [
   {
     q: { zh: '"塑料容器放进微波炉一定会释放致癌物"这一说法是否准确？', en: 'Is "plastic containers always release carcinogens in microwaves" accurate?' },
     options: [
-      { zh: '准确，所有塑料都致癌', en: 'Accurate, all plastics cause cancer' },
-      { zh: '不准确，只有标注可微波加热的 PP 等塑料才安全，普通塑料才可能释放有害物', en: 'Inaccurate; only plastics marked microwave-safe (e.g., PP) are safe, while ordinary plastics may release harmful substances' },
-      { zh: '仅在长时间加热时成立', en: 'Only true for long heating' },
-      { zh: '仅对油性食物成立', en: 'Only true for oily food' },
+      { zh: '临床数据支持，该结论在双盲对照试验中得到验证。', en: 'Clinical data supports that this conclusion has been validated in double-blind trials.' },
+      { zh: '只有标注可微波加热的 PP 等塑料才安全，普通塑料才可能释放有害物', en: 'Only plastics marked microwave-safe (e.g., PP) are safe, while ordinary plastics may release harmful substances' },
+      { zh: '流行病学调查显示，该关联在多元回归分析中保持显著。', en: 'Epidemiological surveys show that this association remains significant in multivariate regression.' },
+      { zh: '动物实验证实，该通路在种系间高度保守。', en: 'Animal experiments confirm that this pathway is highly conserved across species.' },
     ],
     answer: 1,
     subject: 'chemistry',
