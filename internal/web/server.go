@@ -170,7 +170,7 @@ func mustSub() fs.FS {
 func (s *Server) Run(ctx context.Context) error {
 	srv := &http.Server{
 		Addr:              s.cfg.Server.Addr,
-		Handler:           securityHeaders(s.mux),
+		Handler:           httpsRedirect(securityHeaders(s.mux)),
 		ReadHeaderTimeout: 15 * time.Second, // 防 slowloris
 		ReadTimeout:       120 * time.Second,
 		WriteTimeout:      300 * time.Second,

@@ -21,6 +21,23 @@ func securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
+// httpsRedirect 经反向代理（cloudflared）转发来的 HTTP 请求 301 永久重定向到 HTTPS。
+// 作用：浏览器经 http:// 访问时，页面与动态导入的子模块均为 http 源，CSP script-src 'self'
+// 会把跨 scheme（http 模块在 https 页）的动态导入拦截，报 "Failed to fetch dynamically imported module"。
+// 仅当 X-Forwarded-Proto=http 时触发（本地直连无此头，开发不受影响）。
+func httpsRedirect(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-Forwarded-Proto") == "http" {
+			u := *r.URL
+			u.Scheme = "https"
+			u.Host = r.Host
+			http.Redirect(w, r, u.String(), http.StatusMovedPermanently)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 // bucket 单 IP 计数桶
 type bucket struct {
 	count   int

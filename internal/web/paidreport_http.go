@@ -123,34 +123,64 @@ func (s *Server) notifyPaidReportOwner(e paidReportEntry) {
 	}
 }
 
-// notifyPaidReportApprovedUser 通知访客并把完整报告邮件送达：附带金纪念卡则 multipart 附件，否则纯文本
+// notifyPaidReportApprovedUser 通知访客并把完整报告邮件送达：PDF 报告作主附件，金卡 PNG 作次附件（可选）。
+// PDF 由服务端从落盘报告文本即时渲染（gofpdf + 内嵌中文字体）；任一附件就绪即 multipart 发送，否则纯文本回退。
 func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) {
 	m := s.cfg.Mail
 	if !m.Configured() {
 		return
 	}
 	text := buildPaidReportMailText(e, s.cfg.Site.URL)
-	subject := e.Title
-	if subject == "" {
-		subject = "[Toolbox] 你的付费报告"
-	} else {
-		subject = subject + " 已封缄 · Sealed"
-	}
-	// 金卡附件文件名：含类型缩写与日期，如 "人格金卡-DISC-20260820.png"
-	filename := "人格金卡-" + shortTypeName(e.Feature) + "-" + time.Now().Format("20060102") + ".png"
-	// 申请若附带金纪念卡 PNG（人格测试完整版），作附件 multipart 发送；无则纯文本回退
-	if strings.TrimSpace(e.PNG) != "" {
-		if pngBytes, decErr := decodePNG(e.PNG); decErr == nil {
-			if sendErr := sendMailWithAttachment(m, e.Email, subject, text, pngBytes, filename); sendErr != nil {
-				log.Printf("paid report notify user (with card) failed: id=%s err=%v", e.ID, sendErr)
-			}
-			return
+	subject := paidReportSubject(e.Title)
+	dateStr := time.Now().Format("20060102")
+	atts := buildPaidReportAttachments(e, dateStr)
+	if len(atts) > 0 {
+		if sendErr := sendMailWithAttachments(m, e.Email, subject, text, atts); sendErr != nil {
+			log.Printf("paid report notify user (with attachments) failed: id=%s err=%v", e.ID, sendErr)
 		}
-		log.Printf("paid report png decode failed, fallback to text: id=%s", e.ID)
+		return
 	}
 	if err := sendMail(m, e.Email, subject, text); err != nil {
 		log.Printf("paid report notify user failed: id=%s err=%v", e.ID, err)
 	}
+}
+
+// paidReportSubject 邮件主题：有标题则追加"已封缄"后缀，无标题用默认
+func paidReportSubject(title string) string {
+	if strings.TrimSpace(title) == "" {
+		return "[Toolbox] 你的付费报告"
+	}
+	return title + " 已封缄 · Sealed"
+}
+
+// buildPaidReportAttachments 组装邮件附件：PDF 报告（主）+ 金纪念卡 PNG（次，可选）。
+// PDF 渲染失败或 PNG 缺失则跳过对应附件；两者皆无时返回 nil（调用方走纯文本回退）。
+func buildPaidReportAttachments(e paidReportEntry, dateStr string) []mailAttachment {
+	var atts []mailAttachment
+	typeName := shortTypeName(e.Feature)
+	if pdfBytes, err := renderPDFReport(e.Report, e.Title); err == nil {
+		atts = append(atts, mailAttachment{
+			Content:  pdfBytes,
+			Filename: "人格报告-" + typeName + "-" + dateStr + ".pdf",
+			MIME:     "application/pdf",
+		})
+	} else {
+		log.Printf("paid report pdf render failed, skip: id=%s err=%v", e.ID, err)
+	}
+	if strings.TrimSpace(e.PNG) == "" {
+		return atts
+	}
+	pngBytes, err := decodePNG(e.PNG)
+	if err != nil {
+		log.Printf("paid report png decode failed, skip: id=%s", e.ID)
+		return atts
+	}
+	atts = append(atts, mailAttachment{
+		Content:  pngBytes,
+		Filename: "人格金卡-" + typeName + "-" + dateStr + ".png",
+		MIME:     "image/png",
+	})
+	return atts
 }
 
 // shortTypeName 从付费项特征文字提取类型缩写，用于金卡附件文件名

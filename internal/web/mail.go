@@ -32,11 +32,18 @@ func buildTextMail(from, to, subject, text string) []byte {
 	))
 }
 
-// sendMailWithAttachment 发送一封带 PNG 附件的 multipart 邮件。
-// 用于人格测试完整版付费报告：正文为画像纯文本，金纪念卡 PNG 作为附件送达。
-func sendMailWithAttachment(m config.MailConfig, to, subject, textBody string, png []byte, filename string) error {
+// mailAttachment 邮件附件（字节 + 文件名 + MIME 类型），供 multipart 邮件附带一个或多个附件。
+type mailAttachment struct {
+	Content  []byte // 附件原始字节
+	Filename string // 附件文件名
+	MIME     string // MIME 类型，如 "image/png"、"application/pdf"
+}
+
+// sendMailWithAttachments 发送一封带若干附件的 multipart/mixed 邮件。
+// 用于人格测试完整版付费报告：正文为画像纯文本，金纪念卡 PNG 与报告 PDF 作附件送达。
+func sendMailWithAttachments(m config.MailConfig, to, subject, textBody string, attachments []mailAttachment) error {
 	from := m.From
-	body := buildMultipartMail(from, to, subject, textBody, png, filename)
+	body := buildMultipartWithAttachments(from, to, subject, textBody, attachments)
 	addr := fmt.Sprintf("%s:%d", m.Host, m.Port)
 	auth := smtp.PlainAuth("", m.User, m.Pass, m.Host)
 	if m.Port == 465 {
@@ -45,8 +52,8 @@ func sendMailWithAttachment(m config.MailConfig, to, subject, textBody string, p
 	return smtp.SendMail(addr, auth, from, []string{to}, body)
 }
 
-// buildMultipartMail 构造 multipart/mixed 邮件：UTF-8 纯文本正文 + PNG 附件（主题 Base64 防乱码）
-func buildMultipartMail(from, to, subject, textBody string, png []byte, filename string) []byte {
+// buildMultipartWithAttachments 构造 multipart/mixed 邮件：UTF-8 纯文本正文 + 多个 base64 附件（主题 Base64 防乱码）
+func buildMultipartWithAttachments(from, to, subject, textBody string, attachments []mailAttachment) []byte {
 	boundary := fmt.Sprintf("tb%d", time.Now().UnixNano())
 	header := fmt.Sprintf(
 		"From: %s\r\nTo: %s\r\nSubject: =?UTF-8?B?%s?=\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=%s\r\n\r\n",
@@ -56,13 +63,25 @@ func buildMultipartMail(from, to, subject, textBody string, png []byte, filename
 		"--%s\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n%s\r\n",
 		boundary, textBody,
 	)
-	imgPart := fmt.Sprintf(
-		"--%s\r\nContent-Type: image/png; name=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n\r\n",
-		boundary, filename, filename,
-	)
-	b64 := wrapBase64(base64.StdEncoding.EncodeToString(png))
-	end := fmt.Sprintf("--%s--\r\n", boundary)
-	return []byte(header + textPart + imgPart + b64 + end)
+	parts := strings.Builder{}
+	parts.WriteString(header)
+	parts.WriteString(textPart)
+	for _, att := range attachments {
+		if len(att.Content) == 0 {
+			continue
+		}
+		mime := att.MIME
+		if mime == "" {
+			mime = "application/octet-stream"
+		}
+		parts.WriteString(fmt.Sprintf(
+			"--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n\r\n",
+			boundary, mime, att.Filename, att.Filename,
+		))
+		parts.WriteString(wrapBase64(base64.StdEncoding.EncodeToString(att.Content)))
+	}
+	parts.WriteString(fmt.Sprintf("--%s--\r\n", boundary))
+	return []byte(parts.String())
 }
 
 // wrapBase64 将 base64 串按 76 字符折行（每行以 \r\n 结尾），满足 RFC 2045 行长与 RFC 5321 单行 ≤998 octet 限制。

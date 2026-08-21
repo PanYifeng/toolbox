@@ -3,14 +3,26 @@
 // 防伪码是内容指纹而非秘密，纯前端复算即可验真，无需服务端存储。
 
 import { t, getLang } from '/core/i18n.js';
-import { THEMES, computeAntiFake, normalizeCode, renderMemorialCard, downloadPng } from '/core/cert.js';
+import { THEMES, THEME_CATEGORIES, computeAntiFake, normalizeCode, renderMemorialCard, downloadPng } from '/core/cert.js';
+
+// buildThemeOpts 按一级分类分组渲染主题下拉项（optgroup），避免长列表难选
+function buildThemeOpts(lang) {
+  return THEME_CATEGORIES
+    .map((cat) => {
+      const label = cat.title[lang] || cat.title.zh;
+      const opts = cat.themes
+        .filter((k) => THEMES[k])
+        .map((k) => `<option value="${k}">${THEMES[k].title[lang] || THEMES[k].title.zh}</option>`)
+        .join('');
+      return `<optgroup label="${label}">${opts}</optgroup>`;
+    })
+    .join('');
+}
 
 // render 验真表单 + 结果区
 export default function (el) {
   const lang = getLang();
-  const themeOpts = Object.keys(THEMES)
-    .map((k) => `<option value="${k}">${THEMES[k].title[lang] || THEMES[k].title.zh}</option>`)
-    .join('');
+  const themeOpts = buildThemeOpts(lang);
 
   el.innerHTML = `
     <p class="muted">${t('cv.desc')}</p>

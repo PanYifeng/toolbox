@@ -80,13 +80,6 @@ export const THEMES = {
     // 样例完成时间：俄罗斯方块诞生（Aleksej Pažitnov，1984 年 6 月 6 日）
     sampleDate: '1984-06-06',
   },
-  'game-tetris': {
-    primary: '#3b82f6', secondary: '#1E40AF', bg: '#F0F6FE', symbol: '🟦', auspicious: '★', pattern: 'grid4',
-    title: { zh: '俄罗斯方块 通关纪念卡', en: 'Tetris Clear-Stage Memorial Card' },
-    message: { zh: '方寸之间进退有度，愿你于纷至沓来中从容不迫。', en: 'Order within the falling blocks; may you stay composed as things pile up.' },
-    // 样例完成时间：俄罗斯方块诞生（Aleksej Pažitnov，1984 年 6 月 6 日）
-    sampleDate: '1984-06-06',
-  },
   'game-flappy': {
     primary: '#f59e0b', secondary: '#b45309', bg: '#FFF8EB', symbol: '🐤', auspicious: '☁', pattern: 'wave',
     title: { zh: 'Flappy Bird 通关纪念卡', en: 'Flappy Bird Memorial Card' },
@@ -137,6 +130,15 @@ export const THEMES = {
     sampleDate: '1928-01-01',
   },
 };
+
+// THEME_CATEGORIES 纪念卡主题一级分类（验真选择器分组用，与 THEMES 键对应）。
+// 顺序即下拉分组顺序；themes 数组内每项为 THEMES 键。新增主题时归入对应分类或新建分类。
+export const THEME_CATEGORIES = [
+  { title: { zh: '宗教文化', en: 'Religion & Culture' }, themes: ['buddhism', 'islam', 'christianity'] },
+  { title: { zh: '游戏', en: 'Games' }, themes: ['game-2048', 'game-snake', 'game-ttt', 'game-spider', 'game-minesweeper', 'game-tetris', 'game-flappy', 'game-wordle', 'game-suika', 'game'] },
+  { title: { zh: '知识·趣味', en: 'Knowledge & Fun' }, themes: ['knowledge-quiz'] },
+  { title: { zh: '人格测试', en: 'Personality' }, themes: ['personality-mbti', 'personality-bigfive', 'personality-disc'] },
+];
 
 // BILABEL 双语标签：卡面固定文案中英并列
 const BILABEL = {
