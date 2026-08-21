@@ -175,6 +175,7 @@ function renderActions(el, snap, lang) {
       renderPaidReportEntry($actions, {
         feature: t('mbti.fullFeature'), title: t('mbti.fullTitle'), amount: AMOUNT,
         report: buildFullReport(snap, lang),
+        preview: buildFullReport(snap, lang).split('\n\n')[0],
         getPng: () => buildGoldPng(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
@@ -219,6 +220,8 @@ function buildFullReport(snap, lang) {
   DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
   s += `\n== ${t('ps.secGrowth')} ==\n`;
   DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
+  s += `\n== ${t('ps.secCareer')} ==\n${L(tp.career)}\n\n`;
+  s += `== ${t('ps.secRomance')} ==\n${L(tp.romance)}\n`;
   return s.trim();
 }
 
@@ -246,11 +249,12 @@ function buildShareOpts(snap, lang) {
   const OL = (o) => o[lang === 'en' ? 'zh' : 'en'] || o.en;
   return {
     themeKey: 'personality-mbti',
-    name: snap.code,
+    name: `${snap.code} · ${L(tp.nick)}`,
     personality: {
       typeLabel: `${snap.code} · ${L(tp.nick)}`,
       typeLabelEn: `${snap.code} · ${OL(tp.nick)}`,
       typeCode: snap.code,
+      tagline: L(tp.brief),
       dims: DIMS.map((d) => {
         const dm = data.dims[d];
         const [a, b] = snap.tally[d];

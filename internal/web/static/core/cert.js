@@ -5,6 +5,8 @@
 
 // radarPoints 雷达顶点数学（SVG 与 canvas 共享），人格分享卡复用以绘制雷达多边形
 import { radarPoints } from '/core/radar.js';
+// 人格类型人物形象：男女一对，canvas 几何绘制，用于金卡和报告
+import { getCharacter, drawCharacterPair } from '/core/characters.js';
 
 // THEMES 各宗教 + 各游戏独立主题：主色 / 辅色 / 底色 / 主符号 / 吉祥符号 / 标题 / 寄语 / 纹样类型
 export const THEMES = {
@@ -285,28 +287,41 @@ export async function renderMemorialCard(opts) {
   if (opts.personality) drawPersonalityBody(ctx, opts, theme, displayTime);
   else drawBody(ctx, W, opts, theme, displayTime);
   await drawFooter(ctx, W, H, theme, opts.showDonate);
-  drawAntiFake(ctx, W, H, code, gold);
+  if (gold && opts.personality) drawCertInfo(ctx, W, H, code, opts.name, displayTime, theme);
+  else drawAntiFake(ctx, W, H, code, gold);
+  if (!gold && opts.personality) drawSiteURL(ctx, W, H);
   if (opts.preview) drawPreviewWatermark(ctx, W, H);
 
   return { dataUrl: canvas.toDataURL('image/png'), code };
 }
 
-// drawBackground 底色 + 主题专属纹样 + 双层装饰边框（金版卡用全金边框）
+// drawBackground 底色 + 主题专属纹样 + 双层装饰边框（金版卡用烫金渐变色边框 + 四角花饰）
 function drawBackground(ctx, W, H, theme, gold) {
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, W, H);
   drawThemePattern(ctx, W, H, theme);
   if (gold) {
-    // 金版卡：外围整圈实心金框（深金填充 + 亮金内描边收口），金框外部不留主题底色
-    const M = 60; // 金框宽度：从画布边缘到内容区，覆盖原双层描边位置
-    ctx.fillStyle = '#C99A2E';
-    ctx.fillRect(0, 0, W, M);                 // 上
-    ctx.fillRect(0, H - M, W, M);             // 下
-    ctx.fillRect(0, M, M, H - 2 * M);         // 左
-    ctx.fillRect(W - M, M, M, H - 2 * M);     // 右
+    // 烫金渐变边框：多档金色模拟金属反光，替代原单色填充
+    const M = 60;
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#B8860B');
+    grad.addColorStop(0.2, '#FFD700');
+    grad.addColorStop(0.4, '#FFF8DC');
+    grad.addColorStop(0.5, '#FFD700');
+    grad.addColorStop(0.7, '#FFF8DC');
+    grad.addColorStop(0.85, '#DAA520');
+    grad.addColorStop(1, '#B8860B');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, M);
+    ctx.fillRect(0, H - M, W, M);
+    ctx.fillRect(0, M, M, H - 2 * M);
+    ctx.fillRect(W - M, M, M, H - 2 * M);
+    // 亮金内描边（内容区分界线）
     ctx.strokeStyle = '#F6C453';
     ctx.lineWidth = 3;
-    ctx.strokeRect(M + 1.5, M + 1.5, W - 2 * (M + 1.5), H - 2 * (M + 1.5)); // 亮金内描边，金框与内容区分界
+    ctx.strokeRect(M + 1.5, M + 1.5, W - 2 * (M + 1.5), H - 2 * (M + 1.5));
+    // 四角花饰（烫金渐变边框之内）
+    drawCornerFlourish(ctx, W, H, M);
     return;
   }
   ctx.strokeStyle = theme.primary;
@@ -468,11 +483,19 @@ function drawBody(ctx, W, opts, theme, displayTime) {
   drawMessage(ctx, W, theme, opts, y + 18);
 }
 
-// drawPersonalityBody 人格分享卡中部：类型代号水印 + 大类型标签 + 英文副标题 + 完成时间 + canvas 雷达图 + 寄语（无姓名/分数行）
+// drawPersonalityBody 人格分享卡中部：类型代号水印 + 大类型标签 + 英文副标题 + 金句 tagline + 完成时间 + canvas 雷达图 + 寄语（无姓名/分数行）
+// 金卡额外绘制人物形象（男女一对），增强付费差异化
 function drawPersonalityBody(ctx, opts, theme, displayTime) {
   const W = 1000; // 卡面固定宽度（纪念卡画布恒为 1000×1414）
   const p = opts.personality || {};
+  const isGold = !!(opts.gold);
   drawTypeWatermark(ctx, p, theme, W); // 不同类型呈现不同背景标识
+  // 金卡在分隔线与类型标签之间绘制人物形象（男女一对），增强付费差异化
+  // 人物位于 y=315，size=40 刚好嵌入 80px 间隙（header 分隔线 y=270 至主标签 y=350）
+  if (isGold && p.typeCode) {
+    const ch = getCharacter(p.typeCode);
+    if (ch) drawCharacterPair(ctx, W / 2, 320, ch, 45);
+  }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = theme.secondary;
@@ -483,11 +506,19 @@ function drawPersonalityBody(ctx, opts, theme, displayTime) {
     ctx.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
     ctx.fillText(p.typeLabelEn, W / 2, 400);
   }
+  if (p.tagline) { // 金句 tagline：社交货币 + 传播钩子
+    ctx.fillStyle = theme.secondary;
+    ctx.globalAlpha = 0.75;
+    ctx.font = 'italic 20px "PingFang SC","Microsoft YaHei",serif';
+    ctx.fillText(`${p.tagline}`, W / 2, 434);
+    ctx.globalAlpha = 1;
+  }
   ctx.fillStyle = theme.primary;
   ctx.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
-  ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, 444);
+  const timeY = p.tagline ? 466 : 444;
+  ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, timeY);
   drawPersonalityRadar(ctx, { cx: W / 2, cy: 720, radius: 230, dims: p.dims || [], accent: p.accent || theme.primary, theme });
-  drawMessage(ctx, W, theme, opts, 1060); // 较原 1020 下移 40px，与雷达底部轴标签留出呼吸空间
+  drawMessage(ctx, W, theme, opts, 1060);
 }
 
 // drawTypeWatermark 类型代号水印：大号极淡的类型代号作背景标识，不同类型呈现不同标识（DISC 单字母 / MBTI 四字母 / 大五主导维度字母）
@@ -637,6 +668,84 @@ function drawAntiFake(ctx, W, H, code, gold) {
   ctx.fillText(code, W / 2, H - 84);
 }
 
+// drawCornerFlourish 金卡四角花饰：对称卷草纹，增强封缄感与证书质感
+function drawCornerFlourish(ctx, W, H, M) {
+  ctx.save();
+  ctx.strokeStyle = '#DAA520';
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.5;
+  const d = 40; // 花饰主干距角点偏移
+  const corners = [
+    [M + d, M + d, 1, 1],           // 左上
+    [W - M - d, M + d, -1, 1],      // 右上
+    [M + d, H - M - d, 1, -1],      // 左下
+    [W - M - d, H - M - d, -1, -1], // 右下
+  ];
+  corners.forEach(([cx, cy, sx, sy]) => {
+    ctx.beginPath();
+    // 卷草主干：从角点沿边框弧度向内收
+    ctx.moveTo(cx, cy);
+    ctx.quadraticCurveTo(cx + sx * 16, cy + sy * 8, cx + sx * 8, cy + sy * 24);
+    ctx.stroke();
+    // 外圈小弧辅助
+    ctx.beginPath();
+    ctx.arc(cx - sx * 6, cy - sy * 6, 14, 0, Math.PI * 2);
+    ctx.stroke();
+    // 端点半圆卷装饰
+    ctx.beginPath();
+    ctx.arc(cx + sx * 8, cy + sy * 24, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#DAA520';
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
+// drawCertInfo 金卡认证信息：持证人 + 签发日期 + 认证编号（显式排版代替普通防伪码）
+function drawCertInfo(ctx, W, H, code, name, displayTime, theme) {
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  // 认证编号
+  ctx.fillStyle = '#8C6D1F';
+  ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('CERTIFICATE OF COMPLETION', W / 2, H - 140);
+  ctx.fillStyle = '#6B4F0E';
+  ctx.font = 'bold 16px "PingFang SC","Microsoft YaHei",serif';
+  ctx.fillText(`No. ${code}`, W / 2, H - 114);
+  // 分隔线
+  ctx.strokeStyle = '#DAA520';
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 80, H - 104);
+  ctx.lineTo(W / 2 + 80, H - 104);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  // 持证人与签发日期（左右两列）
+  ctx.font = '14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = '#8C6D1F';
+  ctx.textAlign = 'left';
+  const holder = name || '—';
+  ctx.fillText(`持证人 · Holder: ${holder}`, 120, H - 80);
+  ctx.textAlign = 'right';
+  const issued = displayTime ? displayTime.replace('T', ' ').replace(/:\d{2}$/, '') : '';
+  ctx.fillText(`签发日 · Issued: ${issued || '—'}`, W - 120, H - 80);
+  ctx.restore();
+}
+
+// drawSiteURL 免费分享卡底部署名水印：小字回站 URL，金卡不展示（保持纯净）
+function drawSiteURL(ctx, W, H) {
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#999';
+  ctx.globalAlpha = 0.5;
+  ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  const url = (window && window.location && window.location.origin) || '';
+  if (url) ctx.fillText(url, W / 2, H - 50);
+  ctx.restore();
+}
+
 // drawRecordBanner 破纪录卡专属标识：顶部金色绶带 + 四角星纹。
 // 仅当 opts.recordCode（服务端签发码）时绘制，使金版破纪录卡与普通通关卡一眼可辨。
 function drawRecordBanner(ctx, W, H, theme) {
@@ -692,9 +801,12 @@ function drawPerfectBanner(ctx, W, H, theme) {
 // 仅当 opts.gold（人格测试完整版付费纪念卡）时绘制，与破纪录/满分绶带同结构、文案区分。
 // 人格测试无分数，故用"纪念"标识区别于满分卡。
 function drawMemorialBanner(ctx, W, H, theme) {
-  const grad = ctx.createLinearGradient(0, 0, 0, 40);
-  grad.addColorStop(0, '#F6C453');
-  grad.addColorStop(1, '#C99A2E');
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#B8860B');
+  grad.addColorStop(0.3, '#FFD700');
+  grad.addColorStop(0.5, '#FFF8DC');
+  grad.addColorStop(0.7, '#FFD700');
+  grad.addColorStop(1, '#B8860B');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, 40);
   ctx.fillStyle = '#5C3D00';
@@ -702,7 +814,7 @@ function drawMemorialBanner(ctx, W, H, theme) {
   ctx.textBaseline = 'middle';
   ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",serif';
   ctx.fillText('🏆 纪念 · MEMORIAL', W / 2, 20);
-  ctx.fillStyle = '#C99A2E';
+  ctx.fillStyle = '#DAA520';
   ctx.globalAlpha = 0.5;
   ctx.font = '28px serif';
   ctx.textBaseline = 'middle';

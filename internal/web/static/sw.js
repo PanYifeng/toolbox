@@ -1,6 +1,6 @@
 // service worker：app shell cache-first + 导航 network-first。
 // 发布时 bump VER 触发自更新与旧缓存清理。
-const VER = 'toolbox-v19';
+const VER = 'toolbox-v20';
 const SHELL = [
   '/',
   '/core/app.js',
@@ -8,8 +8,10 @@ const SHELL = [
   '/core/i18n.js',
   '/core/pro.js',
   '/core/cert.js',
+  '/core/characters.js',
   '/core/radar.js',
   '/core/lined.js',
+  '/core/personality.js',
   '/manifest.webmanifest',
   '/img/icon.svg',
 ];

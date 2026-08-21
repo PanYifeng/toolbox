@@ -18,15 +18,15 @@ function fmtYuan(n) {
   return n.toFixed(2);
 }
 
-// renderPaidReportEntry 付费内容入口：先"查看完整版"按钮，点击后进申请表单
-export function renderPaidReportEntry(container, { feature, title, amount, report, onSubmitted, getPng } = {}) {
+// renderPaidReportEntry 付费内容入口：先"查看完整版"按钮，点击后进申请表单（含预览）
+export function renderPaidReportEntry(container, { feature, title, amount, report, preview, onSubmitted, getPng } = {}) {
   const lang = getLang();
   const wrap = document.createElement('div');
   wrap.className = 'pr-entry';
   const btn = document.createElement('button');
   btn.className = 'btn pr-entry-btn';
   btn.textContent = `${t('pr.viewFull')}（¥${fmtYuan(amount)}）`;
-  btn.onclick = () => renderClaimForm(wrap, { feature, title, amount, report, lang, onSubmitted, getPng });
+  btn.onclick = () => renderClaimForm(wrap, { feature, title, amount, report, preview, lang, onSubmitted, getPng });
   wrap.appendChild(btn);
   container.appendChild(wrap);
 }
@@ -46,12 +46,14 @@ export function renderPaidReportSubmitted(container, { claimId, email, amount } 
   container.appendChild(wrap);
 }
 
-// renderClaimForm 申请态：开价 + 收款码（标注 Alipay/WeChat）+ TXID 备注 + 邮箱 + 提交按钮
-function renderClaimForm(container, { feature, title, amount, report, lang, onSubmitted, getPng }) {
+// renderClaimForm 申请态：开价 + 预览(首段) + 收款码 + TXID 备注 + 邮箱 + 提交按钮
+function renderClaimForm(container, { feature, title, amount, report, preview, lang, onSubmitted, getPng }) {
   const txid = genTxid('PR');
+  const previewHTML = preview ? `<div class="pr-preview"><blockquote>${esc(preview)}</blockquote><p class="muted">${t('pr.previewNote')}</p></div>` : '';
   container.innerHTML = `
     <div class="errata-wrap">
       <h3 class="errata-title">${t('pr.title')}</h3>
+      ${previewHTML}
       <div class="lb-upgrade errata-gate">
         <p class="lb-upgrade-desc">${t('pr.costHint').replace('{n}', fmtYuan(amount))}</p>
         <div class="lb-qr">

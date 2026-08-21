@@ -201,6 +201,7 @@ function renderActions(el, snap, lang) {
       renderPaidReportEntry($actions, {
         feature: t('disc.fullFeature'), title: t('disc.fullTitle'), amount: AMOUNT,
         report: buildFullReport(snap, lang),
+        preview: buildFullReport(snap, lang).split('\n\n')[0],
         getPng: () => buildGoldPng(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
@@ -256,11 +257,12 @@ function buildShareOpts(snap, lang) {
   const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
   return {
     themeKey: 'personality-disc',
-    name: snap.primary,
+    name: `${L(dm.name)} · ${L(blend.name)}`,
     personality: {
       typeLabel: `${L(dm.name)} · ${L(blend.name)}`,
       typeLabelEn: `${OL(dm.name)} · ${OL(blend.name)}`,
       typeCode: snap.primary,
+      tagline: L(dm.high),
       dims: DIMS.map((d) => ({ name: d, pct: snap.pcts[d] })),
       accent: ACCENT,
     },

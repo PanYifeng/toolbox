@@ -173,6 +173,7 @@ function renderActions(el, snap, lang) {
       renderPaidReportEntry($actions, {
         feature: t('bf.fullFeature'), title: t('bf.fullTitle'), amount: AMOUNT,
         report: buildFullReport(snap, lang),
+        preview: buildFullReport(snap, lang).split('\n\n')[0],
         getPng: () => buildGoldPng(snap, lang),
         onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
       });
@@ -251,11 +252,12 @@ function buildShareOpts(snap, lang) {
   const top = [...DIMS].sort((a, b) => snap.pcts[b] - snap.pcts[a])[0];
   return {
     themeKey: 'personality-bigfive',
-    name: 'Big Five',
+    name: `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(snap.pcts[top]))}`,
     personality: {
       typeLabel: `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(snap.pcts[top]))}`,
       typeLabelEn: `${OL(data.dims[top].name)} · ${tFor('ps.band' + bandKey(snap.pcts[top]), olang)}`,
       typeCode: top,
+      tagline: L(data.dims[top].high),
       dims: DIMS.map((d) => ({ name: L(data.dims[d].name), pct: snap.pcts[d] })),
       accent: ACCENT,
     },

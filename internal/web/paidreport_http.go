@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/mail"
 	"strings"
+	"time"
 )
 
 // paidReportBody 访客提交付费报告申请入参：邮箱 + 交易号 + 语言 + 报告文本 + 金纪念卡 PNG。
@@ -132,11 +133,15 @@ func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) {
 	subject := e.Title
 	if subject == "" {
 		subject = "[Toolbox] 你的付费报告"
+	} else {
+		subject = subject + " 已封缄 · Sealed"
 	}
+	// 金卡附件文件名：含类型缩写与日期，如 "人格金卡-DISC-20260820.png"
+	filename := "人格金卡-" + shortTypeName(e.Feature) + "-" + time.Now().Format("20060102") + ".png"
 	// 申请若附带金纪念卡 PNG（人格测试完整版），作附件 multipart 发送；无则纯文本回退
 	if strings.TrimSpace(e.PNG) != "" {
 		if pngBytes, decErr := decodePNG(e.PNG); decErr == nil {
-			if sendErr := sendMailWithAttachment(m, e.Email, subject, text, pngBytes, "gold-card.png"); sendErr != nil {
+			if sendErr := sendMailWithAttachment(m, e.Email, subject, text, pngBytes, filename); sendErr != nil {
 				log.Printf("paid report notify user (with card) failed: id=%s err=%v", e.ID, sendErr)
 			}
 			return
@@ -148,13 +153,30 @@ func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) {
 	}
 }
 
-// buildPaidReportMailText 构造访客邮件正文：报告原文 + 站点脚注（按申请语言）
+// shortTypeName 从付费项特征文字提取类型缩写，用于金卡附件文件名
+func shortTypeName(feature string) string {
+	if strings.Contains(feature, "MBTI") {
+		return "MBTI"
+	}
+	if strings.Contains(feature, "DISC") {
+		return "DISC"
+	}
+	if strings.Contains(feature, "大五") || strings.Contains(feature, "Big Five") {
+		return "BigFive"
+	}
+	return "Report"
+}
+
+// buildPaidReportMailText 构造访客邮件正文：个性化寄语 + 报告原文 + 站点脚注（按申请语言）
 func buildPaidReportMailText(e paidReportEntry, siteURL string) string {
+	greeting := i18nField(e.Lang,
+		"你好，以下是你付费解锁的完整报告，愿它为你带来新的视角。\n\n",
+		"Hello, here is your full report. May it bring you a fresh perspective.\n\n")
 	footer := i18nField(e.Lang, "感谢支持 Toolbox。", "Thanks for supporting Toolbox.")
 	if u := strings.TrimSpace(siteURL); u != "" {
 		footer = fmt.Sprintf("%s\n%s", footer, u)
 	}
-	return e.Report + "\n\n" + footer
+	return greeting + e.Report + "\n\n" + footer
 }
 
 // renderPaidReportConfirmResult 渲染站主点击确认后的结果页（纯静态 HTML，无需前端）
