@@ -16,3 +16,8 @@ node_modules/
 
 # IDE
 .idea/
+
+# Python（一次性注入脚手架与缓存）
+__pycache__/
+*.pyc
+scripts/inject_*.py
