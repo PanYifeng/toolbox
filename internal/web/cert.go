@@ -17,12 +17,14 @@ import (
 
 // certRequest 纪念卡发送请求
 type certRequest struct {
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Score    int    `json:"score"`
-	Code     string `json:"code"`
-	PNG      string `json:"png"`      // data:image/png;base64,.... 或纯 base64
-	Religion string `json:"religion"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	Score     int    `json:"score"`      // 数值分数（普通卡/破纪录卡）
+	ScoreText string `json:"scoreText"` // 非数值槽位展示值（人格卡类型代号如 INTJ），非空时覆盖 Score 展示
+	Code      string `json:"code"`
+	PNG       string `json:"png"`       // data:image/png;base64,.... 或纯 base64
+	Subject   string `json:"subject"`  // 可选自定义主题，空则用默认
+	Religion  string `json:"religion"` // 兼容旧调用方（card-form/religion），当前未用于正文
 }
 
 // handleCertSend 将生成的纪念卡 PNG 发送到用户邮箱（需配置 SMTP）。
@@ -72,7 +74,10 @@ func decodePNG(s string) ([]byte, error) {
 func sendMemorialMail(m config.MailConfig, req certRequest, png []byte) error {
 	from := m.From
 	to := req.Email
-	subject := fmt.Sprintf("Toolbox 纪念卡 / Memorial Card — %s", req.Name)
+	subject := req.Subject
+	if subject == "" {
+		subject = fmt.Sprintf("Toolbox 纪念卡 / Memorial Card — %s", req.Name)
+	}
 	body := buildMailBody(req, png, from, to, subject)
 	addr := fmt.Sprintf("%s:%d", m.Host, m.Port)
 	auth := smtp.PlainAuth("", m.User, m.Pass, m.Host)
@@ -119,8 +124,14 @@ func sendTLS(addr, host string, auth smtp.Auth, from string, to []string, body [
 // buildMailBody 构造 multipart/mixed 邮件：正文 + PNG 附件
 func buildMailBody(req certRequest, png []byte, from, to, subject string) []byte {
 	boundary := fmt.Sprintf("tb%d", time.Now().UnixNano())
-	text := fmt.Sprintf("%s\n\n姓名 / Name: %s\n分数 / Score: %d\n防伪码 / Anti-counterfeit: %s\n\n（纪念卡为附件 PNG，请查收。）\nThis is a project keepsake, not a religious credential.",
-		"感谢参与宗教文化学习，纪念卡见附件。", req.Name, req.Score, req.Code)
+	// 分数槽位：人格卡为类型代号（字符串如 INTJ），普通/破纪录卡为数值
+	slot := req.ScoreText
+	if slot == "" {
+		slot = fmt.Sprintf("%d", req.Score)
+	}
+	text := fmt.Sprintf(
+		"纪念卡见附件 PNG，请查收。\n\n姓名 / Name: %s\n分数 / Score: %s\n防伪码 / Anti-counterfeit: %s\n\n（Toolbox 纪念卡为留念性质，非任何资格凭证。）\nThis is a project keepsake, not a credential of any kind.",
+		req.Name, slot, req.Code)
 	header := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=%s\r\n\r\n",
 		from, to, subject, boundary)
 	textPart := fmt.Sprintf("--%s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n%s\r\n",
