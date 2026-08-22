@@ -277,8 +277,13 @@ html, body {
 .board-2048 .t32 { background: #f67c5f; color: #fff; }
 .board-2048 .t64 { background: #f65e3b; color: #fff; }
 .board-2048 .t128 { background: #edcf72; color: #fff; font-size: 18px; }
-.board-2048 .t256, .board-2048 .t512 { background: #edcc61; color: #fff; font-size: 18px; }
-.board-2048 .t1024, .board-2048 .t2048 { background: #edc53f; color: #fff; font-size: 16px; }
+.board-2048 .t256 { background: #f4cc4e; color: #fff; font-size: 18px; }
+.board-2048 .t512 { background: #f0b429; color: #fff; font-size: 18px; }
+.board-2048 .t1024 { background: #e8932b; color: #fff; font-size: 16px; }
+.board-2048 .t2048 { background: #d96b1f; color: #fff; font-size: 16px; }
+.board-2048 .t4096 { background: #c0392b; color: #fff; font-size: 16px; }
+.board-2048 .t8192 { background: #8e44ad; color: #fff; font-size: 16px; }
+.board-2048 .t16384 { background: #1f2937; color: #fff; font-size: 13px; }
 
 .ttt-board {
   display: grid;
@@ -573,7 +578,8 @@ pre {
   /* 2048 棋盘缩小，避免横向溢出 */
   .board-2048 { grid-template-columns: repeat(4, 64px); grid-template-rows: repeat(4, 64px); }
   .board-2048 .t128, .board-2048 .t256, .board-2048 .t512 { font-size: 16px; }
-  .board-2048 .t1024, .board-2048 .t2048 { font-size: 14px; }
+  .board-2048 .t1024, .board-2048 .t2048, .board-2048 .t4096, .board-2048 .t8192 { font-size: 14px; }
+  .board-2048 .t16384 { font-size: 12px; }
   /* 井字棋格缩小 */
   .ttt-board { grid-template-columns: repeat(3, 72px); grid-template-rows: repeat(3, 72px); }
   .ttt-cell { font-size: 28px; }

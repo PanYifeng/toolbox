@@ -85,7 +85,7 @@ export default function (el) {
   function move(dir) {
     const rotate = (g) => g[0].map((_, i) => g.map((row) => row[i]).reverse());
     let g = grid.map((row) => [...row]);
-    const turns = { L: 0, U: 1, R: 2, D: 3 }[dir];
+    const turns = { L: 0, U: 3, R: 2, D: 1 }[dir];
     for (let i = 0; i < turns; i++) g = rotate(g);
     let moved = false;
     for (let r = 0; r < SIZE; r++) {
