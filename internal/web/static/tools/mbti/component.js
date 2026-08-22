@@ -9,6 +9,7 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice, subsetPerDim } from '/core/personality.js';
 import { dichotomyHTML, barHTML } from '/core/radar.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
+import { buildFromSections, MBTI_SECTIONS } from '/core/report-sections.js';
 import data from './data.js';
 
 const FULL = data.questions; // 完整版题集（全部，60 题，每维度 15 题）
@@ -195,34 +196,10 @@ function renderActions(el, snap, lang) {
   el.appendChild($actions);
 }
 
-// buildFullReport 客户端按当前语言生成完整版报告文本（分段：画像/维度详解/子维度/人际/压力/成长）
+// buildFullReport 客户端按当前语言生成完整版报告文本（段落注册表驱动，支持 phase 控制）
 function buildFullReport(snap, lang) {
-  const tp = data.types[snap.code] || data.types.INTJ;
   const L = (o) => o[lang] || o.zh;
-  let s = `== ${t('ps.secProfile')} ==\n${snap.code} ${L(tp.nick)}\n${L(tp.full)}\n\n`;
-  s += `== ${t('ps.secDim')} ==\n`;
-  DIMS.forEach((d) => {
-    const dm = data.dims[d];
-    const [a, b] = snap.tally[d];
-    const total = a + b || 1;
-    const winPct = Math.round((Math.max(a, b) / total) * 100);
-    s += `${L(dm.name)}: ${dm.first} ${a} / ${dm.second} ${b} [${t('ps.clar' + clarKey(winPct))}]\n`;
-  });
-  s += `\n== ${t('ps.secSub')} ==\n`;
-  DIMS.forEach((d) => {
-    const dm = data.dims[d];
-    const subs = computeSubPcts(data.facets[d], snap.answers);
-    s += `${L(dm.name)}: ${subs.map((sf, i) => `${L(data.facets[d][i].name)} ${dm.first}${sf.pct}/${dm.second}${100 - sf.pct}`).join(' / ')}\n`;
-  });
-  s += `\n== ${t('ps.secRelation')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].relationship)}\n`; });
-  s += `\n== ${t('ps.secStress')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
-  s += `\n== ${t('ps.secGrowth')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
-  s += `\n== ${t('ps.secCareer')} ==\n${L(tp.career)}\n\n`;
-  s += `== ${t('ps.secRomance')} ==\n${L(tp.romance)}\n`;
-  return s.trim();
+  return buildFromSections(MBTI_SECTIONS, snap, data, L, 0);
 }
 
 // clarKey MBTI 偏好清晰度带位（胜出极占比）：≥80 清晰 / 60-79 中等 / 53-59 轻微 / ≤52 几乎居中

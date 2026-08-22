@@ -277,9 +277,16 @@ export async function renderMemorialCard(opts) {
   const gold = !!(opts.recordCode || opts.recordPending || opts.perfect || opts.gold);
   // 破纪录卡由服务端签发 TB-R- 码（opts.recordCode），跳过前端复算，直接用作防伪码。
   // 待核验态（opts.recordPending）：防伪码位占位，不发真码，核验通过后才下发。
+  // 人格卡无分数，用类型代号（卡面水印大字，如 INTJ/D/O）作为防伪指纹的"分数槽位"，
+  // 使 cert-verify 可凭卡面四要素复算验真；游戏卡仍用 opts.score。
   let code;
   if (opts.recordPending) code = '待核验 · PENDING';
-  else code = opts.recordCode || await computeAntiFake(opts.name, opts.themeKey, opts.score, displayTime);
+  else {
+    const scoreKey = (opts.score != null && opts.score !== '')
+      ? opts.score
+      : (opts.personality && opts.personality.typeCode ? opts.personality.typeCode : '');
+    code = opts.recordCode || await computeAntiFake(opts.name, opts.themeKey, scoreKey, displayTime);
+  }
 
   drawBackground(ctx, W, H, theme, gold);
   if (opts.recordCode || opts.recordPending) drawRecordBanner(ctx, W, H, theme);

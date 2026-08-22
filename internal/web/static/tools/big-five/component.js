@@ -8,6 +8,7 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice, subsetPerDim } from '/core/personality.js';
 import { radarSVG, barHTML } from '/core/radar.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
+import { buildFromSections, BIG5_SECTIONS } from '/core/report-sections.js';
 import data from './data.js';
 
 const FULL = Object.entries(data).filter(([k]) => /^[OCENA]\d{1,2}$/.test(k)).map(([k, v]) => ({ k, ...v })); // 完整版（全部 60 题，每维度 12 题）
@@ -193,30 +194,11 @@ function renderActions(el, snap, lang) {
   el.appendChild($actions);
 }
 
-// buildFullReport 客户端按当前语言生成完整版报告文本（分段：画像/维度详解/子维度/人际/压力/成长）
+// buildFullReport 客户端按当前语言生成完整版报告文本（段落注册表驱动）
 function buildFullReport(snap, lang) {
   const L = (o) => o[lang] || o.zh;
-  const pcts = snap.pcts;
-  const top = [...DIMS].sort((a, b) => pcts[b] - pcts[a])[0];
-  let s = `== ${t('ps.secProfile')} ==\n`;
-  s += `${L(data.dims[top].name)} · ${t('ps.band' + bandKey(pcts[top]))}\n${L(data.dims[top][level(pcts[top])])}\n\n`;
-  s += `== ${t('ps.secDim')} ==\n`;
-  DIMS.forEach((d) => {
-    const dm = data.dims[d];
-    s += `${L(dm.name)} ${pcts[d]}% [${t('ps.band' + bandKey(pcts[d]))}]\n${L(dm.full)}\n\n`;
-  });
-  s += `== ${t('ps.secSub')} ==\n`;
-  DIMS.forEach((d) => {
-    const subs = computeSubPcts(data.facets[d], snap.ratings);
-    s += `${L(data.dims[d].name)}: ${subs.map((sf, i) => `${L(data.facets[d][i].name)} ${sf.pct}%`).join(' / ')}\n`;
-  });
-  s += `\n== ${t('ps.secRelation')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].relationship)}\n`; });
-  s += `\n== ${t('ps.secStress')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
-  s += `\n== ${t('ps.secGrowth')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
-  return s.trim();
+  const dataWithKey = Object.assign({ KEY2IDX }, data);
+  return buildFromSections(BIG5_SECTIONS, snap, dataWithKey, L, 0);
 }
 
 // bandKey 大五量表带位：≥75 很高 / 55-74 偏高 / 45-54 中等 / 26-44 偏低 / ≤25 很低

@@ -7,6 +7,7 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice } from '/core/personality.js';
 import { radarSVG, barHTML } from '/core/radar.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
+import { buildFromSections, DISC_SECTIONS } from '/core/report-sections.js';
 import data from './data.js';
 
 const FULL = data.groups; // 完整版（全部 28 组迫选）
@@ -221,24 +222,10 @@ function renderActions(el, snap, lang) {
   el.appendChild($actions);
 }
 
-// buildFullReport 客户端按当前语言生成完整版报告文本（分段：画像/维度详解/人际/压力/成长）
+// buildFullReport 客户端按当前语言生成完整版报告文本（段落注册表驱动）
 function buildFullReport(snap, lang) {
   const L = (o) => o[lang] || o.zh;
-  const dm = data.dims[snap.primary];
-  const blend = data.blends[snap.primary + snap.secondary] || data.blends.DI;
-  let s = `== ${t('ps.secProfile')} ==\n${L(dm.name)} · ${L(blend.name)}\n${L(dm.full)}\n${L(blend.desc)}\n\n`;
-  s += `== ${t('ps.secDim')} ==\n`;
-  DIMS.forEach((d) => {
-    const x = data.dims[d];
-    s += `${L(x.name)} ${snap.pcts[d]}% [${t('ps.band' + bandKey(snap.pcts[d]))}] 最像${snap.tallyMost[d]} / 最不像${snap.tallyLeast[d]}\n`;
-  });
-  s += `\n== ${t('ps.secRelation')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].relationship)}\n`; });
-  s += `\n== ${t('ps.secStress')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].stress)}\n`; });
-  s += `\n== ${t('ps.secGrowth')} ==\n`;
-  DIMS.forEach((d) => { s += `${L(data.dims[d].name)}: ${L(data.dims[d].growth)}\n`; });
-  return s.trim();
+  return buildFromSections(DISC_SECTIONS, snap, data, L, 0);
 }
 
 // bandKey DISC 份额带位（4 维和=100）：≥35 主导 / 20-34 明显 / 15-19 中等 / ≤14 较低

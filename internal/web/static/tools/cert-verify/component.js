@@ -19,6 +19,34 @@ function buildThemeOpts(lang) {
     .join('');
 }
 
+// isPersonalityTheme 判断是否为人格卡主题（无分数，改用类型代号验真）
+function isPersonalityTheme(k) {
+  return typeof k === 'string' && k.indexOf('personality-') === 0;
+}
+
+// adaptScoreField 人格卡主题下把"分数"输入框切换为"类型代号"文本框，反之恢复数字分数框
+function adaptScoreField(el) {
+  const themeKey = el.querySelector('#cv-theme').value;
+  const $label = el.querySelector('#cv-score-label');
+  const $score = el.querySelector('#cv-score');
+  const $hint = el.querySelector('#cv-hint');
+  if (isPersonalityTheme(themeKey)) {
+    $label.textContent = t('cv.typeCode');
+    $score.type = 'text';
+    $score.removeAttribute('min');
+    $score.removeAttribute('max');
+    $score.placeholder = 'INTJ / D / O';
+    $hint.textContent = t('cv.typeCodeHint');
+  } else {
+    $label.textContent = t('cv.score');
+    $score.type = 'number';
+    $score.setAttribute('min', '0');
+    $score.setAttribute('max', '999999');
+    $score.placeholder = '';
+    $hint.textContent = t('cv.timeHint');
+  }
+}
+
 // render 验真表单 + 结果区
 export default function (el) {
   const lang = getLang();
@@ -31,14 +59,17 @@ export default function (el) {
       <label>${t('cv.theme')}
         <select id="cv-theme">${themeOpts}</select>
       </label>
-      <label>${t('cv.score')} <input id="cv-score" type="number" min="0" max="999999"></label>
+      <label><span id="cv-score-label">${t('cv.score')}</span> <input id="cv-score" type="number" min="0" max="999999"></label>
       <label>${t('cv.completed')} <input id="cv-time" type="datetime-local"></label>
       <label>${t('cv.code')} <input id="cv-code" type="text" placeholder="TB-XXXX-XXXX-XXXX"></label>
-      <p class="muted cv-hint">${t('cv.timeHint')}</p>
+      <p class="muted cv-hint" id="cv-hint">${t('cv.timeHint')}</p>
       <button id="cv-go" class="btn">${t('cv.verify')}</button>
     </div>
     <div id="cv-out"></div>`;
 
+  // 主题切换时，人格卡把"分数"字段切换为"类型代号"文本框（人格卡无分数）
+  el.querySelector('#cv-theme').addEventListener('change', () => adaptScoreField(el));
+  adaptScoreField(el);
   el.querySelector('#cv-go').onclick = () => onVerify(el);
 }
 
@@ -46,7 +77,9 @@ export default function (el) {
 async function onVerify(el) {
   const name = el.querySelector('#cv-name').value.trim();
   const themeKey = el.querySelector('#cv-theme').value;
-  const score = el.querySelector('#cv-score').value.trim();
+  let score = el.querySelector('#cv-score').value.trim();
+  // 人格卡的"分数"实为类型代号（如 INTJ/D/O），卡面恒为大写；统一大写以容错用户输入
+  if (isPersonalityTheme(themeKey)) score = score.toUpperCase();
   // datetime-local 控件值为 YYYY-MM-DDTHH:MM，转换为卡面/哈希所用的 YYYY-MM-DD HH:MM 格式
   const displayTime = el.querySelector('#cv-time').value.trim().replace('T', ' ');
   const userCode = el.querySelector('#cv-code').value.trim();
@@ -72,8 +105,12 @@ async function onVerify(el) {
       return;
     }
     // 验证通过：用相同输入重新渲染原卡（displayTime 直接传入，保证与原卡一致）
+    // 人格卡无分数，重渲染传 minimal personality 走 drawPersonalityBody（无原始维度数据，省略雷达图）
+    const personality = isPersonalityTheme(themeKey)
+      ? { typeCode: score, typeLabel: score, dims: [] }
+      : null;
     const { dataUrl, code } = await renderMemorialCard({
-      themeKey, name, score, displayTime, showDonate: true,
+      themeKey, name, score, displayTime, showDonate: true, personality,
     });
     $out.innerHTML = `
       <p class="ok">${t('cv.pass')}</p>
