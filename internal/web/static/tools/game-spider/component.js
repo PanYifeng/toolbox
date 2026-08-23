@@ -10,6 +10,18 @@ const RANK = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', '
 const SP_MOVE_BENCH = 120; // 蜘蛛纸牌完成步数基准：少于此步数完成有效率加成
 const SP_MOVE_K = 3;       // 每少 1 步加 3 分（鼓励精简解法，打破全收 900 平局）
 
+const SP_CARD_H = 44;       // 牌最小高度（与 CSS .sp-card min-height 一致，border-box 含边框）
+const SP_STRIP_DEFAULT = 18; // 默认每张露出 18px，足以显示贴顶的点数
+const SP_STRIP_MIN = 14;     // 长列最低露出，仍可完整辨认点数
+const SP_COL_HMAX = 330;     // 单列目标最大高度，超出则收紧叠放，保证整盘可见
+
+// spOverlap 由本列牌数算负 margin 幅度：牌多时收紧叠放，让整盘可见且点数可读
+function spOverlap(len) {
+  if (len <= 1) return SP_CARD_H - SP_STRIP_DEFAULT;
+  const strip = Math.max(SP_STRIP_MIN, Math.min(SP_STRIP_DEFAULT, (SP_COL_HMAX - SP_CARD_H) / (len - 1)));
+  return SP_CARD_H - strip;
+}
+
 // render 蜘蛛纸牌
 export default function (el) {
   el.innerHTML = `
@@ -152,6 +164,7 @@ export default function (el) {
     for (let i = 0; i < NCols; i++) {
       const colEl = document.createElement('div');
       colEl.className = 'sp-col';
+      colEl.style.setProperty('--sp-mtop', `-${spOverlap(cols[i].length)}px`);
       if (!cols[i].length) {
         const empty = document.createElement('button');
         empty.className = 'sp-card sp-empty';

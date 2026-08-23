@@ -385,19 +385,24 @@ canvas { outline: none; border-radius: 6px; max-width: 100%; height: auto; touch
 .sp-col { display: flex; flex-direction: column; gap: 0; min-height: 60px; }
 .sp-card {
   margin: 0;
-  padding: 4px 2px;
+  padding: 1px 2px;
   min-height: 44px;
   font-size: 13px;
   font-weight: 600;
+  display: flex;
+  align-items: flex-start;   /* 点数贴顶，叠放露出条带即可见完整点数 */
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;        /* 防"10♠"折行折叠 */
+  overflow: hidden;
   text-align: center;
   background: var(--bg);
   color: var(--fg);
   border: 1px solid var(--border);
   border-radius: 5px;
   cursor: pointer;
-  margin-top: -26px;            /* 叠放露出上半部分（约 18px）显示点数 */
+  margin-top: var(--sp-mtop, -26px);  /* 叠放露出顶部点数；长列由 JS 收紧 */
   position: relative;
-  line-height: 1.2;
   -webkit-tap-highlight-color: transparent;
 }
 .sp-col .sp-card:first-child { margin-top: 0; }
