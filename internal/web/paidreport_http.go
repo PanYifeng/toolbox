@@ -87,10 +87,16 @@ func (s *Server) handlePaidReportConfirm(w http.ResponseWriter, r *http.Request)
 		s.renderPaidReportConfirmResult(w, e, "already")
 		return
 	}
+	// 先同步发件，成功后才置 approved；失败保持 pending，站主可重新点确认链接重发——
+	// 避免"状态已通过但邮件没送达"的卡死态（曾因正文行超 998 octet 被 SMTP 500 退信而卡死）。
+	if err := s.notifyPaidReportApprovedUser(e); err != nil {
+		log.Printf("paid report notify user failed (stays pending, retry by re-confirm): id=%s err=%v", e.ID, err)
+		s.renderPaidReportConfirmResult(w, e, "sendfail")
+		return
+	}
 	s.pr.setStatus(e.ID, prApproved)
 	e, _ = s.pr.find(id)
-	go s.notifyPaidReportApprovedUser(e)
-	log.Printf("paid report claim approved: id=%s feature=%s txid=%s", e.ID, e.Feature, e.TxID)
+	log.Printf("paid report claim approved+sent: id=%s feature=%s txid=%s", e.ID, e.Feature, e.TxID)
 	s.renderPaidReportConfirmResult(w, e, "approved")
 }
 
@@ -125,24 +131,26 @@ func (s *Server) notifyPaidReportOwner(e paidReportEntry) {
 
 // notifyPaidReportApprovedUser 通知访客并把完整报告邮件送达：PDF 报告作主附件，金卡 PNG 作次附件（可选）。
 // PDF 由服务端从落盘报告文本即时渲染（gofpdf + 内嵌中文字体）；任一附件就绪即 multipart 发送，否则纯文本回退。
-func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) {
+// 返回发送错误，供确认流程在置 approved 前校验：失败则保持 pending，可重试点确认链接重发。
+func (s *Server) notifyPaidReportApprovedUser(e paidReportEntry) error {
 	m := s.cfg.Mail
 	if !m.Configured() {
-		return
+		return fmt.Errorf("mail not configured")
 	}
 	text := buildPaidReportMailText(e, s.cfg.Site.URL)
 	subject := paidReportSubject(e.Title)
 	dateStr := time.Now().Format("20060102")
 	atts := buildPaidReportAttachments(e, dateStr)
 	if len(atts) > 0 {
-		if sendErr := sendMailWithAttachments(m, e.Email, subject, text, atts); sendErr != nil {
-			log.Printf("paid report notify user (with attachments) failed: id=%s err=%v", e.ID, sendErr)
+		if err := sendMailWithAttachments(m, e.Email, subject, text, atts); err != nil {
+			return fmt.Errorf("send with attachments: %w", err)
 		}
-		return
+		return nil
 	}
 	if err := sendMail(m, e.Email, subject, text); err != nil {
-		log.Printf("paid report notify user failed: id=%s err=%v", e.ID, err)
+		return fmt.Errorf("send text: %w", err)
 	}
+	return nil
 }
 
 // paidReportSubject 邮件主题：有标题则追加"已封缄"后缀，无标题用默认
@@ -212,15 +220,20 @@ func buildPaidReportMailText(e paidReportEntry, siteURL string) string {
 // renderPaidReportConfirmResult 渲染站主点击确认后的结果页（纯静态 HTML，无需前端）
 func (s *Server) renderPaidReportConfirmResult(w http.ResponseWriter, e paidReportEntry, kind string) {
 	var msg string
+	var extra string
 	switch kind {
 	case "approved":
 		msg = "✅ 已核验通过，完整报告已发送至用户邮箱。"
 	case "already":
 		msg = "ℹ️ 该申请已处理过（状态：" + e.Status + "），无需重复操作。"
+	case "sendfail":
+		// 状态保持 pending，提供重发链接走同一确认流程重试
+		msg = "⚠️ 报告邮件发送失败（已记录日志），状态保持待核验。点击下方按钮重发："
+		extra = fmt.Sprintf(`<p><a href="%s" style="display:inline-block;margin-top:12px;padding:10px 18px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:6px">重新发送报告邮件</a></p>`, s.paidReportConfirmLink(e.ID))
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, _ = fmt.Fprintf(w, `<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>付费报告核验</title></head>
 <body style="font-family:system-ui;max-width:480px;margin:80px auto;text-align:center;color:#333">
-<h2>%s</h2><p>申请 ID: %s</p><a href="%s">返回 Toolbox</a></body></html>`,
-		msg, e.ID, strings.TrimRight(s.cfg.Site.URL, "/")+"/")
+<h2>%s</h2>%s<p>申请 ID: %s</p><a href="%s">返回 Toolbox</a></body></html>`,
+		msg, extra, e.ID, strings.TrimRight(s.cfg.Site.URL, "/")+"/")
 }

@@ -23,12 +23,14 @@ func sendMail(m config.MailConfig, to, subject, text string) error {
 	return smtp.SendMail(addr, auth, from, []string{to}, body)
 }
 
-// buildTextMail 构造符合 RFC 5322 的纯文本邮件（UTF-8 + Base64 主题防乱码）
+// buildTextMail 构造符合 RFC 5322 的纯文本邮件（UTF-8 + Base64 主题防乱码）。
+// 正文用 base64 折行编码：长正文（如付费完整版报告可达上百 KB）若 8bit 直发，单行超 RFC 5321
+// 的 998 octet 限制会被 SMTP 服务器以 500 退信。base64 后每行 ≤76，安全送达，客户端自动解码还原。
 func buildTextMail(from, to, subject, text string) []byte {
 	return []byte(fmt.Sprintf(
 		"From: %s\r\nTo: %s\r\nSubject: =?UTF-8?B?%s?=\r\n"+
-			"MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n%s",
-		from, to, base64.StdEncoding.EncodeToString([]byte(subject)), text,
+			"MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n%s",
+		from, to, base64.StdEncoding.EncodeToString([]byte(subject)), wrapBase64(base64.StdEncoding.EncodeToString([]byte(text))),
 	))
 }
 
@@ -52,7 +54,8 @@ func sendMailWithAttachments(m config.MailConfig, to, subject, textBody string, 
 	return smtp.SendMail(addr, auth, from, []string{to}, body)
 }
 
-// buildMultipartWithAttachments 构造 multipart/mixed 邮件：UTF-8 纯文本正文 + 多个 base64 附件（主题 Base64 防乱码）
+// buildMultipartWithAttachments 构造 multipart/mixed 邮件：UTF-8 纯文本正文 + 多个 base64 附件（主题 Base64 防乱码）。
+// 正文同样用 base64 折行编码，避免长报告单行超 RFC 5321 的 998 octet 限制被退信（见 buildTextMail）。
 func buildMultipartWithAttachments(from, to, subject, textBody string, attachments []mailAttachment) []byte {
 	boundary := fmt.Sprintf("tb%d", time.Now().UnixNano())
 	header := fmt.Sprintf(
@@ -60,8 +63,8 @@ func buildMultipartWithAttachments(from, to, subject, textBody string, attachmen
 		from, to, base64.StdEncoding.EncodeToString([]byte(subject)), boundary,
 	)
 	textPart := fmt.Sprintf(
-		"--%s\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n%s\r\n",
-		boundary, textBody,
+		"--%s\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n%s",
+		boundary, wrapBase64(base64.StdEncoding.EncodeToString([]byte(textBody))),
 	)
 	parts := strings.Builder{}
 	parts.WriteString(header)
