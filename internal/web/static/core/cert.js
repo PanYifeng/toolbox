@@ -101,6 +101,27 @@ export const THEMES = {
     // 样例完成时间：Synthetic Suika 上线（Eldorado，2021 年）
     sampleDate: '2021-09-01',
   },
+  'game-match3': {
+    primary: '#ec4899', secondary: '#be185d', bg: '#FFF1F7', symbol: '🍬', auspicious: '★', pattern: 'dots',
+    title: { zh: '消消乐 通关纪念卡', en: 'Match-3 Memorial Card' },
+    message: { zh: '巧手连消，步步生花，愿你于纷繁中理出条理。', en: 'Clever clears, blossoming step by step; may you find order amid the colorful clutter.' },
+    // 样例完成时间：Bejeweled 首发（PopCap，2001 年 6 月），三消玩法奠基
+    sampleDate: '2001-06-01',
+  },
+  'game-xiangqi': {
+    primary: '#b91c1c', secondary: '#7f1d1d', bg: '#FEF2F2', symbol: '帥', auspicious: '★', pattern: 'grid3',
+    title: { zh: '中国象棋 通关纪念卡', en: 'Xiangqi Memorial Card' },
+    message: { zh: '楚河汉界，运筹帷幄，愿你于攻守之间常握先机。', en: 'Across the Chu River and Han border, strategy in mind; may you hold the initiative between attack and defense.' },
+    // 样例完成时间：1956 年首届全国象棋锦标赛（中国象棋正式竞技化标志）
+    sampleDate: '1956-01-01',
+  },
+  'game-chess': {
+    primary: '#475569', secondary: '#1f2937', bg: '#F3F4F6', symbol: '♚', auspicious: '★', pattern: 'grid4',
+    title: { zh: '国际象棋 通关纪念卡', en: 'Chess Memorial Card' },
+    message: { zh: '方寸棋盘，千变万化，愿你思虑周全、落子无悔。', en: 'On a small board, infinite variation; may you think it through and play without regret.' },
+    // 样例完成时间：Staunton 棋具标准化（1849 年），现代国际象棋形制奠基
+    sampleDate: '1849-01-01',
+  },
   game: {
     primary: '#6D3BE6', secondary: '#3E1F8A', bg: '#F6F2FE', symbol: '★', auspicious: '★', pattern: 'grid4',
     title: { zh: '通关纪念卡', en: 'Clear Stage Memorial Card' },
@@ -135,7 +156,7 @@ export const THEMES = {
 // 顺序即下拉分组顺序；themes 数组内每项为 THEMES 键。新增主题时归入对应分类或新建分类。
 export const THEME_CATEGORIES = [
   { title: { zh: '宗教文化', en: 'Religion & Culture' }, themes: ['buddhism', 'islam', 'christianity'] },
-  { title: { zh: '游戏', en: 'Games' }, themes: ['game-2048', 'game-snake', 'game-ttt', 'game-spider', 'game-minesweeper', 'game-tetris', 'game-flappy', 'game-wordle', 'game-suika', 'game'] },
+  { title: { zh: '游戏', en: 'Games' }, themes: ['game-2048', 'game-snake', 'game-ttt', 'game-spider', 'game-minesweeper', 'game-tetris', 'game-flappy', 'game-wordle', 'game-suika', 'game-match3', 'game-xiangqi', 'game-chess', 'game'] },
   { title: { zh: '知识·趣味', en: 'Knowledge & Fun' }, themes: ['knowledge-quiz'] },
   { title: { zh: '人格测试', en: 'Personality' }, themes: ['personality-mbti', 'personality-bigfive', 'personality-disc'] },
 ];
