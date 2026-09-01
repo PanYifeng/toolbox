@@ -502,42 +502,43 @@ function drawPersonalityBody(ctx, opts, theme, displayTime) {
   const userName = opts.name || '';
   drawTypeWatermark(ctx, p, theme, W); // 不同类型呈现不同背景标识
   // 金卡在分隔线与类型标签之间绘制人物形象（男女一对），增强付费差异化
-  // 人物位于 y=315，size=40 刚好嵌入 80px 间隙（header 分隔线 y=270 至主标签 y=350）
+  // 人物 y=345、size=64：够大不压抑，头部(281)位于 header 分隔线(270)之下；spacing 系数 0.62 保证不重叠
   if (isGold && p.typeCode) {
     const ch = getCharacter(p.typeCode);
-    if (ch) drawCharacterPair(ctx, W / 2, 320, ch, 45);
+    if (ch) drawCharacterPair(ctx, W / 2, 345, ch, 64);
   }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = theme.secondary;
   ctx.font = 'bold 54px "PingFang SC","Microsoft YaHei",serif';
-  ctx.fillText(p.typeLabel || '', W / 2, 350);
+  ctx.fillText(p.typeLabel || '', W / 2, 400);
   if (userName) { // 姓名：置于大类型标签之下，英文副标题之上（金卡底部 drawCertInfo 已有姓名，此处也展示以保持分享卡一致性）
     ctx.fillStyle = theme.primary;
     ctx.globalAlpha = 0.8;
     ctx.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText(`${BILABEL.name.zh} · ${BILABEL.name.en}: ${userName}`, W / 2, 395);
+    ctx.fillText(`${BILABEL.name.zh} · ${BILABEL.name.en}: ${userName}`, W / 2, 445);
     ctx.globalAlpha = 1;
   }
   const nameAdj = userName ? 0 : 30; // 无姓名时英文标题上移 30px
   if (p.typeLabelEn) { // 英文副标题，与主标签配对
     ctx.fillStyle = theme.primary;
     ctx.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.fillText(p.typeLabelEn, W / 2, 420 - nameAdj);
+    ctx.fillText(p.typeLabelEn, W / 2, 470 - nameAdj);
   }
   if (p.tagline) { // 金句 tagline：社交货币 + 传播钩子
     ctx.fillStyle = theme.secondary;
     ctx.globalAlpha = 0.75;
     ctx.font = 'italic 20px "PingFang SC","Microsoft YaHei",serif';
-    ctx.fillText(`${p.tagline}`, W / 2, 454 - nameAdj);
+    ctx.fillText(`${p.tagline}`, W / 2, 504 - nameAdj);
     ctx.globalAlpha = 1;
   }
   ctx.fillStyle = theme.primary;
   ctx.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
-  const timeY = p.tagline ? 486 - nameAdj : 464 - nameAdj;
+  const timeY = p.tagline ? 536 - nameAdj : 514 - nameAdj;
   ctx.fillText(`${BILABEL.completed.zh} · ${BILABEL.completed.en}: ${displayTime}`, W / 2, timeY);
-  drawPersonalityRadar(ctx, { cx: W / 2, cy: 720, radius: 230, dims: p.dims || [], accent: p.accent || theme.primary, theme });
-  drawMessage(ctx, W, theme, opts, 1060);
+  // 雷达下移至 cy=820、radius=200：顶部标签(584)与完成时间(536)留 48px 间距，消除原 cy=760 标签(504)与时间(486)的重叠
+  drawPersonalityRadar(ctx, { cx: W / 2, cy: 820, radius: 200, dims: p.dims || [], accent: p.accent || theme.primary, theme });
+  drawMessage(ctx, W, theme, opts, 1140);
 }
 
 // drawTypeWatermark 类型代号水印：大号极淡的类型代号作背景标识，不同类型呈现不同标识（DISC 单字母 / MBTI 四字母 / 大五主导维度字母）
@@ -614,6 +615,7 @@ function drawPersonalityRadar(ctx, cfg) {
 }
 
 // drawMessage 寄语区：中英双语，依主题而定
+// 英文文本按分号分行（如有），避免字符级断行破坏语义
 function drawMessage(ctx, W, theme, opts, y) {
   ctx.textAlign = 'center';
   const msg = opts.message || theme.message;
@@ -622,7 +624,19 @@ function drawMessage(ctx, W, theme, opts, y) {
   const yEnd = wrapText(ctx, msg.zh, W / 2, y, W - 240, 34);
   ctx.fillStyle = theme.primary;
   ctx.font = 'italic 18px "PingFang SC","Microsoft YaHei",serif';
-  wrapText(ctx, msg.en, W / 2, yEnd + 30, W - 240, 26);
+  const enText = msg.en;
+  // 按分号分行：如果英文文本包含分号且宽度超限，在分号处分行
+  const enLines = enText.split(';').map(s => s.trim()).filter(Boolean);
+  if (enLines.length > 1 && ctx.measureText(enText).width > W - 240) {
+    let ey = yEnd + 30;
+    for (let i = 0; i < enLines.length; i++) {
+      // 保留原分号作行尾标点，但末行不追加——原句以 . 等收尾，避免 "fullness.;" 之类残留
+      ctx.fillText(i < enLines.length - 1 ? enLines[i] + ';' : enLines[i], W / 2, ey);
+      ey += 26;
+    }
+  } else {
+    wrapText(ctx, enText, W / 2, yEnd + 30, W - 240, 26);
+  }
 }
 
 // drawFooter 底部二维码（通用项目支持，非宗教募捐）。
@@ -820,19 +834,23 @@ function drawPerfectBanner(ctx, W, H, theme) {
 // 仅当 opts.gold（人格测试完整版付费纪念卡）时绘制，与破纪录/满分绶带同结构、文案区分。
 // 人格测试无分数，故用"纪念"标识区别于满分卡。
 function drawMemorialBanner(ctx, W, H, theme) {
-  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  // 金框底色已由 drawBackground 绘制（0-60px 的金色渐变条），此处仅覆盖文字和装饰，
+  // 避免二次填充产生色差边界。用与背景一致的渐变填充 0-60px 区域消除 seam。
+  const grad = ctx.createLinearGradient(0, 0, W, H);
   grad.addColorStop(0, '#B8860B');
-  grad.addColorStop(0.3, '#FFD700');
-  grad.addColorStop(0.5, '#FFF8DC');
-  grad.addColorStop(0.7, '#FFD700');
+  grad.addColorStop(0.2, '#FFD700');
+  grad.addColorStop(0.4, '#FFF8DC');
+  grad.addColorStop(0.5, '#FFD700');
+  grad.addColorStop(0.7, '#FFF8DC');
+  grad.addColorStop(0.85, '#DAA520');
   grad.addColorStop(1, '#B8860B');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, 40);
+  ctx.fillRect(0, 0, W, 60); // 与背景金框顶部等高
   ctx.fillStyle = '#5C3D00';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = 'bold 22px "PingFang SC","Microsoft YaHei",serif';
-  ctx.fillText('🏆 纪念 · MEMORIAL', W / 2, 20);
+  ctx.fillText('🏆 纪念 · MEMORIAL', W / 2, 30);
   ctx.fillStyle = '#DAA520';
   ctx.globalAlpha = 0.5;
   ctx.font = '28px serif';

@@ -42,14 +42,44 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// mdToText 把报告正文中的轻量 markdown 归一化为纯文本友好形式。
+// 三工具深度文（poleDeep.deep / domProfile.deep / type.deep / blend.deep 等）均按 markdown 撰写：
+// 含 # / ## 子标题、**强调**、- 列表。但报告以纯文本邮件 + gofpdf PDF（仅解析 == 段标题 ==）两种媒介
+// 送达，两者都不渲染 markdown，导致 ## 整体画像、**bold**、- 列表项原样显形，观感粗糙；
+// 且高低极标题层级不一（high 用 #、low 用 ##）。归一化后：子标题去 # 留正文并前后补空行、
+// ** 去星留文、- 转 •；连续空行折叠为最多一段间。纯文本段落（无标记）原样通过。
+function mdToText(s) {
+  if (!s) return s;
+  const lines = String(s).split('\n');
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    const h = line.match(/^\s{0,3}#{1,6}\s+(.*)$/);
+    if (h) {
+      const title = h[1].trim();
+      if (out.length && out[out.length - 1] !== '') out.push('');
+      out.push(title);
+      if (i + 1 < lines.length && lines[i + 1].trim() !== '') out.push('');
+      continue;
+    }
+    line = line.replace(/^(\s*)([-*])\s+/, '$1• ');
+    line = line.replace(/\*\*(.+?)\*\*/g, '$1');
+    out.push(line);
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\n+/, '').replace(/\n+$/, '');
+}
+
 // —— 构建器 ——
+
+// MAX_REPORT_PHASE 报告可用的最高 phase（付费报告纳入全部段落时用它）
+export const MAX_REPORT_PHASE = 2;
 
 // buildFromSections 按 sections 数组 + activePhase 拼装完整报告文本
 export function buildFromSections(sections, snap, data, L, activePhase = 0) {
   return sections
     .filter((s) => s.phase <= activePhase)
     .map((s) => {
-      const content = s.render(snap, data, L);
+      const content = mdToText(s.render(snap, data, L));
       if (!content) return '';
       return `== ${t(s.titleKey)} ==\n${content}`;
     })
@@ -99,12 +129,19 @@ export const MBTI_SECTIONS = [
       const cs = tp.cogStack;
       if (!cs) return '';
       const order = cs.order || '';
-      const dom = cs.dominant ? `${L(cs.dominant.name)}：${L(cs.dominant.desc)}` : '';
-      const aux = cs.auxiliary ? `${L(cs.auxiliary.name)}：${L(cs.auxiliary.desc)}` : '';
-      const ter = cs.tertiary ? `${L(cs.tertiary.name)}：${L(cs.tertiary.desc)}` : '';
-      const inf = cs.inferior ? `${L(cs.inferior.name)}：${L(cs.inferior.desc)}` : '';
-      let s = `功能栈顺序：${order}\n`;
-      if (dom) s += `\n主导功能：${dom}`;
+      // fn 描述：cogStack 各功能可能存字母（字符串，查 data.cogFns 双语名+描述）
+      //   或已是 {name,desc} 对象；缺数据则回退显示字母本身。绝不因 undefined 抛错。
+      const fn = (f) => {
+        if (!f) return '';
+        const obj = typeof f === 'string' ? (data.cogFns && data.cogFns[f]) : f;
+        if (!obj) return typeof f === 'string' ? f : '';
+        const n = obj.name ? L(obj.name) : (typeof f === 'string' ? f : '');
+        const d = obj.desc ? L(obj.desc) : '';
+        return d ? `${n}：${d}` : n;
+      };
+      const dom = fn(cs.dominant), aux = fn(cs.auxiliary), ter = fn(cs.tertiary), inf = fn(cs.inferior);
+      let s = `功能栈顺序：${order}`;
+      if (dom) s += `\n\n主导功能：${dom}`;
       if (aux) s += `\n辅助功能：${aux}`;
       if (ter) s += `\n第三功能：${ter}`;
       if (inf) s += `\n第四功能：${inf}`;
@@ -121,7 +158,7 @@ export const MBTI_SECTIONS = [
         const winPct = Math.round((Math.max(a, b) / total) * 100);
         const pole = a >= b ? dm.first : dm.second;
         const poleDeep = dm.poleDeep && dm.poleDeep[pole] ? L(dm.poleDeep[pole].deep) : '';
-        return `${L(dm.name)}：${dm.first} ${a} / ${dm.second} ${b} [${t('ps.clar' + clarKey(winPct))}]\n${poleDeep}`;
+        return `${L(dm.name)} ${winPct}% [${t('ps.clar' + clarKey(winPct))}]（${dm.first} ${a} / ${dm.second} ${b}）\n${poleDeep}`;
       }).join('\n\n');
     } },
 
@@ -129,6 +166,8 @@ export const MBTI_SECTIONS = [
   { key: 'facet', titleKey: 'ps.secSub', phase: 0,
     render: (snap, data, L) => {
       if (!data.facets) return '';
+      // 免费版仅答每维子集（5 题/维），不足以诚实计算子维度；仅完整版（15 题/维）输出本段
+      if (snap.version !== 'full') return '';
       return MBTI_DIMS.map((d) => {
         const dm = data.dims[d];
         const subs = mbtiSubPcts(data.facets[d], snap.answers);
@@ -267,7 +306,9 @@ export const MBTI_SECTIONS = [
 const BIG5_DIMS = ['O', 'C', 'E', 'A', 'N'];
 
 function big5Level(pct) {
-  return pct >= 66 ? 'high' : pct <= 33 ? 'low' : 'mid';
+  // 五档简评键名（与 data.dims[d].{veryHigh,high,mid,low,veryLow} 对齐）
+  const k = big5BandKey(pct);
+  return k[0].toLowerCase() + k.slice(1);
 }
 
 function big5BandKey(pct) {
@@ -322,8 +363,11 @@ export const BIG5_SECTIONS = [
       const pcts = snap.pcts;
       return BIG5_DIMS.map((d) => {
         const dm = data.dims[d];
-        const lvl = big5Level(pcts[d]);
-        const poleDeep = dm.poleDeep && dm.poleDeep[lvl === 'high' ? 'high' : 'low'] ? L(dm.poleDeep[lvl === 'high' ? 'high' : 'low'].deep) : '';
+        // 极性按"是否过中点"判定：≥50 取 high 极、<50 取 low 极。勿用 big5Level 的三档，
+        // poleDeep 只有 high/low 两极，旧逻辑把 mid（34-65，含上半区 51-65）误并入 low，
+        // 导致 65% 开放性渲染"低开放性"深度文——与 band 标"偏高"自相矛盾。
+        const pole = pcts[d] >= 50 ? 'high' : 'low';
+        const poleDeep = dm.poleDeep && dm.poleDeep[pole] ? L(dm.poleDeep[pole].deep) : '';
         return `${L(dm.name)} ${pcts[d]}% [${t('ps.band' + big5BandKey(pcts[d]))}]\n${L(dm.full)}\n${poleDeep}`;
       }).join('\n\n');
     } },
@@ -331,6 +375,8 @@ export const BIG5_SECTIONS = [
   { key: 'facet', titleKey: 'ps.secSub', phase: 0,
     render: (snap, data, L) => {
       if (!data.facets) return '';
+      // 免费版仅答每维子集（4 题/维），不足以诚实计算子维度；仅完整版（12 题/维）输出本段
+      if (snap.version !== 'full') return '';
       return BIG5_DIMS.map((d) => {
         const subs = big5SubPcts(data.facets[d], snap.ratings, data);
         return subs.map((sf, i) => {
@@ -445,10 +491,6 @@ export const BIG5_SECTIONS = [
 
 const DISC_DIMS = ['D', 'I', 'S', 'C'];
 
-function discLevel(pct) {
-  return pct >= 35 ? 'high' : pct <= 14 ? 'low' : 'mid';
-}
-
 export const DISC_SECTIONS = [
   { key: 'intro', titleKey: 'ps.secIntro', phase: 0,
     render: (snap, data, L) => L({ zh: '本报告基于 DISC 行为风格理论，通过迫选作答测量你在支配(D)、影响(I)、稳健(S)、严谨(C)四个维度上的风格强度，找出你的主导风格与混合风格解读。报告包含风格画像、维度详解、优势盲点、职业建议、人际关系、压力应对与成长建议。DISC 为自我报告量表，非临床诊断工具。', en: 'This report is based on the DISC behavior style theory, measuring your Dominance (D), Influence (I), Steadiness (S), and Conscientiousness (C) to identify your primary and secondary style blend. It includes your style profile, dimension analysis, strengths and blind spots, career advice, relationships, stress coping, and growth tips. DISC is a self-report inventory, not a clinical diagnostic tool.' }) },
@@ -481,8 +523,10 @@ export const DISC_SECTIONS = [
         const pct = snap.pcts[d];
         const pole = pct >= 50 ? 'high' : 'low';
         const poleDeep = dm.poleDeep && dm.poleDeep[pole] ? L(dm.poleDeep[pole].deep) : '';
-        const bandKey = discLevel(pct) === 'high' ? 'VeryHigh' : discLevel(pct) === 'mid' ? 'Mid' : 'Low';
-        return `${L(dm.name)} ${pct}% [${t('ps.band' + bandKey)}]\n${L(dm.full)}\n${poleDeep}`;
+        // 用 discBandKey 四档（含 High）+ DISC 专属标签，勿用 discLevel 三档（跳过 High，
+        // 使 20-34 的"明显"份额误标"中等"）与 Big Five 标签（很高/偏高/偏低）。
+        const bandKey = discBandKey(pct);
+        return `${L(dm.name)} ${pct}% [${t('ps.discBand' + bandKey)}]\n${L(dm.full)}\n${poleDeep}`;
       }).join('\n\n');
     } },
 

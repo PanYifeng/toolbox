@@ -1,5 +1,5 @@
 // 大五人格（OCEAN）组件：测试前选免费版/完整版 → Likert 1-5 题计分 → 五维度百分比 + 免费画像。
-// 完整版（全部题）结果含 ¥5 详细解读（站主确认门邮件送达）；免费版（每维度子集）结果软推完整版。
+// 完整版（全部题）结果含 ¥5 详细解读（站主确认门邮件送达）；免费版（每维度子集）结果直接给 ¥5 付费 CTA（不强迫重测，报告缺子维度段）。
 // 不用 quiz.js（正误计分型）；Likert 1-5 自建表单。无纪念卡（非分数型）。
 // 语言切换重渲染时用模块级 snapshot 恢复结果与申请态；刷新清空回选择入口。
 
@@ -8,7 +8,7 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice, subsetPerDim } from '/core/personality.js';
 import { radarSVG, barHTML } from '/core/radar.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
-import { buildFromSections, BIG5_SECTIONS } from '/core/report-sections.js';
+import { buildFromSections, BIG5_SECTIONS, MAX_REPORT_PHASE } from '/core/report-sections.js';
 import data from './data.js';
 
 const FULL = Object.entries(data).filter(([k]) => /^[OCENA]\d{1,2}$/.test(k)).map(([k, v]) => ({ k, ...v })); // 完整版（全部 60 题，每维度 12 题）
@@ -155,7 +155,7 @@ function renderResult(el, snap, lang) {
   renderActions(el, snap, lang);
 }
 
-// renderActions（完整版）付费入口/已提交 或（免费版）分享卡+升级 + 重新测试
+// renderActions 付费入口/已提交（免费版与完整版均直接给 ¥5 CTA，不强迫免费用户重测 60 题）
 // 完整版画像付费后才邮件送达，不在结果页泄露分享卡；免费版保留分享卡作传播诱饵
 function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
@@ -167,24 +167,18 @@ function renderActions(el, snap, lang) {
     share.onclick = () => downloadShareCard(snap, lang);
     $actions.appendChild(share);
   }
-  if (snap.version === 'full') {
-    if (snap.fullStage === 'submitted') {
-      renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
-    } else {
-      renderPaidReportEntry($actions, {
-        feature: t('bf.fullFeature'), title: t('bf.fullTitle'), amount: AMOUNT,
-        report: buildFullReport(snap, lang),
-        preview: buildFullReport(snap, lang).split('\n\n')[0],
-        getPng: () => buildGoldPng(snap, lang),
-        onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
-      });
-    }
+  // 免费版快照已算出 pcts，足以生成除子维度外的完整报告（子维度段按 version 在 report-sections 跳过）
+  if (snap.fullStage === 'submitted') {
+    renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
   } else {
-    const up = document.createElement('button');
-    up.className = 'btn';
-    up.textContent = t('ps.upgrade');
-    up.onclick = () => { snapshot = null; startTest(el, lang, 'full'); };
-    $actions.appendChild(up);
+    const full = buildFullReport(snap, lang);
+    renderPaidReportEntry($actions, {
+      feature: t('bf.fullFeature'), title: t('bf.fullTitle'), amount: AMOUNT,
+      report: full,
+      preview: full.split('\n\n')[0],
+      getPng: (name) => buildGoldPng(snap, lang, name),
+      onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
+    });
   }
   const retry = document.createElement('button');
   retry.className = 'btn-soft';
@@ -198,7 +192,7 @@ function renderActions(el, snap, lang) {
 function buildFullReport(snap, lang) {
   const L = (o) => o[lang] || o.zh;
   const dataWithKey = Object.assign({ KEY2IDX }, data);
-  return buildFromSections(BIG5_SECTIONS, snap, dataWithKey, L, 0);
+  return buildFromSections(BIG5_SECTIONS, snap, dataWithKey, L, MAX_REPORT_PHASE);
 }
 
 // bandKey 大五量表带位：≥75 很高 / 55-74 偏高 / 45-54 中等 / 26-44 偏低 / ≤25 很低

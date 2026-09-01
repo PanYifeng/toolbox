@@ -1,5 +1,5 @@
 // DISC 行为风格组件：测试前选免费版/完整版 → 经典迫选（每组四选最像+最不像）→ 四维度 ipsative 计分 + 主导风格 + 免费简版解读。
-// 完整版（全部 28 组）结果含 ¥5 详细解读（站主确认门邮件送达）；免费版（前 14 组）结果软推完整版。
+// 完整版（全部 28 组）结果含 ¥5 详细解读（站主确认门邮件送达）；免费版（前 14 组）结果直接给 ¥5 付费 CTA（不强迫重测，报告与完整版等价）。
 // 语言切换重渲染时用模块级 snapshot 恢复结果与申请态；刷新清空回选择入口。
 
 import { t, getLang } from '/core/i18n.js';
@@ -7,7 +7,7 @@ import { renderPaidReportEntry, renderPaidReportSubmitted } from '/core/paid-rep
 import { renderChoice } from '/core/personality.js';
 import { radarSVG, barHTML } from '/core/radar.js';
 import { renderMemorialCard, downloadPng } from '/core/cert.js';
-import { buildFromSections, DISC_SECTIONS } from '/core/report-sections.js';
+import { buildFromSections, DISC_SECTIONS, MAX_REPORT_PHASE } from '/core/report-sections.js';
 import data from './data.js';
 
 const FULL = data.groups; // 完整版（全部 28 组迫选）
@@ -183,7 +183,7 @@ function renderResult(el, snap, lang) {
   renderActions(el, snap, lang);
 }
 
-// renderActions（完整版）付费入口/已提交 或（免费版）分享卡+升级 + 重新测试
+// renderActions 付费入口/已提交（免费版与完整版均直接给 ¥5 CTA，不强迫免费用户重测 28 组）
 // 完整版画像付费后才邮件送达，不在结果页泄露分享卡；免费版保留分享卡作传播诱饵
 function renderActions(el, snap, lang) {
   const $actions = document.createElement('div');
@@ -195,24 +195,18 @@ function renderActions(el, snap, lang) {
     share.onclick = () => downloadShareCard(snap, lang);
     $actions.appendChild(share);
   }
-  if (snap.version === 'full') {
-    if (snap.fullStage === 'submitted') {
-      renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
-    } else {
-      renderPaidReportEntry($actions, {
-        feature: t('disc.fullFeature'), title: t('disc.fullTitle'), amount: AMOUNT,
-        report: buildFullReport(snap, lang),
-        preview: buildFullReport(snap, lang).split('\n\n')[0],
-        getPng: () => buildGoldPng(snap, lang),
-        onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
-      });
-    }
+  // DISC 报告全段按 primary/secondary/pcts 渲染，免费版（14 组）已算出这些，报告与完整版等价
+  if (snap.fullStage === 'submitted') {
+    renderPaidReportSubmitted($actions, { claimId: snap.claimId, email: snap.email, amount: AMOUNT });
   } else {
-    const up = document.createElement('button');
-    up.className = 'btn';
-    up.textContent = t('ps.upgrade');
-    up.onclick = () => { snapshot = null; startTest(el, lang, 'full'); };
-    $actions.appendChild(up);
+    const full = buildFullReport(snap, lang);
+    renderPaidReportEntry($actions, {
+      feature: t('disc.fullFeature'), title: t('disc.fullTitle'), amount: AMOUNT,
+      report: full,
+      preview: full.split('\n\n')[0],
+      getPng: (name) => buildGoldPng(snap, lang, name),
+      onSubmitted: (id, em) => { if (snapshot) { snapshot.fullStage = 'submitted'; snapshot.claimId = id; snapshot.email = em; } },
+    });
   }
   const retry = document.createElement('button');
   retry.className = 'btn-soft';
@@ -225,7 +219,7 @@ function renderActions(el, snap, lang) {
 // buildFullReport 客户端按当前语言生成完整版报告文本（段落注册表驱动）
 function buildFullReport(snap, lang) {
   const L = (o) => o[lang] || o.zh;
-  return buildFromSections(DISC_SECTIONS, snap, data, L, 0);
+  return buildFromSections(DISC_SECTIONS, snap, data, L, MAX_REPORT_PHASE);
 }
 
 // bandKey DISC 份额带位（4 维和=100）：≥35 主导 / 20-34 明显 / 15-19 中等 / ≤14 较低

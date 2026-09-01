@@ -988,6 +988,13 @@ pre {
 .ps-card-primary { border-color: var(--accent); }
 .ps-card-title { font-size: 16px; }
 .ps-foot { margin-top: 8px; }
+.ps-card-sub { font-size: 13px; }
+.ps-feats { margin: 4px 0 2px; padding: 0; list-style: none; font-size: 13px; line-height: 1.7; color: var(--muted, #888); }
+.ps-feats li { padding-left: 20px; position: relative; }
+.ps-feats li::before { content: '✓'; position: absolute; left: 2px; color: var(--accent); }
+.ps-card-note { font-size: 12px; margin-top: auto; }
+.ps-card-price { font-weight: 600; color: var(--accent); }
+.pr-benefit { margin: 0 0 8px; font-size: 13px; line-height: 1.6; }
 
 /* 反馈渠道（feedback.js）— 全局浮层 */
 .fb-btn { border: 1px solid var(--border); background: var(--card); border-radius: 8px; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; line-height: 1; color: var(--fg); }

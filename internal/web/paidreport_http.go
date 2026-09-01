@@ -166,7 +166,7 @@ func paidReportSubject(title string) string {
 func buildPaidReportAttachments(e paidReportEntry, dateStr string) []mailAttachment {
 	var atts []mailAttachment
 	typeName := shortTypeName(e.Feature)
-	if pdfBytes, err := renderPDFReport(e.Report, e.Title); err == nil {
+	if pdfBytes, err := renderPDFReport(e.Report, e.Title, e.Name, e.Lang); err == nil {
 		atts = append(atts, mailAttachment{
 			Content:  pdfBytes,
 			Filename: "人格报告-" + typeName + "-" + dateStr + ".pdf",

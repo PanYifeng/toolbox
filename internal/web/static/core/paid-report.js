@@ -18,11 +18,18 @@ function fmtYuan(n) {
   return n.toFixed(2);
 }
 
-// renderPaidReportEntry 付费内容入口：先"查看完整版"按钮，点击后进申请表单（含预览）
+// renderPaidReportEntry 付费内容入口：完整版内容预告 + "查看完整版"按钮，点击后进申请表单（含预览）
 export function renderPaidReportEntry(container, { feature, title, amount, report, preview, onSubmitted, getPng } = {}) {
   const lang = getLang();
   const wrap = document.createElement('div');
   wrap.className = 'pr-entry';
+  const benefit = t('ps.fullBenefit');
+  if (benefit && benefit !== 'ps.fullBenefit') {
+    const bp = document.createElement('p');
+    bp.className = 'pr-benefit muted';
+    bp.textContent = benefit;
+    wrap.appendChild(bp);
+  }
   const btn = document.createElement('button');
   btn.className = 'btn pr-entry-btn';
   btn.textContent = `${t('pr.viewFull')}（¥${fmtYuan(amount)}）`;
@@ -80,7 +87,7 @@ async function submitClaim(container, { feature, title, amount, report, txid, la
   // 金纪念卡 PNG（人格测试完整版）：提交前异步生成（含姓名），失败则不附带（服务端回退纯文本邮件）
   let png = null;
   try { png = getPng ? await getPng(name) : null; } catch (_) { png = null; }
-  const payload = { feature, title, amount, email, txId: txid, lang, report };
+  const payload = { feature, title, amount, email, txId: txid, lang, report, name };
   if (png) payload.png = png;
   let d;
   try {

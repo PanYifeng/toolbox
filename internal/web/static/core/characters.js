@@ -141,7 +141,7 @@ export function drawCharacter(ctx, x, y, charDef, gender, size = 60) {
 // drawCharacterPair 绘制男女一对人物，居中于 cx
 // 返回底部 y 坐标（与传入 y 相同，方便链式调用）
 export function drawCharacterPair(ctx, cx, y, charDef, size = 60) {
-  const spacing = size * 0.5; // 男女间距（中心距）
+  const spacing = size * 0.62; // 男女间距（中心距），系数 0.62 保证两人不重叠（bodyW*2=size*0.56）
   drawCharacter(ctx, cx - spacing, y, charDef, 'male', size);
   drawCharacter(ctx, cx + spacing, y, charDef, 'female', size);
   return y;

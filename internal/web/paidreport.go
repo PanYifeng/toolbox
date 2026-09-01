@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -24,6 +25,7 @@ type paidReportInput struct {
 	Title   string // 邮件主题（默认取 Feature）
 	Amount  float64 // 金额（元）
 	Email   string  // 访客邮箱
+	Name    string  // 访客姓名（金卡持证人 + PDF 持证人行）
 	TxID    string  // 前端生成，提示填入支付备注供站主对账
 	Lang    string  // 访客当前语言，邮件按此渲染脚注
 	Report  string  // 完整报告文本（按访客语言客户端预生成，确认后原样邮件送达）
@@ -37,6 +39,7 @@ type paidReportEntry struct {
 	Title       string  `json:"title"`
 	Amount      float64 `json:"amount"`
 	Email       string  `json:"email"`
+	Name        string  `json:"name,omitempty"`
 	TxID        string  `json:"txId"`
 	Lang        string  `json:"lang"`
 	Report      string  `json:"report"`
@@ -135,6 +138,7 @@ func (s *paidReportStore) create(in paidReportInput) paidReportEntry {
 		Title:     in.Title,
 		Amount:    in.Amount,
 		Email:     in.Email,
+		Name:      strings.TrimSpace(in.Name),
 		TxID:      in.TxID,
 		Lang:      in.Lang,
 		Report:    in.Report,

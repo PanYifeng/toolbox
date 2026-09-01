@@ -18,7 +18,14 @@ export function subsetPerDim(items, perDim) {
   return out;
 }
 
-// renderChoice 渲染免费版/完整版二选一卡片；点击触发对应回调进入测试
+// featsHTML 把 i18n 中以换行分隔的"含什么"清单拆成 <li>，缺失键返回空串
+function featsHTML(key) {
+  const s = t(key);
+  if (!s || s === key) return '';
+  return s.split('\n').filter((f) => f.trim()).map((f) => `<li>${f.trim()}</li>`).join('');
+}
+
+// renderChoice 渲染免费版/完整版二选一卡片；每张卡含"能拿到什么"清单，凸显完整版优势
 export function renderChoice(el, { freeN, fullN, onFree, onFull }) {
   el.innerHTML = `
     <div class="rel-intro">
@@ -26,11 +33,15 @@ export function renderChoice(el, { freeN, fullN, onFree, onFull }) {
       <div class="ps-choice">
         <button class="ps-card" id="ps-free">
           <b class="ps-card-title">${t('ps.freeTitle')}</b>
-          <span class="muted">${t('ps.freeDesc').replace('{n}', freeN)}</span>
+          <span class="muted ps-card-sub">${t('ps.freeDesc').replace('{n}', freeN)}</span>
+          <ul class="ps-feats">${featsHTML('ps.freeFeats')}</ul>
+          <span class="muted ps-card-note">${t('ps.freeFeatsNote')}</span>
         </button>
         <button class="ps-card ps-card-primary" id="ps-full">
           <b class="ps-card-title">${t('ps.fullTitle')}</b>
-          <span class="muted">${t('ps.fullDesc').replace('{n}', fullN)}</span>
+          <span class="muted ps-card-sub">${t('ps.fullDesc').replace('{n}', fullN)}</span>
+          <ul class="ps-feats">${featsHTML('ps.fullFeats')}</ul>
+          <span class="ps-card-note ps-card-price">${t('ps.fullFeatsNote')}</span>
         </button>
       </div>
       <p class="muted ps-foot">${t('ps.foot')}</p>
