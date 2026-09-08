@@ -8,6 +8,8 @@ const COLORS = 6;      // 颜色种类 0..5
 const MOVES = 30;      // 总步数
 const TARGET = 800;    // 目标分
 const BEST_KEY = 'tbmatch3best';
+// 卡通水果：每种色对应一个水果，形状可辨（色弱也能玩），低饱和护眼
+const EMOJI = ['🍓', '🍊', '🍋', '🍏', '🫐', '🍇'];
 
 // render 消消乐
 export default function (el) {
@@ -62,6 +64,7 @@ export default function (el) {
       const v = grid[r][c];
       const cell = document.createElement('div');
       cell.className = 'm3-cell' + (v >= 0 ? ' c' + v : ' empty');
+      if (v >= 0) cell.textContent = EMOJI[v];
       if (sel && sel[0] === r && sel[1] === c) cell.classList.add('sel');
       cell.dataset.r = r; cell.dataset.c = c;
       cell.onclick = () => onTap(r, c);
@@ -131,10 +134,10 @@ export default function (el) {
 
   // resolve 级联消除循环：消除→下落补齐→再检测，连锁倍率加分
   function resolve() {
-    let combo = 0;
+    let combo = 0, maxCombo = 0;
     let m = findMatches();
     while (m.size > 0) {
-      combo++;
+      combo++; if (combo > maxCombo) maxCombo = combo;
       score += m.size * 10 * combo;   // 连锁倍率
       for (const key of m) { const [r, c] = key.split(',').map(Number); grid[r][c] = -1; }
       draw();                          // 显示消除后空格
@@ -144,6 +147,7 @@ export default function (el) {
     busy = false;
     saveBest();
     draw();
+    if (maxCombo >= 2) $status.textContent = `🔥 ${t('m3.combo')} ×${maxCombo}!`;  // 连消庆祝
     if (score >= TARGET) endGame(true);
     else if (moves <= 0) endGame(false);
     else if (!hasAnyMove()) shuffleAlive(); // 无可换步：重排避免卡死
