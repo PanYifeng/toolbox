@@ -121,7 +121,7 @@ func (s *Server) notifyRecordClaimOwner(e recordVerifyEntry) {
 	}
 	text := fmt.Sprintf(
 		"破纪录金版卡下载申请待核验：\n\n游戏：%s\n姓名：%s\n分数：%d\n完成时间：%s\n用户邮箱：%s\n交易号(TXID)：%s\n提交时间：%s\n\n"+
-			"请到收款账户按 TXID（或金额 ¥1 + 时间）核对这笔入账，确认后点击：%s\n\n核验通过后用户回到游戏页面刷新即可下载金版卡。",
+			"请到收款账户按 TXID（或金额 ¥1 + 时间）核对这笔入账，确认后点击：%s\n\n核验通过后金版卡将作为附件直接发送至用户邮箱。",
 		recordGameLabel(e.Game), e.Name, e.Score, e.Time, e.Email, e.TxID, e.CreatedAt, s.recordConfirmLink(e.ID),
 	)
 	if err := sendMail(m, s.cfg.Pro.AdminEmail, "[Toolbox] 破纪录金版卡核验 "+e.TxID, text); err != nil {
@@ -129,17 +129,22 @@ func (s *Server) notifyRecordClaimOwner(e recordVerifyEntry) {
 	}
 }
 
-// notifyRecordApprovedUser 通知用户已通过，回游戏页刷新下载
+// notifyRecordApprovedUser 通知用户已通过，并将金版卡 PDF 作为附件直接发送至用户邮箱
 func (s *Server) notifyRecordApprovedUser(e recordVerifyEntry) {
 	m := s.cfg.Mail
 	if !m.Configured() {
 		return
 	}
+	pdf, err := renderRecordCardPDF(e.Game, e.Name, e.Score, e.Time, e.SignedCode)
+	if err != nil {
+		log.Printf("record card render failed: id=%s err=%v", e.ID, err)
+		return
+	}
 	text := fmt.Sprintf(
-		"您的破纪录金版卡已核验通过！\n\n游戏：%s\n姓名：%s\n分数：%d\n\n请回到 %s 刷新页面，即可下载完整金版卡。\n感谢支持。",
-		recordGameLabel(e.Game), e.Name, e.Score, strings.TrimRight(s.cfg.Site.URL, "/")+recordGamePath(e.Game),
+		"您的破纪录金版卡已核验通过！金版卡见附件 PDF，请查收。\n\n游戏：%s\n姓名：%s\n分数：%d\n完成时间：%s\n防伪码：%s\n\n（Toolbox 纪念卡为留念性质，非任何资格凭证。）\n感谢支持。",
+		recordGameLabel(e.Game), e.Name, e.Score, e.Time, e.SignedCode,
 	)
-	if err := sendMail(m, e.Email, "[Toolbox] 破纪录金版卡已核验通过", text); err != nil {
+	if err := sendAttachmentMail(m, e.Email, "[Toolbox] 破纪录金版卡已核验通过", text, "gold-record-card.pdf", "application/pdf", pdf); err != nil {
 		log.Printf("record claim notify user failed: id=%s err=%v", e.ID, err)
 	}
 }
@@ -149,7 +154,7 @@ func (s *Server) renderRecordConfirmResult(w http.ResponseWriter, e recordVerify
 	var msg string
 	switch kind {
 	case "approved":
-		msg = "✅ 已核验通过，金版卡可下载，已通知用户回页刷新。"
+		msg = "✅ 已核验通过，金版卡已作为附件发送至用户邮箱。"
 	case "already":
 		msg = "ℹ️ 该申请已处理过（状态：" + e.Status + "），无需重复操作。"
 	case "noemail":
@@ -167,7 +172,8 @@ func recordGameLabel(game string) string {
 	return "破纪录金版卡（" + strings.TrimPrefix(game, "game-") + "）"
 }
 
-// recordGamePath 由 game 主题键得游戏页路径（/t/tetris）
+// recordGamePath 由 game 主题键得游戏页路径（/t/game_<name>）。
+// 主题键用连字符（game-match3），路由 id 用下划线（game_match3），二者前缀一致仅分隔符不同。
 func recordGamePath(game string) string {
-	return "/t/" + strings.TrimPrefix(game, "game-")
+	return "/t/game_" + strings.TrimPrefix(game, "game-")
 }

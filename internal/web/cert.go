@@ -70,18 +70,30 @@ func decodePNG(s string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(s)
 }
 
-// sendMemorialMail 构造 multipart 邮件并发送，支持 465 隐式 TLS 与 587 STARTTLS
+// sendMemorialMail 构造纪念卡邮件正文并以 PNG 附件发送（复用 sendAttachmentMail）。
 func sendMemorialMail(m config.MailConfig, req certRequest, png []byte) error {
-	from := m.From
-	to := req.Email
 	subject := req.Subject
 	if subject == "" {
 		subject = fmt.Sprintf("Toolbox 纪念卡 / Memorial Card — %s", req.Name)
 	}
-	body := buildMailBody(req, png, from, to, subject)
+	// 分数槽位：人格卡为类型代号（字符串如 INTJ），普通/破纪录卡为数值
+	slot := req.ScoreText
+	if slot == "" {
+		slot = fmt.Sprintf("%d", req.Score)
+	}
+	body := fmt.Sprintf(
+		"纪念卡见附件 PNG，请查收。\n\n姓名 / Name: %s\n分数 / Score: %s\n防伪码 / Anti-counterfeit: %s\n\n（Toolbox 纪念卡为留念性质，非任何资格凭证。）\nThis is a project keepsake, not a credential of any kind.",
+		req.Name, slot, req.Code)
+	return sendAttachmentMail(m, req.Email, subject, body, "memorial.png", "image/png", png)
+}
+
+// sendAttachmentMail 发送带任意附件的 multipart/mixed 邮件，支持 465 隐式 TLS 与 587 STARTTLS。
+// to/bodyText/filename/mimeType/content 由调用方提供；filename 用 ASCII 以规避 RFC 2047 编码。
+func sendAttachmentMail(m config.MailConfig, to, subject, bodyText, filename, mimeType string, content []byte) error {
+	from := m.From
 	addr := fmt.Sprintf("%s:%d", m.Host, m.Port)
 	auth := smtp.PlainAuth("", m.User, m.Pass, m.Host)
-
+	body := buildAttachmentBody(from, to, subject, bodyText, filename, mimeType, content)
 	if m.Port == 465 {
 		return sendTLS(addr, m.Host, auth, from, []string{to}, body)
 	}
@@ -121,24 +133,17 @@ func sendTLS(addr, host string, auth smtp.Auth, from string, to []string, body [
 	return w.Close()
 }
 
-// buildMailBody 构造 multipart/mixed 邮件：正文 + PNG 附件
-func buildMailBody(req certRequest, png []byte, from, to, subject string) []byte {
+// buildAttachmentBody 构造 multipart/mixed 邮件：正文 + 单个附件。
+// filename 用 ASCII 名（破纪录卡用 gold-record-card.pdf 等），避免 RFC 2047 编码复杂度。
+func buildAttachmentBody(from, to, subject, bodyText, filename, mimeType string, content []byte) []byte {
 	boundary := fmt.Sprintf("tb%d", time.Now().UnixNano())
-	// 分数槽位：人格卡为类型代号（字符串如 INTJ），普通/破纪录卡为数值
-	slot := req.ScoreText
-	if slot == "" {
-		slot = fmt.Sprintf("%d", req.Score)
-	}
-	text := fmt.Sprintf(
-		"纪念卡见附件 PNG，请查收。\n\n姓名 / Name: %s\n分数 / Score: %s\n防伪码 / Anti-counterfeit: %s\n\n（Toolbox 纪念卡为留念性质，非任何资格凭证。）\nThis is a project keepsake, not a credential of any kind.",
-		req.Name, slot, req.Code)
 	header := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=%s\r\n\r\n",
 		from, to, subject, boundary)
 	textPart := fmt.Sprintf("--%s\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n%s\r\n",
-		boundary, text)
-	imgPart := fmt.Sprintf("--%s\r\nContent-Type: image/png; name=\"memorial.png\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"memorial.png\"\r\n\r\n",
-		boundary)
-	b64 := base64.StdEncoding.EncodeToString(png)
+		boundary, bodyText)
+	attPart := fmt.Sprintf("--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n\r\n",
+		boundary, mimeType, filename, filename)
+	b64 := base64.StdEncoding.EncodeToString(content)
 	end := fmt.Sprintf("\r\n--%s--\r\n", boundary)
-	return []byte(header + textPart + imgPart + b64 + end)
+	return []byte(header + textPart + attPart + b64 + end)
 }
