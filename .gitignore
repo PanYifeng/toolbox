@@ -1,5 +1,6 @@
 # 二进制与构建产物
 /toolbox
+/toolbox_*
 /bin/
 /dist/
 
