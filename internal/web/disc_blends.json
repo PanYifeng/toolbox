@@ -1,0 +1,556 @@
+{
+  "blends": {
+    "DI": {
+      "deep": {
+        "zh": "开拓者是天生的创业者和变革推动者，他们将D型的果断与I型的社交魅力融为一体。这类人不仅追求目标，更享受带领团队一路冲锋陷阵的过程。他们行动力极强，擅长在快速变化的环境中抓住机会，用热情感染身边的人。",
+        "en": "Trailblazers are natural entrepreneurs and change agents who blend D-style decisiveness with I-style social charisma. They don't just pursue goals — they thrive on rallying the team and leading the charge. Highly action-oriented, they excel at seizing opportunities in fast-changing environments and inspiring those around them with their energy."
+      },
+      "interplay": {
+        "zh": "D型的主导驱动力让他们渴望掌控局面和快速推进，而I型的社交天性则让他们非常注重人际影响力和团队氛围。这两种特质相互加持，使得他们在强势推进的同时依然能保持亲和力，成为极具号召力的领导者。",
+        "en": "The D drive for control and speed combines with the I need for social connection, creating a leader who is both assertive and approachable. These two styles amplify each other, producing a commanding presence that still feels warm and engaging to others."
+      },
+      "compat": {
+        "zh": "在关系中，他们热情主动，喜欢主导约会和活动安排，但需要伴侣能跟上他们的节奏。与S型或C型搭配时能形成互补——S型带来稳定，C型提供理性分析，平衡DI的冲动倾向。",
+        "en": "In relationships, they are enthusiastic and take the lead in planning and activities, but need a partner who can match their pace. They pair well with S or C types, who bring stability and rational analysis to balance the DI's impulsive streak."
+      },
+      "comm": {
+        "zh": "沟通直接有力，同时富有感染力。他们擅长用愿景和激情打动人，但有时会因为过于急切而忽略倾听。在表达观点时常常带有强烈的个人色彩和说服力。",
+        "en": "Direct and impactful, with a persuasive and enthusiastic delivery. They excel at motivating others through vision and passion, but may sometimes rush past listening in their eagerness to move forward."
+      },
+      "leadership": {
+        "zh": "属于变革型领导，善于描绘宏大愿景并激励团队为之奋斗。他们不怕挑战现状，敢于冒险，但需要留意给团队成员足够的参与感和安全感，避免因步调过快而让团队掉队。",
+        "en": "Transformational leaders who paint compelling visions and inspire teams to achieve them. They challenge the status quo and take calculated risks, but should ensure team members feel included and secure, as their pace can sometimes leave others behind."
+      },
+      "careerDeep": {
+        "zh": "适合创业、销售管理、产品创新、市场拓展等需要开拓精神和人际影响力的岗位。他们不适合重复性高、自由度低的工作环境。在初创公司或快速成长的组织中最能发挥所长。",
+        "en": "Thrive in entrepreneurship, sales management, product innovation, and business development roles that require initiative and influence. They are ill-suited for highly repetitive or low-autonomy settings and flourish in startups or rapidly growing organizations."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "果敢魄力", "en": "Decisive Drive"},
+          "desc": {"zh": "面对复杂局面能快速做出决策，不犹豫不拖延。这种果断力在危机时刻尤为突出，能带领团队迅速走出困境。", "en": "Able to make quick decisions in complex situations without hesitation. This decisiveness shines in crises, guiding the team swiftly through challenges."}
+        },
+        {
+          "title": {"zh": "感召力强", "en": "Inspirational"},
+          "desc": {"zh": "天生具备感染他人的能力，能用热情和愿景点燃团队斗志。人们愿意追随他们，因为总能感受到前进的方向和动力。", "en": "Naturally gifted at energizing others, igniting team spirit with passion and vision. People follow them because they always sense direction and momentum."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "急于求成", "en": "Impatient Pace"},
+          "desc": {"zh": "过于追求速度和结果，容易忽视过程中的细节和风险。有时会跳过必要的规划和准备环节，导致后期返工。", "en": "Overly focused on speed and outcomes, they may overlook details and risks in the process, sometimes skipping necessary planning only to face rework later."}
+        },
+        {
+          "title": {"zh": "不够沉稳", "en": "Restless Nature"},
+          "desc": {"zh": "难以忍受慢节奏和按部就班的工作方式，容易对常规任务失去耐心。在需要长期坚持和细致打磨的工作中可能表现不稳定。", "en": "Struggle with slow-paced or routine work, easily losing patience with repetitive tasks. Their performance may waver in roles requiring sustained, meticulous effort."}
+        }
+      ]
+    },
+    "DS": {
+      "deep": {
+        "zh": "护航者是坚定而温和的守护者，他们将D型的目标感和S型的耐心忠诚结合在一起。这些人既有推动事情发生的决心，又有照顾他人感受的细腻。他们是团队中可靠的中坚力量，既能在前方开路，也能在后方提供支持。",
+        "en": "Guardians are steady and caring protectors who combine D-style goal-orientation with S-style patience and loyalty. They possess both the determination to make things happen and the sensitivity to care for others' feelings. They are the reliable backbone of any team, equally comfortable leading from the front or supporting from behind."
+      },
+      "interplay": {
+        "zh": "D型让他们有明确的目标意识和推进力，但S型的存在让这种推进更加温和、更有耐心。他们不会像纯D型那样横冲直撞，而是会考虑团队成员的承受力，在保持方向的同时放慢节奏等人跟上。",
+        "en": "The D drive provides clear goals and forward momentum, but the S influence tempers it with patience and consideration. Unlike pure D types, they don't bulldoze ahead — they consider the team's capacity, maintaining direction while slowing down enough for everyone to keep pace."
+      },
+      "compat": {
+        "zh": "在关系中忠诚可靠，是值得托付的伴侣。他们既能为关系设定方向，又愿意为对方付出和妥协。与I型或D型搭配较好——I型带来轻松和活力，D型则能与他们在目标感上产生共鸣。",
+        "en": "Loyal and dependable partners who are worthy of trust in relationships. They can set direction for the relationship while also being willing to give and compromise. They pair well with I or D types — I brings lightness and energy, while D resonates with their sense of purpose."
+      },
+      "comm": {
+        "zh": "沟通风格坚定而温和，既有立场又不失礼貌。他们善于用事实和逻辑表达观点，同时注意维护对方的尊严。在冲突中倾向于先倾听再表达，力求找到双方都能接受的方案。",
+        "en": "Firm yet gentle communicators who hold their ground while remaining polite. They express views with facts and logic while preserving the other person's dignity. In conflict, they tend to listen first before responding, seeking solutions acceptable to both sides."
+      },
+      "leadership": {
+        "zh": "属于服务型领导，以身作则，要求自己甚于要求他人。他们关注团队成员的成长和福祉，愿意为团队承担压力。在变革中能兼顾任务推进和人员稳定，是让人安心的领导者。",
+        "en": "Servant leaders who lead by example, holding themselves to higher standards than they hold others. They care deeply about team members' growth and well-being and willingly shoulder pressure for the team. During change, they balance task progress with team stability, providing a reassuring presence."
+      },
+      "careerDeep": {
+        "zh": "适合项目管理、团队管理、客户关系、运营管理等需要既推动结果又维护关系的岗位。在医疗、教育、非营利组织等需要责任感和耐心的行业中表现出色。",
+        "en": "Excel in project management, team leadership, client relations, and operations roles that require both driving results and maintaining relationships. They shine in healthcare, education, and non-profit sectors where responsibility and patience are valued."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "坚韧可靠", "en": "Steadfast"},
+          "desc": {"zh": "一旦承诺就绝不轻言放弃，无论遇到多大困难都会坚持到底。团队可以放心地将重要任务交给他们，因为知道他们一定会完成。", "en": "Once committed, they never give up easily, persevering through any difficulty. The team can confidently entrust them with important tasks, knowing they will see it through."}
+        },
+        {
+          "title": {"zh": "换位思考", "en": "Empathetic"},
+          "desc": {"zh": "既有自己的立场，又能理解他人的难处。在决策时能兼顾各方利益，是团队中天然的调解者和凝聚者。", "en": "They hold their own views while genuinely understanding others' perspectives. When making decisions, they balance multiple interests, making them natural mediators and unifiers within the team."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过度迁就", "en": "Over-accommodating"},
+          "desc": {"zh": "为了维护团队和谐，有时会过度妥协自己的立场。长期压抑自己的意见可能导致内心积怨，最终爆发时反而破坏关系。", "en": "To maintain harmony, they may over-compromise their own position. Prolonged suppression of their own views can lead to resentment that eventually erupts and damages relationships."}
+        },
+        {
+          "title": {"zh": "变革阻力", "en": "Change Reluctance"},
+          "desc": {"zh": "对已经建立起来的流程和关系有很强的依恋，面对变革时可能比其他人更需要时间适应。有时会因过于坚持既有方式而错失更好的机会。", "en": "Strong attachment to established processes and relationships means they may need more time than others to adapt to change. Sometimes they miss better opportunities by clinging too tightly to the old ways."}
+        }
+      ]
+    },
+    "DC": {
+      "deep": {
+        "zh": "督办者是追求卓越和高标准执行者，他们将D型的果断与C型的严谨融为一体。这类人做事雷厉风行，同时极度注重质量和规则。他们眼里容不得沙子，对自己和他人都有很高的要求，是组织中确保标准不落地的关键角色。",
+        "en": "Enforcers are excellence-driven, high-standard performers who combine D-style decisiveness with C-style precision. They work with swift determination while maintaining an intense focus on quality and rules. Brooking no compromise, they hold themselves and others to exacting standards, serving as the organization's guardian of quality."
+      },
+      "interplay": {
+        "zh": "D型渴望快速取得成果，而C型要求完美无缺——这两种驱动力之间存在内在张力。这使得DC型人既追求速度又坚守质量，在快和好之间不断寻找平衡。他们不会为了速度牺牲标准，也不会因为追求完美而停滞不前。",
+        "en": "The D drive for quick results and the C demand for perfection create an internal tension. This makes DC types pursue both speed and quality, constantly balancing between fast and flawless. They neither sacrifice standards for speed nor stall out pursuing perfection."
+      },
+      "compat": {
+        "zh": "在关系中标准高、要求严，对伴侣也有较高的期待。他们需要被理解和尊重其对品质的追求。与S型或I型搭配效果较好——S型能包容他们的挑剔，I型能帮他们放松下来享受生活。",
+        "en": "In relationships, they hold high standards and expectations for their partner. They need to be understood and respected for their pursuit of quality. They pair well with S or I types — S accommodates their exacting nature, while I helps them relax and enjoy life."
+      },
+      "comm": {
+        "zh": "沟通风格直接、精准，注重事实和数据。他们不喜欢模糊不清的表达，会直截了当地指出问题。说话有条理、有逻辑，但有时会显得过于严苛或不留情面。",
+        "en": "Direct, precise communicators who value facts and data. They dislike ambiguity and will point out problems bluntly. Their speech is structured and logical, but can sometimes come across as harsh or overly critical."
+      },
+      "leadership": {
+        "zh": "属于标准驱动型领导，以身作则地展示什么是卓越。他们建立清晰的规则和标准，并坚决执行。在团队中扮演“质检员”的角色，确保每个人都达到应有的水平。但需要注意不要因过度批评而打击团队士气。",
+        "en": "Standard-driven leaders who model excellence through their own actions. They establish clear rules and standards and enforce them rigorously. They act as the team's quality assurance, ensuring everyone meets the bar — but should be mindful not to demoralize the team with excessive criticism."
+      },
+      "careerDeep": {
+        "zh": "适合质量管理、审计、法务、工程研发、金融分析等需要精准判断和高标准执行的领域。他们不适合宽松随意的环境，在有明确规则和质量要求的组织中最为出色。",
+        "en": "Excel in quality management, auditing, legal, engineering, and financial analysis roles that demand precision and high standards. They are ill-suited for lax environments and perform best in organizations with clear rules and quality requirements."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "精益求精", "en": "Quality Obsession"},
+          "desc": {"zh": "对工作质量有近乎偏执的追求，善于发现别人忽略的细节和漏洞。交付的成果往往超出预期，可信赖度极高。", "en": "An almost obsessive commitment to quality, with a sharp eye for details and flaws others miss. Their deliverables consistently exceed expectations and are highly dependable."}
+        },
+        {
+          "title": {"zh": "执行有力", "en": "Decisive Execution"},
+          "desc": {"zh": "不仅有高标准，更有强大的执行力。他们能快速将计划转化为行动，并在执行过程中严格把控质量关，确保不走样。", "en": "They don't just set high standards — they execute with force. They quickly translate plans into action while maintaining strict quality control throughout, ensuring nothing goes off-track."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过度挑剔", "en": "Overly Critical"},
+          "desc": {"zh": "对错误和不完美缺乏容忍度，容易给人留下苛刻的印象。长期的批评可能让团队成员感到压力和挫败，影响团队凝聚力。", "en": "Low tolerance for errors and imperfection can come across as harsh. Persistent criticism may stress and frustrate team members, undermining team cohesion over time."}
+        },
+        {
+          "title": {"zh": "缺乏变通", "en": "Rigid Thinking"},
+          "desc": {"zh": "过于坚持规则和标准，有时会忽略大环境的变化和特殊情况。在需要灵活应对的场景中，可能显得不够灵活，错失灵活应变的机会。", "en": "Overly rigid adherence to rules and standards may cause them to overlook contextual changes or special circumstances. In situations requiring flexibility, they may miss opportunities that call for adaptation."}
+        }
+      ]
+    },
+    "ID": {
+      "deep": {
+        "zh": "鼓动者是温暖而目标明确的引领者，他们将I型的热情与D型的果断完美结合。这类人既有让人如沐春风的亲和力，又有清晰的目标导向。他们善于用鼓励和赞美激发他人潜能，同时不失方向和底线。",
+        "en": "Motivators are warm yet goal-oriented leaders who blend I-style enthusiasm with D-style decisiveness. They possess both an approachable warmth that puts people at ease and a clear sense of direction. They excel at unlocking others' potential through encouragement and praise while never losing sight of the goal."
+      },
+      "interplay": {
+        "zh": "I型的社交需求让他们渴望与人建立连接，而D型的驱动力让他们不会止步于“聊得开心”。这种组合使得他们既能营造良好的团队氛围，又能推动事情向前发展。他们用热情感染人，用目标引领人。",
+        "en": "The I need for social connection drives them to build rapport, while the D drive ensures they never stop at just 'having a nice chat.' This combination lets them foster a positive team atmosphere while pushing things forward. They inspire with warmth and lead with purpose."
+      },
+      "compat": {
+        "zh": "在关系中热情开朗，善于营造浪漫和欢乐的氛围。他们需要伴侣既欣赏他们的社交能力，又能理解他们对成就的追求。与S型或C型搭配较好——他们的沉稳能平衡ID的活跃和冲动。",
+        "en": "Warm and outgoing in relationships, they excel at creating romance and joyful moments. They need a partner who appreciates both their social skills and their drive for achievement. They pair well with S or C types, whose steadiness balances their energy and impulsiveness."
+      },
+      "comm": {
+        "zh": "沟通风格富有感染力和亲和力，善于用故事和情感打动人心。他们说话时充满热情，能让人感受到真诚和关注。同时也能在必要时直截了当地表达自己的要求和期望。",
+        "en": "Engaging and warm communicators who connect through stories and emotion. They speak with genuine enthusiasm that makes others feel heard and valued, while also being able to express their expectations directly when needed."
+      },
+      "leadership": {
+        "zh": "属于激励型领导，善于通过认可和鼓励激发团队潜力。他们创造积极向上的团队文化，让每个人都能感受到被重视。在设定高目标的同时，也给予团队充分的支持和信任。",
+        "en": "Inspirational leaders who unlock team potential through recognition and encouragement. They cultivate a positive, upward-looking culture where everyone feels valued, setting high goals while providing ample support and trust."
+      },
+      "careerDeep": {
+        "zh": "适合销售、培训、公关、市场营销、人力资源等需要人际交往和结果导向的岗位。他们能在需要频繁与人打交道且有明确业绩目标的领域大放异彩。",
+        "en": "Excel in sales, training, public relations, marketing, and human resources roles that require both interpersonal skills and results orientation. They shine in fields that involve frequent human interaction coupled with clear performance targets."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "激励人心", "en": "Inspirational Spark"},
+          "desc": {"zh": "善于发现他人闪光点，并用真诚的赞美激发其自信和动力。团队成员在他们身边往往能超常发挥。", "en": "A talent for spotting others' strengths and boosting their confidence through genuine praise. Team members often perform beyond their usual level when working alongside them."}
+        },
+        {
+          "title": {"zh": "目标清晰", "en": "Clear Direction"},
+          "desc": {"zh": "在保持亲和力的同时，始终不忘目标和方向。他们能温和而坚定地引导团队朝着正确方向前进，不会因人情而偏离轨道。", "en": "While maintaining warmth and approachability, they never lose sight of goals and direction. They guide the team gently but firmly toward the right path, never letting personal relationships derail the mission."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过度乐观", "en": "Over-optimism"},
+          "desc": {"zh": "有时过于乐观，低估了任务的难度和风险。在充满热情地推进时，可能忽略潜在的隐患和阻力。", "en": "Sometimes overly optimistic, underestimating task difficulty and risks. In their enthusiastic push forward, they may overlook potential pitfalls and resistance."}
+        },
+        {
+          "title": {"zh": "回避冲突", "en": "Conflict Avoidance"},
+          "desc": {"zh": "为了维护积极的人际关系，有时会回避必要的冲突。当需要直面棘手问题时，可能倾向于绕开而非正面解决。", "en": "To preserve positive relationships, they may avoid necessary conflict. When faced with tough issues, they may prefer to sidestep rather than address them head-on."}
+        }
+      ]
+    },
+    "IS": {
+      "deep": {
+        "zh": "凝聚者是温暖而耐心的团队粘合剂，他们将I型的社交热情与S型的稳定包容融为一体。这类人天生友善，乐于助人，是团队中让人感到舒适和安心的存在。他们重视和谐的人际关系，愿意为维护团队氛围付出努力。",
+        "en": "Harmonizers are the warm and patient glue that holds teams together, blending I-style social warmth with S-style stability and包容. Naturally friendly and helpful, they are the comforting presence that makes teams feel at ease. They value harmonious relationships and invest effort in maintaining a positive team atmosphere."
+      },
+      "interplay": {
+        "zh": "I型让他们渴望与人互动和获得认可，而S型则让他们更加关注他人的感受和需求。这两种特质的结合使得他们不像纯I型那样需要舞台中央，也不像纯S型那样过于退让，而是在温暖中保持着恰到好处的存在感。",
+        "en": "The I desire for interaction and recognition is tempered by the S focus on others' feelings and needs. This combination means they don't need center stage like a pure I, nor are they as retiring as a pure S — they maintain a warm, balanced presence that feels just right."
+      },
+      "compat": {
+        "zh": "在关系中温柔体贴，善于营造温馨和谐的家庭氛围。他们重视陪伴和情感交流，愿意为维持关系付出努力。与D型或C型搭配可形成互补——D型带来方向和刺激，C型提供深度和理性。",
+        "en": "Gentle and considerate partners who excel at creating a warm, harmonious home environment. They value companionship and emotional connection, investing effort into maintaining the relationship. They pair well with D or C types — D brings direction and excitement, C offers depth and rationality."
+      },
+      "comm": {
+        "zh": "沟通风格温和友善，善于倾听和共情。他们说话时让人感到舒适和被尊重，很少使用对抗性的语言。在表达不同意见时倾向于委婉方式，避免伤害他人感受。",
+        "en": "Gentle and friendly communicators who excel at listening and empathizing. Their words make others feel comfortable and respected, rarely using confrontational language. When disagreeing, they prefer tactful approaches that avoid hurting others' feelings."
+      },
+      "leadership": {
+        "zh": "属于参与型领导，注重团队参与和共识建立。他们善于创造一个包容、安全的工作环境，让每个人都能畅所欲言。他们更倾向于用鼓励而非命令的方式带领团队，但在需要果断决策时可能略显犹豫。",
+        "en": "Participative leaders who emphasize team involvement and consensus-building. They create an inclusive, safe environment where everyone feels free to speak up. They prefer encouragement over commands, though they may hesitate when decisive action is needed."
+      },
+      "careerDeep": {
+        "zh": "适合客户服务、护理、教育、社会工作、人力资源等需要耐心和同理心的岗位。他们不适合高压、对抗性强的工作环境，在以人为本的组织中最能发挥价值。",
+        "en": "Excel in customer service, nursing, education, social work, and HR roles that demand patience and empathy. They are unsuited for high-pressure, confrontational environments and thrive in people-centered organizations."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "凝聚人心", "en": "Team Unifier"},
+          "desc": {"zh": "天生具备让团队团结一致的能力，能敏锐察觉团队中的情绪变化并适时介入调解。是团队中不可或缺的润滑剂。", "en": "A natural ability to unite the team, keenly sensing emotional shifts and stepping in to mediate when needed. They are the indispensable lubricant that keeps team dynamics running smoothly."}
+        },
+        {
+          "title": {"zh": "耐心倾听", "en": "Patient Listener"},
+          "desc": {"zh": "不急于表达自己，而是先耐心倾听他人的想法和感受。这种真诚的倾听让人感到被重视和理解，建立深厚的信任关系。", "en": "They don't rush to express themselves, instead patiently listening to others' thoughts and feelings. This genuine listening makes people feel valued and understood, building deep trust."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "难以拒绝", "en": "Difficulty Saying No"},
+          "desc": {"zh": "过于在意他人感受，难以拒绝别人的请求。长期下来可能承担过多不属于自己的责任，导致身心俱疲。", "en": "Overly concerned with others' feelings, they struggle to say no. Over time, they may take on too much responsibility that isn't theirs, leading to burnout."}
+        },
+        {
+          "title": {"zh": "回避冲突", "en": "Conflict Averse"},
+          "desc": {"zh": "为了避免破坏和谐，往往推迟或回避必要的冲突处理。问题积累到一定程度后突然爆发，反而造成更大的破坏。", "en": "To avoid disrupting harmony, they often delay or avoid necessary conflict resolution. Problems accumulate until they suddenly erupt, causing greater damage than if addressed early."}
+        }
+      ]
+    },
+    "IC": {
+      "deep": {
+        "zh": "演说家是兼具表达力与分析力的沟通高手，他们将I型的表现欲与C型的严谨思维融为一体。这类人既能用生动的语言和丰富的表情吸引听众，又能在内容上做到逻辑严密、有据可查。他们是天生的演讲者、培训师和内容创作者。",
+        "en": "Presenters are communication maestros who blend I-style expressiveness with C-style analytical rigor. They captivate audiences with vivid language and dynamic delivery while ensuring their content is logically sound and well-supported. They are natural speakers, trainers, and content creators."
+      },
+      "interplay": {
+        "zh": "I型渴望被关注和表达，C型则追求准确和深度——这让他们既想站在台上发光，又要求自己言之有物。这种组合使得他们的表达不仅有感染力，更有专业深度，不同于纯I型的浮于表面。",
+        "en": "The I desire for attention and expression meets the C pursuit of accuracy and depth, creating a drive to both shine on stage and deliver substance. This combination gives their communication both emotional impact and professional depth, setting them apart from superficial pure-I expression."
+      },
+      "compat": {
+        "zh": "在关系中既有浪漫的表达又有理性的思考，是富有情趣又不失深度的伴侣。他们喜欢有质量的对话和交流。与S型或D型搭配较好——S型提供稳定和包容，D型能与他们进行有挑战性的对话。",
+        "en": "In relationships, they offer both romantic expression and rational thought — an engaging partner with depth. They enjoy quality conversation and intellectual exchange. They pair well with S or D types — S provides stability, while D engages them in challenging dialogue."
+      },
+      "comm": {
+        "zh": "沟通风格生动而精准，既有感染力又有说服力。他们善于用故事、比喻和案例来传达复杂概念，同时保持逻辑严谨。在表达时注意措辞的准确性和表达的层次感。",
+        "en": "Lively yet precise communicators who are both engaging and persuasive. They excel at conveying complex concepts through stories, analogies, and examples while maintaining logical rigor. They pay attention to word choice and the structure of their delivery."
+      },
+      "leadership": {
+        "zh": "属于愿景型领导，善于用清晰的表达和有力的论据来统一团队思想。他们不仅能说清楚“做什么”，还能讲明白“为什么做”。在团队中扮演思想引领者的角色，但有时会过于关注表达而忽略执行细节。",
+        "en": "Visionary leaders who align the team through clear articulation and compelling arguments. They don't just explain 'what to do' but also 'why it matters.' They serve as the team's thought leader, though they may sometimes focus more on expression than execution details."
+      },
+      "careerDeep": {
+        "zh": "适合培训、教育、媒体、公关、内容创作、市场营销等需要表达能力和专业深度的岗位。在需要将复杂信息转化为易懂内容的领域中表现出色。",
+        "en": "Excel in training, education, media, PR, content creation, and marketing roles that require both expressive skill and professional depth. They shine in fields that involve translating complex information into accessible content."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "表达精准", "en": "Precise Expression"},
+          "desc": {"zh": "能将复杂的概念用通俗易懂的语言表达出来，同时不失专业性。他们的演讲和写作总能让人听得明白、记得深刻。", "en": "Able to express complex concepts in accessible language without sacrificing professionalism. Their speeches and writing always leave audiences both informed and impressed."}
+        },
+        {
+          "title": {"zh": "思维缜密", "en": "Analytical Mind"},
+          "desc": {"zh": "在热情表达的背后有着严谨的思维逻辑。他们不会信口开河，而是确保每一个观点都有充分的依据和推理。", "en": "Behind their passionate delivery lies rigorous logical thinking. They never speak irresponsibly, ensuring every point is well-supported by evidence and reasoning."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "完美演讲", "en": "Perfectionist Delivery"},
+          "desc": {"zh": "过分追求表达的完美，有时会因反复修改措辞而延误时机。在需要快速响应时，可能因准备不足而焦虑。", "en": "Overly focused on perfect delivery, they may delay action by endlessly refining their words. In situations requiring quick response, they may become anxious if underprepared."}
+        },
+        {
+          "title": {"zh": "重说轻做", "en": "Talk Over Action"},
+          "desc": {"zh": "有时过于沉迷于表达和说服，而忽略了将想法落实到行动上。需要提醒自己，说得好不如做得好。", "en": "Sometimes so absorbed in expressing and persuading that they neglect translating ideas into action. They need to remind themselves that doing is as important as saying."}
+        }
+      ]
+    },
+    "SD": {
+      "deep": {
+        "zh": "实干家是低调而坚毅的成就追求者，他们将S型的沉稳与D型的目标导向融为一体。这类人不像纯D型那样锋芒毕露，但内心有着同样强烈的成就欲望。他们用日复一日的坚持和扎实的行动来证明自己，是团队中值得信赖的实干派。",
+        "en": "Achievers are quietly determined go-getters who blend S-style steadiness with D-style goal orientation. Less flashy than pure D types, they possess an equally strong inner drive for accomplishment. They prove themselves through consistent effort and solid action, earning trust as the reliable workhorses of any team."
+      },
+      "interplay": {
+        "zh": "S型赋予他们耐心和稳定性，D型则提供了内在的目标驱动力。这种组合使得他们既有长跑的耐力，又有冲刺的决心。他们不会急于求成，但也不会安于现状——在稳定中持续向前推进。",
+        "en": "The S provides patience and stability while the D supplies internal goal-driven motivation. This combination gives them both the endurance for the long haul and the determination to sprint when needed. They neither rush recklessly nor settle complacently — they steadily advance."
+      },
+      "compat": {
+        "zh": "在关系中稳定可靠，是值得信赖的伴侣。他们用实际行动而非华丽的言辞来表达爱意。与I型或D型搭配较好——I型能帮他们打开心扉、增加生活的乐趣，D型则能在目标感上互相理解。",
+        "en": "Stable and reliable partners who express love through actions rather than flowery words. They are the kind of partner others can count on through thick and thin. They pair well with I or D types — I helps them open up and enjoy life, while D shares their sense of purpose."
+      },
+      "comm": {
+        "zh": "沟通风格务实直接，不喜欢花哨的言辞。他们说话简洁明了，重点突出，注重实际效果。在表达意见时更倾向于用事实和数据说话，而非情感渲染。",
+        "en": "Pragmatic and direct communicators who dislike flowery language. They speak concisely and clearly, focusing on practical outcomes. They prefer facts and data over emotional appeals when expressing their views."
+      },
+      "leadership": {
+        "zh": "属于以身作则的实干型领导。他们不靠空谈而是靠实际行动赢得尊重。在管理中注重建立稳定的流程和系统，同时推动团队持续进步。他们要求严格但公平公正，是让人信服的领导者。",
+        "en": "Lead by example through action rather than rhetoric. They earn respect through solid performance, focusing on building stable processes and systems while driving continuous improvement. Demanding but fair, they are leaders who command genuine respect."
+      },
+      "careerDeep": {
+        "zh": "适合项目管理、运营管理、制造业、工程实施等需要持之以恒和追求成效的岗位。他们不适合需要频繁社交和自我推销的工作，在注重实际成果的组织中最为出色。",
+        "en": "Excel in project management, operations, manufacturing, and engineering roles that require persistence and results orientation. They are unsuited for roles requiring constant self-promotion and thrive in organizations that value tangible outcomes."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "稳扎稳打", "en": "Steady Progress"},
+          "desc": {"zh": "一步一个脚印地推进工作，不急于求成也不轻言放弃。这种持之以恒的作风让他们在长期项目中表现尤为出色。", "en": "They advance step by step, neither rushing nor giving up easily. This persistent approach makes them especially effective in long-term projects that require sustained effort."}
+        },
+        {
+          "title": {"zh": "目标坚定", "en": "Goal-driven"},
+          "desc": {"zh": "表面温和但内心有着明确的目标感。一旦设定了目标，就会以实际行动持续接近它，不被外界干扰所动摇。", "en": "Outwardly calm but inwardly driven by clear goals. Once a target is set, they pursue it with consistent action, unshaken by external distractions."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "固执己见", "en": "Stubbornness"},
+          "desc": {"zh": "一旦认定自己的方法和方向，很难被说服改变。这种固执在某些情况下可能让他们错失更好的解决方案。", "en": "Once they've settled on a method or direction, they can be difficult to persuade otherwise. This stubbornness may cause them to miss better solutions in some situations."}
+        },
+        {
+          "title": {"zh": "不善表达", "en": "Reserved Expression"},
+          "desc": {"zh": "不善于表达自己的情感和需求，有时会被误解为冷漠或不合群。在需要情感沟通的场景中可能显得不够主动。", "en": "Not adept at expressing emotions and needs, they may sometimes be misunderstood as indifferent or aloof. In situations requiring emotional communication, they may appear less proactive."}
+        }
+      ]
+    },
+    "SI": {
+      "deep": {
+        "zh": "守护者是温和而忠诚的团队基石，他们将S型的稳定包容与I型的友善热情融为一体。这类人天生让人感到安心和舒适，是团队中默默付出、不求回报的支撑者。他们重视忠诚和信任，用持续的行动证明自己的可靠。",
+        "en": "Supporters are the gentle, loyal foundation of any team, blending S-style stability with I-style warmth and friendliness. They naturally put others at ease, quietly supporting the team without seeking recognition. They value loyalty and trust above all, proving their reliability through consistent action."
+      },
+      "interplay": {
+        "zh": "S型让他们渴望稳定和可预测的环境，I型则带来了与人交往的温暖和愉悦。这种组合让他们既享受和谐的人际关系，又愿意为维护这种和谐付出努力。他们不喜欢冲突，善于创造让人放松的氛围。",
+        "en": "The S desire for stability and predictability combines with the I warmth for human connection. This makes them enjoy harmonious relationships and invest effort in maintaining that harmony. They dislike conflict and excel at creating a relaxed, comfortable atmosphere."
+      },
+      "compat": {
+        "zh": "在关系中极度忠诚和体贴，是最值得信赖的伴侣之一。他们善于照顾对方的感受，愿意为关系付出。与D型或C型搭配较好——D型带来方向和决断力，C型提供深度和理性思考。",
+        "en": "Extremely loyal and considerate partners, among the most trustworthy in relationships. They are attentive to their partner's feelings and willing to invest in the relationship. They pair well with D or C types — D brings direction and decisiveness, C offers depth and rational thought."
+      },
+      "comm": {
+        "zh": "沟通风格温和友善，善于倾听和回应。他们说话时让人感到被尊重和被理解，很少使用强势或对抗性的语言。在团队中常常扮演“翻译官”的角色，帮助不同风格的人更好地沟通。",
+        "en": "Gentle and friendly communicators who excel at listening and responding. Their words make others feel respected and understood, rarely using aggressive or confrontational language. They often serve as 'translators' in teams, helping different styles communicate better."
+      },
+      "leadership": {
+        "zh": "属于亲和型领导，注重团队氛围和成员感受。他们通过建立信任和支持来带领团队，而不是靠权威和命令。在管理中倾向于共识决策，可能在需要快速决断时显得犹豫。",
+        "en": "Affiliative leaders who prioritize team atmosphere and individual well-being. They lead through trust and support rather than authority and commands, preferring consensus-based decision-making — though they may hesitate when swift decisions are needed."
+      },
+      "careerDeep": {
+        "zh": "适合客户服务、护理、教育、行政管理、社区服务等需要耐心和人际交往能力的岗位。他们不适合高压竞争或对抗性强的环境，在支持性和协作性的组织中发挥最好。",
+        "en": "Excel in customer service, nursing, education, administration, and community service roles that require patience and interpersonal skills. They are unsuited for high-pressure competitive environments and perform best in supportive, collaborative organizations."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "忠诚可靠", "en": "Loyal & Dependable"},
+          "desc": {"zh": "对团队和关系有着极强的忠诚度，一旦承诺就全力以赴。他们是可以把后背放心交付的伙伴。", "en": "Deeply loyal to their team and relationships, they give their all once committed. They are the kind of partner you can trust with your back turned."}
+        },
+        {
+          "title": {"zh": "人际关系", "en": "Relationship Builder"},
+          "desc": {"zh": "善于建立和维护长久的人际关系，让人感到舒适和被接纳。他们的人际网络中充满了真诚的信任和善意。", "en": "Skilled at building and maintaining lasting relationships, making others feel comfortable and accepted. Their network is built on genuine trust and goodwill."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过度依赖", "en": "Over-dependence"},
+          "desc": {"zh": "在关系和决策中可能过度依赖他人的意见和认可，缺乏独立判断的勇气。有时会因害怕失去关系而放弃自己的立场。", "en": "May become overly reliant on others' opinions and approval in relationships and decisions, lacking the courage for independent judgment. They may abandon their own stance out of fear of losing the relationship."}
+        },
+        {
+          "title": {"zh": "变化焦虑", "en": "Change Anxiety"},
+          "desc": {"zh": "对变化和不确定性有着天然的抗拒，适应新环境的速度较慢。在变革期需要更多的支持和过渡时间。", "en": "Naturally resistant to change and uncertainty, with a slower adaptation speed. They need more support and transition time during periods of change."}
+        }
+      ]
+    },
+    "SC": {
+      "deep": {
+        "zh": "参谋者是稳健而严谨的专业人士，他们将S型的踏实稳重与C型的分析思维融为一体。这类人做事有条不紊，注重流程和规范，追求工作的准确性和可靠性。他们是组织中的“定海神针”，在复杂的信息和流程中保持清晰的头脑。",
+        "en": "Specialists are steady and meticulous professionals who blend S-style dependability with C-style analytical thinking. They work methodically, valuing process and precision, and pursue accuracy and reliability in everything they do. They are the steady anchor of any organization, maintaining clarity amid complex information and processes."
+      },
+      "interplay": {
+        "zh": "S型让他们追求稳定和可预期，C型则驱动他们追求精确和标准。这两种特质高度契合，共同塑造了他们在专业领域深度钻研、不轻易动摇的个性。他们不喜欢模糊和不确定，渴望通过系统和方法来掌控工作。",
+        "en": "The S desire for stability and predictability aligns seamlessly with the C drive for precision and standards. Together, these traits shape a personality that delves deep into specialized areas without easily wavering. They dislike ambiguity and uncertainty, preferring to master their work through systems and methods."
+      },
+      "compat": {
+        "zh": "在关系中稳重而专一，不追求轰轰烈烈但求细水长流。他们用行动和忠诚来表达爱意，而不是花哨的浪漫。与I型或D型搭配较好——I型能带来轻松和活力，D型能帮助他们走出舒适区。",
+        "en": "Steady and devoted partners who value lasting connection over dramatic romance. They express love through actions and loyalty rather than grand gestures. They pair well with I or D types — I brings lightness and energy, while D helps them step out of their comfort zone."
+      },
+      "comm": {
+        "zh": "沟通风格谨慎、精确，注重事实和细节。他们说话前会深思熟虑，给出的信息往往准确可靠。不喜欢夸夸其谈，更倾向于用数据和逻辑来支持自己的观点。",
+        "en": "Cautious and precise communicators who value facts and details. They think carefully before speaking, and the information they provide is generally accurate and reliable. They dislike exaggeration and prefer supporting their views with data and logic."
+      },
+      "careerDeep": {
+        "zh": "适合财务、审计、数据分析、研发、质量控制、医疗诊断等需要高度精确性和专业深度的岗位。在需要系统性思维和长期专注的领域中表现出色。",
+        "en": "Excel in finance, auditing, data analysis, R&D, quality control, and medical diagnostics roles that demand high precision and specialized depth. They perform exceptionally well in fields requiring systematic thinking and sustained focus."
+      },
+      "leadership": {
+        "zh": "属于专业型领导，以专业能力而非个人魅力来建立权威。他们注重建立标准和流程，确保团队工作质量可控。在管理中谨慎而周全，但可能因为过度分析而错失时机。",
+        "en": "Expert leaders who build authority through professional competence rather than personal charisma. They focus on establishing standards and processes to ensure quality control. They are cautious and thorough in management, though may miss opportunities through over-analysis."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "专业精深", "en": "Deep Expertise"},
+          "desc": {"zh": "在专业领域有着深厚的积累，善于钻研复杂问题。他们往往是团队中“最懂这个领域的人”，是值得信赖的专家。", "en": "Deep knowledge accumulation in their specialized field, with a talent for tackling complex problems. They are often the go-to expert in their domain, trusted for their professional judgment."}
+        },
+        {
+          "title": {"zh": "系统思维", "en": "Systematic Thinking"},
+          "desc": {"zh": "善于建立系统和流程，让复杂的工作变得有序可控。他们能看到事物之间的关联和规律，构建出高效的运作框架。", "en": "Skilled at establishing systems and processes that bring order and control to complex work. They can see connections and patterns, building efficient operational frameworks."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过度分析", "en": "Analysis Paralysis"},
+          "desc": {"zh": "有时因追求完美分析而陷入决策延迟，在信息不完备的情况下难以做出判断。需要在分析与行动之间找到更好的平衡。", "en": "Sometimes陷入 decision paralysis while pursuing perfect analysis, struggling to make judgments with incomplete information. They need to find a better balance between analysis and action."}
+        },
+        {
+          "title": {"zh": "抗拒变化", "en": "Resistant to Change"},
+          "desc": {"zh": "对已经建立起来的流程和规则有很强的依赖，面对新方法时可能过于保守。需要意识到不是所有变化都是威胁。", "en": "Strong attachment to established processes and rules makes them overly conservative when facing new methods. They need to recognize that not all change is a threat."}
+        }
+      ]
+    },
+    "CD": {
+      "deep": {
+        "zh": "修正者是兼具严谨与决断力的标准制定者，他们将C型的分析思维与D型的果断行动融为一体。这类人既能深入分析问题本质，又能迅速做出决策并推动执行。他们眼中不揉沙子，对错误和低效有着天然的敏锐度。",
+        "en": "Correctors are standards-setters who combine C-style analytical rigor with D-style decisive action. They can both deeply analyze problems at their core and move swiftly to make decisions and drive execution. They have a natural eye for errors and inefficiencies, tolerating neither."
+      },
+      "interplay": {
+        "zh": "C型要求一切都经过验证和推敲，D型则要求快速行动和取得成果——这两种力量形成了一种“批判性行动”的风格。他们不会盲目行动，但也不会陷入无限分析。在确保方向正确的前提下快速推进。",
+        "en": "The C demands everything be verified and scrutinized while the D demands quick action and results — these forces create a style of 'critical action.' They neither act blindly nor fall into endless analysis, advancing rapidly once the direction is verified."
+      },
+      "compat": {
+        "zh": "在关系中直言不讳，追求真实和深度。他们不喜欢表面化的交流，更看重精神层面的契合和思想的碰撞。与S型或I型搭配较好——S型能包容他们的直接，I型能带来轻松和温暖。",
+        "en": "In relationships, they are direct and value authenticity and depth. They dislike superficial communication, prioritizing intellectual connection and stimulating exchange. They pair well with S or I types — S accommodates their directness, while I brings warmth and lightness."
+      },
+      "comm": {
+        "zh": "沟通风格直接、犀利、精准。他们不喜欢拐弯抹角，会直指问题的核心。在表达观点时逻辑严密、论据充分，但有时会因过于直接而让人感到压力。",
+        "en": "Direct, sharp, and precise communicators who dislike beating around the bush. They go straight to the heart of the matter, expressing themselves with tight logic and solid evidence — though their directness can sometimes feel intense to others."
+      },
+      "leadership": {
+        "zh": "属于变革型领导，善于发现问题、分析问题并推动改进。他们对现状从不满足，总是寻找可以优化的空间。在管理中追求效率和结果，但需要注意在推动变革时照顾团队的接受度。",
+        "en": "Change-oriented leaders who excel at identifying problems, analyzing root causes, and driving improvement. Never satisfied with the status quo, they constantly seek optimization opportunities. They pursue efficiency and results in management but should be mindful of team readiness during change."
+      },
+      "careerDeep": {
+        "zh": "适合战略咨询、管理优化、质量控制、审计、技术研发、数据分析等需要批判性思维和行动力的岗位。在需要发现问题并推动改进的组织中最为出色。",
+        "en": "Excel in strategic consulting, management optimization, quality control, auditing, R&D, and data analysis roles that require both critical thinking and action orientation. They shine in organizations that need to identify problems and drive improvement."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "洞察力强", "en": "Keen Insight"},
+          "desc": {"zh": "能快速识别问题的本质和根源，不被表面现象所迷惑。他们的分析往往一针见血，直击要害。", "en": "Quick to identify the essence and root cause of problems, undeterred by surface appearances. Their analysis is often incisive, hitting the nail on the head."}
+        },
+        {
+          "title": {"zh": "敢于变革", "en": "Change Catalyst"},
+          "desc": {"zh": "发现问题后不会坐视不管，而是主动推动变革和改进。他们既有批判的头脑，又有行动的勇气。", "en": "Once they spot a problem, they don't sit idle — they proactively drive change and improvement. They possess both a critical mind and the courage to act."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过于严苛", "en": "Overly Harsh"},
+          "desc": {"zh": "对错误和不完美的容忍度极低，容易给人留下苛刻和不近人情的印象。这种高标准可能让身边的人感到压力。", "en": "Extremely low tolerance for errors and imperfection can make them appear harsh and uncompromising. Their high standards may create pressure for those around them."}
+        },
+        {
+          "title": {"zh": "缺乏耐心", "en": "Lack of Patience"},
+          "desc": {"zh": "对效率低下的情况缺乏耐心，容易对跟不上节奏的人表现出不满。在与人合作时，需要学会更多的包容和理解。", "en": "Impatient with inefficiency, they may show frustration toward those who can't keep up. In collaboration, they need to practice more patience and understanding."}
+        }
+      ]
+    },
+    "CI": {
+      "deep": {
+        "zh": "顾问者是兼具数据思维与沟通能力的分析型沟通者，他们将C型的严谨分析与I型的人际表达融为一体。这类人既能深入数据处理和逻辑推理，又能将复杂的分析结果转化为通俗易懂的建议。他们是连接数据与决策的桥梁。",
+        "en": "Consultants are analytical communicators who blend C-style rigorous analysis with I-style interpersonal expression. They can dive deep into data processing and logical reasoning, then translate complex findings into accessible recommendations. They are the bridge between data and decisions."
+      },
+      "interplay": {
+        "zh": "C型驱动他们追求分析的深度和准确性，I型则让他们渴望分享见解并与他人互动。这种组合使得他们不像纯C型那样孤僻闭塞，也不像纯I型那样缺乏深度。他们享受“用数据和逻辑说服他人”的过程。",
+        "en": "The C drives them toward analytical depth and accuracy while the I makes them eager to share insights and interact with others. This combination prevents them from being as isolated as a pure C or as superficial as a pure I. They enjoy the process of 'convincing others with data and logic.'"
+      },
+      "compat": {
+        "zh": "在关系中追求智力上的共鸣和深度的交流。他们喜欢与伴侣分享知识和见解，享受有质量的对话。与S型或D型搭配较好——S型提供情感上的温暖和包容，D型提供行动上的互补和挑战。",
+        "en": "In relationships, they seek intellectual共鸣 and deep conversation. They enjoy sharing knowledge and insights with their partner, valuing quality dialogue. They pair well with S or D types — S provides emotional warmth, while D offers complementary action orientation and challenge."
+      },
+      "comm": {
+        "zh": "沟通风格清晰、有条理，善于用数据和逻辑增强说服力。他们能够将复杂的信息条理化、结构化，让听众容易理解。同时具有良好的互动意识，能根据听众的反应调整表达方式。",
+        "en": "Clear and organized communicators who strengthen their arguments with data and logic. They can structure complex information in an accessible way, while also reading the room and adjusting their delivery based on audience response."
+      },
+      "leadership": {
+        "zh": "属于分析型领导，用数据和逻辑来指导决策，同时善于沟通和协作。他们不仅关注“做什么”，更关注“为什么这么做”和“数据怎么说”。在团队中扮演理性声音的角色，有时会因过度关注分析而忽略情感因素。",
+        "en": "Analytical leaders who guide decisions with data and logic while maintaining strong communication and collaboration. They care not just about 'what to do' but also 'why' and 'what the data says.' They serve as the voice of reason in the team, though may sometimes overlook emotional factors."
+      },
+      "careerDeep": {
+        "zh": "适合数据分析、咨询、市场研究、产品管理、学术研究等需要分析能力和沟通技巧的岗位。在需要将数据洞察转化为商业建议的交叉领域中最为出色。",
+        "en": "Excel in data analysis, consulting, market research, product management, and academic research roles that require both analytical skills and communication ability. They shine at the intersection of data insight and business recommendation."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "数据沟通", "en": "Data Storytelling"},
+          "desc": {"zh": "擅长将枯燥的数据变成生动的故事和有说服力的建议。他们能让非技术人员也能理解数据背后的含义。", "en": "Skilled at turning dry data into compelling stories and persuasive recommendations. They make data meaningful even for non-technical audiences."}
+        },
+        {
+          "title": {"zh": "理性客观", "en": "Rational Objectivity"},
+          "desc": {"zh": "在决策中保持理性和客观，不轻易被情绪或偏见左右。他们的建议总是基于事实和逻辑，值得信赖。", "en": "Maintain rationality and objectivity in decision-making,不易 swayed by emotion or bias. Their recommendations are always grounded in facts and logic, making them highly trustworthy."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "过度分析", "en": "Over-analysis"},
+          "desc": {"zh": "有时过于依赖数据和逻辑，在信息不完备时难以做出判断。可能在等待更多数据的过程中错失行动时机。", "en": "Sometimes overly reliant on data and logic, struggling to make judgments when information is incomplete. They may miss action windows while waiting for more data."}
+        },
+        {
+          "title": {"zh": "情感淡漠", "en": "Emotional Distance"},
+          "desc": {"zh": "过于关注事实和逻辑，可能忽略他人的情感需求和人际关系中的微妙信号。在需要情感支持的场景中可能显得不够体贴。", "en": "So focused on facts and logic that they may overlook others' emotional needs and subtle interpersonal signals. In situations requiring emotional support, they may come across as less considerate."}
+        }
+      ]
+    },
+    "CS": {
+      "deep": {
+        "zh": "工匠是严谨而踏实的专业深耕者，他们将C型的分析精确与S型的稳定耐心融为一体。这类人专注于自己的领域，追求技术与工艺的极致。他们不急不躁，用时间和专注来打磨每一个细节，是组织中不可或缺的技术中坚。",
+        "en": "Craftsmen are rigorous and grounded specialists who blend C-style analytical precision with S-style stability and patience. They focus intensely on their domain, pursuing mastery of technique and craft. Neither rushed nor distracted, they hone every detail through time and专注, forming the indispensable technical backbone of any organization."
+      },
+      "interplay": {
+        "zh": "C型要求精确和完美，S型提供稳定和耐心——这两种特质高度互补，共同塑造了他们在专业领域深耕细作、不浮躁的个性。他们不会因为追求完美而焦虑，也不会因为追求稳定而放弃改进，而是在稳定的节奏中持续精进。",
+        "en": "The C demands precision and perfection while the S provides stability and patience — these traits are highly complementary, shaping a personality that cultivates expertise without restlessness. They neither焦虑 over perfection nor abandon improvement for stability, advancing steadily in their craft."
+      },
+      "compat": {
+        "zh": "在关系中忠诚专一，追求稳定和长久的陪伴。他们不善于表达浪漫，但用行动和细节来证明自己的在乎。与I型或D型搭配较好——I型能带来活力和社交，D型能帮助他们扩展视野和行动力。",
+        "en": "Loyal and devoted partners who value stability and lasting companionship. They may not be skilled at romantic expression, but prove their care through actions and attention to detail. They pair well with I or D types — I brings energy and social connection, while D broadens their horizons."
+      },
+      "comm": {
+        "zh": "沟通风格谨慎、精确，说话前深思熟虑。他们不喜欢夸夸其谈，更倾向于用事实和实际行动来证明自己的观点。在表达时注重准确性，有时会因过于关注细节而让沟通显得冗长。",
+        "en": "Careful and precise communicators who think before they speak. They dislike exaggeration, preferring to prove their points through facts and actions. They prioritize accuracy in expression, though their attention to detail may sometimes make their communication feel lengthy."
+      },
+      "leadership": {
+        "zh": "属于技术型领导，以专业能力和工匠精神赢得尊重。他们带领团队注重方法和质量，要求严格但以身作则。在管理中倾向于建立稳定的流程和标准，但对人际关系的处理可能不够灵活。",
+        "en": "Technical leaders who earn respect through professional competence and craftsmanship. They lead with a focus on methodology and quality, holding high standards while modeling them personally. They favor stable processes and standards in management, though may lack flexibility in handling interpersonal issues."
+      },
+      "careerDeep": {
+        "zh": "适合技术研发、工程制造、医学研究、精密仪器、质量控制、数据分析等需要高度专业性和耐心的岗位。在需要长期专注和深度钻研的领域中最为出色。",
+        "en": "Excel in technical R&D, engineering, medical research, precision instrumentation, quality control, and data analysis roles that demand high specialization and patience. They perform best in fields requiring long-term focus and deep钻研."
+      },
+      "strengths": [
+        {
+          "title": {"zh": "匠心精神", "en": "Craftsmanship"},
+          "desc": {"zh": "对工作有着精雕细琢的追求，不满足于“差不多就行”。他们交付的成果往往代表着品质和可靠。", "en": "A commitment to meticulous craftsmanship, never settling for 'good enough.' Their deliverables consistently represent quality and reliability."}
+        },
+        {
+          "title": {"zh": "沉稳专注", "en": "Calm Focus"},
+          "desc": {"zh": "拥有极强的专注力和耐心，能在长期项目中保持稳定的输出。不受外界干扰，能够深入钻研复杂问题。", "en": "Exceptional focus and patience, maintaining steady output over long-term projects. Unperturbed by external distractions, they can delve deep into complex problems."}
+        }
+      ],
+      "blindspots": [
+        {
+          "title": {"zh": "视野局限", "en": "Narrow Focus"},
+          "desc": {"zh": "过于专注于自己的专业领域，可能忽略更广阔的视野和跨领域的合作机会。需要提醒自己抬头看路。", "en": "So focused on their own domain that they may overlook broader perspectives and cross-disciplinary opportunities. They need to remind themselves to look up from the details."}
+        },
+        {
+          "title": {"zh": "适应缓慢", "en": "Slow Adaptation"},
+          "desc": {"zh": "对变化和新技术需要较长的适应时间，倾向于坚持自己熟悉的方法。在快速变化的环境中可能面临挑战。", "en": "Require longer adaptation time for change and new technologies, preferring to stick with familiar methods. They may face challenges in rapidly evolving environments."}
+        }
+      ]
+    }
+  }
+}
