@@ -14,7 +14,7 @@
 //   }
 // 引擎纯函数、state 必须 JSON-safe 且零 DOM/i18n 依赖（node 可直接 import 自测）。
 // 随机数入 state（state.rng），框架只透传 seed，保证悔棋/存档确定性。
-import { t, tr } from '/core/i18n.js';
+import { t, tr, getLang } from '/core/i18n.js';
 import { mountGameCard } from '/core/game-card.js';
 import { requestPaidUndo } from '/core/pay-undo.js';
 
@@ -23,10 +23,15 @@ const AI_JITTER = 350;     // AI 行动随机抖动上限
 const HISTORY_CAP = 240;   // 悔棋快照栈上限，防超长对局内存膨胀
 const UNDO_FEE = 5;        // 悔棋价格（元/次），与象棋等现有游戏一致
 
-// fmt 模板插值：t() 不支持参数，日志/UI 用 {k} 占位自替换
+// fmt 模板插值：t() 不支持参数，日志/UI 用 {k} 占位自替换。
+// 参数值为 {zh,en} 双语对象时按当前语言解析（引擎日志不 import i18n，传数据对象）
 export function fmt(template, args) {
-  return String(template).replace(/\{(\w+)\}/g, (m, k) =>
-    args && args[k] !== undefined ? String(args[k]) : m);
+  return String(template).replace(/\{(\w+)\}/g, (m, k) => {
+    const v = args ? args[k] : undefined;
+    if (v === undefined) return m;
+    if (v && typeof v === 'object' && (v.zh || v.en)) return String(v[getLang()] || v.zh || v.en);
+    return String(v);
+  });
 }
 
 // —— 存档（state JSON → localStorage，长对局刷新不丢）——

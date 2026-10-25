@@ -39,6 +39,7 @@ var lbScoreCaps = map[string]int{
 	"game-match3":  100000,   // 30 步最高连消，s generous 上限
 	"game-xiangqi": 50,      // best=历史最高连胜(peak streak)，连胜数远小于累计胜局，cap 调小
 	"game-chess":   50,      // best=历史最高连胜(peak streak)
+	"game-pr":      200,     // 波多黎各终局总分（VP+建筑+大建筑加成），generous 上限
 }
 
 // leaderboardEntry 单条榜单记录。IP/SignedCode 不下发前端（top() 已剥离 IP）。

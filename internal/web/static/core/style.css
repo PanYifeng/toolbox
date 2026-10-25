@@ -1090,3 +1090,49 @@ pre {
   .bg-layout { grid-template-columns: 1fr; }
   .bg-log { max-height: 220px; }
 }
+
+/* —— 波多黎各（game-pr）—— */
+.pr-board { display: flex; flex-direction: column; gap: 12px; }
+.pr-supply { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 10px 12px; }
+.pr-roles { display: flex; flex-wrap: wrap; gap: 6px; }
+.pr-role { border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; font-size: 13px; background: var(--bg); display: inline-flex; align-items: center; gap: 6px; }
+.pr-role.pr-click { cursor: pointer; border-color: var(--accent); }
+.pr-role.pr-taken { opacity: 0.55; }
+.pr-bonus { color: var(--accent); font-size: 12px; }
+.pr-taker { font-size: 11px; font-style: normal; }
+.pr-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
+.pr-label { color: var(--muted); font-size: 12px; }
+.pr-offers { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.pr-tile { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px dashed var(--border); border-radius: 6px; font-size: 16px; background: var(--bg); }
+.pr-tile.pr-click { cursor: pointer; border-style: solid; border-color: var(--accent); }
+.pr-tile.pr-gone { opacity: 0.25; }
+.pr-tile.pr-occ { border-style: solid; }
+.pr-tile.pr-sel { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+.pr-trade { display: inline-flex; gap: 4px; }
+.pr-trade-slot { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--bg); }
+.pr-ship { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 12.5px; background: var(--bg); }
+.pr-players { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.pr-player { border: 1px solid var(--border); border-left: 4px solid var(--pc); border-radius: 10px; padding: 8px 10px; background: var(--bg-soft); }
+.pr-player.pr-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.pr-phead { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
+.pr-res { margin-left: auto; display: inline-flex; gap: 7px; font-size: 12.5px; white-space: nowrap; }
+.pr-pisland { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; min-height: 30px; }
+.pr-city { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+.pr-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font-size: 11.5px; padding: 2px; text-align: center; background: var(--bg); overflow: hidden; }
+.pr-slot i { font-style: normal; color: var(--muted); font-size: 10.5px; }
+.pr-slot.pr-empty { border-style: dashed; opacity: 0.4; }
+.pr-slot.pr-occ { border-color: color-mix(in srgb, var(--pc) 60%, var(--border)); }
+.pr-slot.pr-click { cursor: pointer; border-color: var(--accent); }
+.pr-slot.pr-sel { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+.pr-pgoods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; font-size: 13px; min-height: 20px; }
+.pr-good { border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; background: var(--bg); }
+.pr-action { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--bg-soft); }
+.pr-prompt { margin: 0 0 8px; font-size: 13.5px; }
+.pr-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.pr-buildmarket { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.pr-grp { width: 100%; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.pr-buildbtn i { font-style: normal; color: var(--muted); font-size: 11.5px; }
+.pr-cap { display: flex; flex-direction: column; gap: 6px; }
+.pr-cnt-row { display: flex; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.pr-cnt-row select { padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
+.pr-cnt-row input { width: 64px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
