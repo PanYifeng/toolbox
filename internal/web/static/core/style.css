@@ -1196,3 +1196,69 @@ pre {
   .pg-side { flex: 1 1 auto; width: 100%; }
   .pg-mapwrap { flex: 1 1 auto; width: 100%; }
 }
+
+/* —— 神秘大地（game-terra）—— */
+.tm-board { display: flex; flex-direction: column; gap: 12px; }
+.tm-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13.5px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 8px 12px; }
+.tm-round { font-weight: 700; color: var(--accent); }
+.tm-order { display: inline-flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.tm-seatchip { font-style: normal; font-size: 12px; border: 1px solid var(--border); border-left: 3px solid var(--pc); border-radius: 6px; padding: 1px 7px; background: var(--bg); }
+.tm-seatchip.tm-first { border-color: var(--accent); }
+.tm-main { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.tm-mapwrap { flex: 1 1 560px; min-width: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 6px; }
+.tm-svg { width: 100%; height: auto; display: block; }
+.tm-hex { stroke: var(--border); stroke-width: 1; }
+.tm-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 4 4; pointer-events: none; }
+.tm-hexbtn { cursor: pointer; }
+.tm-hexbtn:hover .tm-ring { stroke-width: 4; }
+.tm-bldlbl { font-size: 11px; font-weight: 700; fill: #fff; pointer-events: none; }
+.tm-bridge { stroke-width: 5; stroke-linecap: round; opacity: 0.9; stroke-dasharray: 7 5; pointer-events: none; }
+.tm-side { flex: 0 1 340px; display: flex; flex-direction: column; gap: 8px; min-width: 290px; }
+.tm-players { display: flex; flex-direction: column; gap: 8px; }
+.tm-player { border: 1px solid var(--border); border-left: 4px solid var(--pc); border-radius: 10px; padding: 7px 10px; background: var(--bg-soft); }
+.tm-player.tm-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tm-phead { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
+.tm-vp { margin-left: auto; font-weight: 700; }
+.tm-pfac { margin-top: 3px; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.tm-terr { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border); flex: none; }
+.tm-pres { margin-top: 4px; font-size: 13px; display: flex; gap: 9px; flex-wrap: wrap; }
+.tm-bowls { margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; }
+.tm-bowl { display: inline-flex; justify-content: center; min-width: 26px; border: 1px solid var(--border); border-radius: 6px; padding: 0 4px; background: var(--bg); font-weight: 700; }
+.tm-bowl3 { border-color: var(--accent); color: var(--accent); }
+.tm-pcult { margin-top: 4px; display: flex; gap: 7px; flex-wrap: wrap; font-size: 12.5px; }
+.tm-cchip { border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; background: var(--bg); }
+.tm-pbonus, .tm-pfavor { margin-top: 4px; font-size: 12px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.tm-fav { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; background: var(--bg); }
+.tm-table { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+.tm-label { color: var(--muted); font-size: 12px; margin-right: 8px; white-space: nowrap; }
+.tm-trackrow { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; font-size: 12.5px; }
+.tm-trackname { min-width: 62px; font-size: 12.5px; }
+.tm-cell { display: inline-flex; align-items: center; justify-content: center; gap: 2px; width: 34px; height: 22px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); }
+.tm-cell-top { border-color: var(--accent); }
+.tm-mark { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--bg); }
+.tm-lock { font-size: 10px; color: var(--muted); }
+.tm-slotrow, .tm-btilerow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; }
+.tm-slot { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; background: var(--bg); }
+.tm-slot-occ { opacity: 0.55; }
+.tm-btile { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; background: var(--bg); }
+.tm-btile-taken { opacity: 0.85; }
+.tm-action { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--bg-soft); }
+.tm-prompt { margin: 0 0 8px; font-size: 13.5px; }
+.tm-row { margin-bottom: 7px; display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.tm-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tm-fcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.tm-fcard { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--bg); cursor: pointer; text-align: left; }
+.tm-fcard:hover { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
+.tm-fname { font-weight: 700; font-size: 14px; }
+.tm-fterr { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; }
+.tm-fdesc { font-size: 12px; color: var(--muted); }
+.tm-upbtn.tm-usel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--bg)); }
+.tm-favors { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; margin: 2px 0 4px; }
+.tm-pass { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.tm-bpick { border: 1px solid var(--border); border-radius: 8px; padding: 3px 9px; background: var(--bg); font-size: 12.5px; cursor: pointer; }
+.tm-bpick.tm-bsel { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
+@media (max-width: 900px) {
+  .tm-main { flex-direction: column; }
+  .tm-side { flex: 1 1 auto; width: 100%; }
+  .tm-mapwrap { flex: 1 1 auto; width: 100%; }
+}

@@ -41,6 +41,7 @@ var lbScoreCaps = map[string]int{
 	"game-chess":   50,      // best=历史最高连胜(peak streak)
 	"game-pr":      200,     // 波多黎各终局总分（VP+建筑+大建筑加成），generous 上限
 	"game-powergrid": 30,   // 电力公司终局供电城市数（≤ 终局城市数 21），generous 上限
+	"game-terra":   300,    // 神秘大地终局总分（起始 20 + 城镇/邪教/收入 VP），generous 上限
 }
 
 // leaderboardEntry 单条榜单记录。IP/SignedCode 不下发前端（top() 已剥离 IP）。
