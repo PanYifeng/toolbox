@@ -1,9 +1,10 @@
 // 神秘大地数值表：建筑/能量动作/恩惠/奖励/回合板块/邪教轨/费用。
-// ⚠ 诚实声明：所有数值为对官方规则的记忆重建，无法在线核对（网络被阻断），
-// 存疑项一律标注「? 待核对」。地图与派系专长见同目录其他文件。
+// ⚠ 诚实声明：除已注明官方核对的条目外，其余数值为对官方规则的记忆重建，
+// 存疑项一律标注「? 待核对」。地图与派系地形见同目录其他文件。
 
 // —— 地形轮盘（挖地距离 = 环上双向最短步数，1-3 步）——
-// ? 待核对：官方轮盘顺序无法核对，此处为记忆近似
+// 已按官方核对（jsnell @colors = yellow brown black blue green gray red，
+// 即沙漠→平原→沼泽→湖泊→森林→山地→荒地，与本表同环）：2026-10-26
 export const WHEEL = ['plains', 'swamp', 'lakes', 'forest', 'mountain', 'wasteland', 'desert'];
 
 // wheelDist 地形轮盘距离（挖到家园地形所需步数）
@@ -14,15 +15,18 @@ export function wheelDist(a, b) {
   return Math.min(d, WHEEL.length - d);
 }
 
-// —— 建筑（? 待核对：费用/收入/能量价值/城镇值均为记忆重建）——
+// —— 建筑 ——
+// power/town 已按官方核对（jsnell Constants.pm %building_strength：D1/TP2/TE2/SH3/SA3，
+// 吸能与建镇同值；建镇另需 ≥4 座建筑、SA 双计，见 TOWN_MIN_BUILDINGS）：2026-10-26
+// cost/income 仍为记忆重建（? 待核对）
 // income: 每轮收入；power: 他人在旁建筑时可吸取的能量值；town: 建镇计分值
 export const BUILDINGS = {
   D: { cost: { coins: 2, workers: 1 }, income: { workers: 1 }, power: 1, town: 1 },
-  TP: { cost: { coins: 2, workers: 1 }, income: { coins: 2 }, power: 1, town: 2 },   // 本地（邻他人建筑）
+  TP: { cost: { coins: 2, workers: 1 }, income: { coins: 2 }, power: 2, town: 2 },   // 本地（邻他人建筑）
   TP2: { cost: { coins: 6, workers: 1 }, income: { coins: 4 }, power: 2, town: 2 },  // 远程（无邻）
-  TE: { cost: { coins: 6, workers: 2 }, income: { priests: 1 }, power: 2, town: 3 },
-  SH: { cost: { coins: 6, workers: 4 }, income: {}, power: 2, town: 2 },
-  SA: { cost: { coins: 8, workers: 4 }, income: { priests: 1 }, power: 3, town: 5 },
+  TE: { cost: { coins: 6, workers: 2 }, income: { priests: 1 }, power: 2, town: 2 },
+  SH: { cost: { coins: 6, workers: 4 }, income: {}, power: 3, town: 3 },
+  SA: { cost: { coins: 8, workers: 4 }, income: { priests: 1 }, power: 3, town: 3 },
 };
 export const UPGRADE_CHAIN = { D: ['TP', 'SH'], TP: ['TE'], TE: ['SA'], SH: [], SA: [] };
 
@@ -90,9 +94,11 @@ export const CULT_RANK_VP = [8, 4, 2];
 export const SPADE_WORKERS = 2;      // 每 1 铲工人费用（? 待核对）
 export const SHIPPING_COST = { coins: 4, priests: 1 }; // 船运 +1（上限 3）
 export const SHIPPING_MAX = 3;
-export const BRIDGE_COST = { coins: 2, priests: 1 };   // 造桥（工程师 1 工人）
+export const BRIDGE_COST = { coins: 2, priests: 1 };   // 造桥（工程师 2 工人）
+export const BRIDGE_MAX = 3;         // 每派系桥上限（官方 BRIDGE_COUNT，已核对）
 export const TOWN_VP = 5;            // 建镇即时 VP（? 待核对）
-export const TOWN_THRESHOLD = 7;     // 相邻建筑群城镇值门槛（? 待核对）
+export const TOWN_THRESHOLD = 7;     // 相邻建筑群城镇值门槛（官方 TOWN_SIZE，已核对）
+export const TOWN_MIN_BUILDINGS = 4; // 建镇最少建筑数，SA 双计（官方，已核对）
 export const PRIEST_CAP = 5;         // 祭司总数上限（在场+锁定）
 export const START = { coins: 20, workers: 3, priests: 5, vp: 20, power: { i: 4, ii: 8, iii: 0 } }; // ? 待核对
 

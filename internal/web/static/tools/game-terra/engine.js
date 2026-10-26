@@ -7,10 +7,10 @@
 import {
   BUILDINGS, UPGRADE_CHAIN, POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, ROUND_TILES,
   ROUNDS, CULT_TRACKS, CULT_TOP, cultSpaceReward, CULT_RANK_VP, SPADE_WORKERS,
-  SHIPPING_COST, SHIPPING_MAX, BRIDGE_COST, TOWN_VP, TOWN_THRESHOLD, PRIEST_CAP,
-  START, wheelDist,
+  SHIPPING_COST, SHIPPING_MAX, BRIDGE_COST, BRIDGE_MAX, TOWN_VP, TOWN_THRESHOLD,
+  TOWN_MIN_BUILDINGS, PRIEST_CAP, START, wheelDist,
 } from './tables.js';
-import { HEXES, ADJACENCY, bridgePairs } from './map-data.js';
+import { HEXES, ADJACENCY, BRIDGE_PAIRS } from './map-data.js';
 import { FACTIONS as FACTIONS_ALL, factionById } from './data-factions.js';
 
 // 阶段种类常量（避免魔术字符串散落）
@@ -135,7 +135,9 @@ function leechFrom(s, hexId, bldKey, builderSeat) {
 
 // —— 建造范围与城镇检测 ——
 
-// buildRangeSet 可建民居格集合：陆地邻接（苦行僧距离 3）+ 船运跨湖 + 自有桥
+// buildRangeSet 可建民居格集合：陆地邻接（苦行僧距离 3）+ 船运跨河 + 自有桥。
+// 官方语义（jsnell check_reachable）：船运跨「河流格」——从己方建筑出发，
+// 连续跨越 ≤shipping 个河格后的陆地格可达；河格只作通道不可建。
 function buildRangeSet(s, p) {
   const fakir = factionOf(p).special === 'range3';
   const maxLand = fakir ? 3 : 1;
@@ -150,10 +152,9 @@ function buildRangeSet(s, p) {
     const cur = queue.shift();
     for (const nid of adjPlusBridges(s, p, cur.id)) {
       const h = s.hexes[nid];
-      if (h.terrain === 'river') continue; // 河流不可穿越（桥已并入邻接）
-      if (h.terrain === 'lakes') {
-        if (cur.land + 1 <= maxLand && h.owner === null) reach.add(nid); // 湖格可作目标（挖建）
-        if (p.shipping > 0 && cur.chain + 1 <= p.shipping) pushState(nid, cur.land, cur.chain + 1);
+      if (h.terrain === 'river') {
+        // 河格仅作船运通道（连续河格数 ≤ shipping），不可建
+        if (cur.chain + 1 <= p.shipping) pushState(nid, cur.land, cur.chain + 1);
       } else if (cur.land + 1 <= maxLand) {
         if (h.owner === null) reach.add(nid);
         pushState(nid, cur.land + 1, 0);
@@ -182,7 +183,7 @@ function adjPlusBridges(s, p, id) {
   return out;
 }
 
-// townEdges 城镇连接边：直接邻接 + 自有桥 +（美人鱼）船运跨湖
+// townEdges 城镇连接边：直接邻接 + 自有桥 +（美人鱼）河格连接
 function townEdges(s, p) {
   const own = Object.keys(p.buildings);
   const edges = {};
@@ -197,26 +198,20 @@ function townEdges(s, p) {
       if (br.b === id && p.buildings[br.a]) edges[id].add(br.a);
     }
   }
-  if (factionOf(p).special === 'shipTown' && p.shipping > 0) addShippingEdges(s, p, own, edges);
+  if (factionOf(p).special === 'shipTown') addShippingEdges(p, edges);
   return edges;
 }
 
-// addShippingEdges 美人鱼：跨 ≤shipping 个湖格相连的自有建筑连边
-// （自有建筑本身是终点不计数——美人鱼家园即湖，建筑常在湖格上）
-function addShippingEdges(s, p, own, edges) {
-  for (const id of own) {
-    const queue = [{ id, chain: 0 }];
-    const seen = new Set([id]);
-    while (queue.length) {
-      const cur = queue.shift();
-      for (const nid of ADJACENCY[cur.id]) {
-        if (seen.has(nid)) continue;
-        if (p.buildings[nid]) {
-          seen.add(nid);
-          edges[id].add(nid);
-        } else if (s.hexes[nid].terrain === 'lakes') {
-          if (cur.chain + 1 <= p.shipping) { seen.add(nid); queue.push({ id: nid, chain: cur.chain + 1 }); }
-        }
+// addShippingEdges 美人鱼：单个河格作连接点——与同一河格相邻的己方建筑
+// 互相连通（官方 connect 语义，jsnell towns.pm check_mermaid_river_connection_town；
+// 与船运等级无关）
+function addShippingEdges(p, edges) {
+  for (const h of HEXES) {
+    if (h.terrain !== 'river') continue;
+    const adjOwn = ADJACENCY[h.id].filter((id) => p.buildings[id]);
+    for (const a of adjOwn) {
+      for (const b of adjOwn) {
+        if (a !== b) edges[a].add(b);
       }
     }
   }
@@ -245,14 +240,16 @@ function townGroups(s, p) {
   return groups;
 }
 
-// checkTowns 建镇检测：新增城镇值 ≥7 的连通组 → +VP 并记录（每组仅一次）
+// checkTowns 建镇检测：城镇值 ≥7 且 ≥4 座建筑（SA 双计）的连通组 → +VP 并记录（每组仅一次）
 function checkTowns(s, seat) {
   const p = s.players[seat];
   for (const group of townGroups(s, p)) {
     const key = [...group].sort().join('|');
     if (p.towns.includes(key)) continue;
     const value = group.reduce((a, id) => a + BUILDINGS[p.buildings[id]].town, 0);
-    if (value >= TOWN_THRESHOLD) {
+    // SA 计 2 座建筑（官方）
+    const count = group.reduce((a, id) => a + (p.buildings[id] === 'SA' ? 2 : 1), 0);
+    if (value >= TOWN_THRESHOLD && count >= TOWN_MIN_BUILDINGS) {
       p.towns.push(key);
       p.vp += TOWN_VP;
       log(s, seat, 'tm.log.town', { n: p.name, hexes: group.length });
@@ -549,21 +546,22 @@ function pushUpgradeActions(s, p, acts) {
   }
 }
 
-// pushBridgeActions 造桥：无桥河格 × 两岸组合（一侧须有己方建筑）
+// pushBridgeActions 造桥：官方 29 对桥位 × 任一端有己方建筑。
+// 每派系全局限 3 座、每对至多 1 座（jsnell command_bridge 语义）
 function pushBridgeActions(s, p, acts) {
   const cost = bridgeCostFor(p);
   if (!afford(p, cost)) return;
-  for (const h of HEXES) {
-    if (h.terrain !== 'river' || s.bridges.some((br) => br.river === h.id)) continue;
-    for (const [a, b] of bridgePairs(h.id)) {
-      if (p.buildings[a] || p.buildings[b]) acts.push({ kind: 'bridge', river: h.id, a, b });
-    }
+  if (s.bridges.filter((br) => br.owner === p.seat).length >= BRIDGE_MAX) return;
+  for (const [a, b] of BRIDGE_PAIRS) {
+    if (s.bridges.some((br) => (br.a === a && br.b === b) || (br.a === b && br.b === a))) continue;
+    if (p.buildings[a] || p.buildings[b]) acts.push({ kind: 'bridge', a, b });
   }
 }
 
-// bridgeCostFor 桥费（工程师 SH 后 1 工人）
+// bridgeCostFor 桥费：标准 2 币 + 1 祭司；工程师 2 工人
+// （官方 ACTE 开放行动的简化，innate 无需 SH）
 function bridgeCostFor(p) {
-  return factionOf(p).special === 'cheapBridge' && hasSH(p) ? { workers: 1 } : BRIDGE_COST;
+  return factionOf(p).special === 'cheapBridge' ? { workers: 2 } : BRIDGE_COST;
 }
 
 // pushChaosAction 混沌法师：付 1 祭司任一轨迹推进 2（每轮 1 次，需 SH）
@@ -750,17 +748,18 @@ function applyShipping(s, p, a) {
   afterAction(s);
 }
 
-// applyBridge 造桥（私有，连接两岸）
+// applyBridge 造桥（私有，连接桥位两端）
 function applyBridge(s, p, a) {
   const cost = bridgeCostFor(p);
-  const valid = HEXES.some((h) => h.id === a.river && h.terrain === 'river')
-    && !s.bridges.some((br) => br.river === a.river)
-    && bridgePairs(a.river).some(([x, y]) => (x === a.a && y === a.b) || (x === a.b && y === a.a))
-    && (p.buildings[a.a] || p.buildings[a.b]);
+  const taken = s.bridges.some((br) => (br.a === a.a && br.b === a.b) || (br.a === a.b && br.b === a.a));
+  const valid = BRIDGE_PAIRS.some(([x, y]) => (x === a.a && y === a.b) || (x === a.b && y === a.a))
+    && !taken
+    && (p.buildings[a.a] || p.buildings[a.b])
+    && s.bridges.filter((br) => br.owner === p.seat).length < BRIDGE_MAX;
   if (!valid || !afford(p, cost)) return;
   pay(p, cost);
-  s.bridges.push({ river: a.river, a: a.a, b: a.b, owner: p.seat });
-  log(s, p.seat, 'tm.log.bridge', { n: p.name, river: a.river });
+  s.bridges.push({ a: a.a, b: a.b, owner: p.seat });
+  log(s, p.seat, 'tm.log.bridge', { n: p.name, a: a.a, b: a.b });
   checkTowns(s, p.seat);
   afterAction(s);
 }

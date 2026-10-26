@@ -1,30 +1,44 @@
-// 神秘大地棋盘：55 格六边形（7 地形 ×7 + 河流 ×6）。
-// ⚠ 诚实声明：官方地图 ~91 格无法在线核对，此为按「北山漠荒、西森林、
-// 东平原、南湖沼、河流斜贯」布局自制的近似图，非官方誊录。
-// 坐标系：axial (q, r)，尖顶六边形；id = "q,r"。
+// 神秘大地官方棋盘誊录：9 行（A–I）× 13/12 槽，共 113 格 =
+// 77 地形格（7 地形 × 11）+ 36 河流格。
+// 来源：jsnell/terra-mystica src/Game/Constants.pm 的 @base_map 逐 token 誊录
+// （社区公认权威在线实现）；官方棋盘色 → 地形映射经 jsnell 派系家园地形双源核对。
+// 坐标系：axial (q, r)，尖顶六边形；id = "q,r"。r = 行号 0-8，
+// q = 行内槽位 - floor(r/2)（odd-r 行偏移，与 jsnell 行列编号一致）。
 
 // TERRAINS 地形（与 tables.WHEEL 顺序一致）
 export const TERRAINS = ['plains', 'swamp', 'lakes', 'forest', 'mountain', 'wasteland', 'desert', 'river'];
 
-// MAP_ROWS 按行手工布置：键 = r，值 = [起始q, 地形序列]
-const MAP_ROWS = {
-  '-3': [0, ['mountain', 'mountain', 'desert', 'desert', 'wasteland', 'wasteland']],
-  '-2': [-1, ['mountain', 'mountain', 'mountain', 'desert', 'desert', 'river', 'wasteland']],
-  '-1': [-1, ['forest', 'mountain', 'mountain', 'river', 'desert', 'desert', 'wasteland', 'wasteland']],
-  '0': [-2, ['forest', 'forest', 'forest', 'river', 'lakes', 'wasteland', 'wasteland', 'swamp', 'plains', 'plains']],
-  '1': [-2, ['forest', 'forest', 'lakes', 'lakes', 'swamp', 'swamp', 'plains', 'plains', 'plains', 'plains']],
-  '2': [-1, ['forest', 'river', 'lakes', 'lakes', 'swamp', 'swamp', 'plains', 'desert']],
-  '3': [0, ['lakes', 'river', 'swamp', 'swamp', 'lakes', 'river']],
+// COLOR_TO_TERRAIN 官方棋盘色 → 地形（'x' = 河流格）
+const COLOR_TO_TERRAIN = {
+  yellow: 'desert', brown: 'plains', black: 'swamp', blue: 'lakes',
+  green: 'forest', gray: 'mountain', red: 'wasteland', x: 'river',
 };
+
+// MAP_ROWS 官方九行棋盘数据（A–I 行，逐 token 誊录）
+const MAP_ROWS = [
+  'brown gray green blue yellow red brown black red green blue red black',
+  'yellow x x brown black x x yellow black x x yellow',
+  'x x black x gray x green x green x gray x x',
+  'green blue yellow x x red blue x red x red brown',
+  'black brown red blue black brown gray yellow x x green black blue',
+  'gray green x x yellow green x x x brown gray brown',
+  'x x x gray x red x green x yellow black blue yellow',
+  'yellow blue brown x x x blue black x gray brown gray',
+  'red black gray blue red green yellow brown gray x blue green red',
+];
 
 // HEXES 展开为 {id, q, r, terrain} 列表
 export const HEXES = [];
-for (const [rStr, [q0, list]] of Object.entries(MAP_ROWS)) {
-  list.forEach((terrain, i) => {
-    const q = q0 + i;
-    HEXES.push({ id: `${q},${rStr}`, q, r: Number(rStr), terrain });
+MAP_ROWS.forEach((line, r) => {
+  line.split(' ').forEach((color, ci) => {
+    const q = ci - Math.floor(r / 2);
+    HEXES.push({ id: `${q},${r}`, q, r, terrain: COLOR_TO_TERRAIN[color] });
   });
-}
+});
+
+// TERRAIN_BY_ID 格 id → 地形（桥位计算用）
+const TERRAIN_BY_ID = {};
+for (const h of HEXES) TERRAIN_BY_ID[h.id] = h.terrain;
 
 // NEIGHBORS 六方向偏移（axial 尖顶）
 export const DIRS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
@@ -49,16 +63,23 @@ export function neighborsOf(id) {
 export const ADJACENCY = {};
 for (const h of HEXES) ADJACENCY[h.id] = neighborsOf(h.id);
 
-// 桥：允许跨过河流格连接两侧——桥建在河格上，桥 id 即河格 id。
-// bridgeSides 河格两侧可连的对岸格对（河格的邻格中隔着它互不相邻的两组），
-// 动态计算：河格 h 的邻格里，任意两个互不相邻的格即为「两岸」候选。
-export function bridgePairs(riverId) {
-  const ns = ADJACENCY[riverId];
+// BRIDGE_PAIRS 官方桥位：两格互不相邻、恰有 2 个公共邻格、且两个公共邻格
+// 均为河格的陆地格对（jsnell setup_valid_bridges 三种模式的等价刻画，
+// 已在官方图上逐对核验：恰好 29 对，不多不少）。
+// 桥建成后两格视为直邻；每派系全局限 3 座、每对至多 1 座（engine 侧约束）。
+export const BRIDGE_PAIRS = (() => {
   const pairs = [];
-  for (let i = 0; i < ns.length; i++) {
-    for (let j = i + 1; j < ns.length; j++) {
-      if (!ADJACENCY[ns[i]].includes(ns[j])) pairs.push([ns[i], ns[j]]);
+  for (let i = 0; i < HEXES.length; i++) {
+    for (let j = i + 1; j < HEXES.length; j++) {
+      const a = HEXES[i].id;
+      const b = HEXES[j].id;
+      if (TERRAIN_BY_ID[a] === 'river' || TERRAIN_BY_ID[b] === 'river') continue;
+      if (ADJACENCY[a].includes(b)) continue;
+      const common = ADJACENCY[a].filter((x) => ADJACENCY[b].includes(x));
+      if (common.length === 2 && common.every((x) => TERRAIN_BY_ID[x] === 'river')) {
+        pairs.push([a, b]);
+      }
     }
   }
   return pairs;
-}
+})();

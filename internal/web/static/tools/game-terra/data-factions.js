@@ -1,6 +1,6 @@
 // 神秘大地派系表：11 派系（官方 14 派系中记忆可靠的部分，明确缩减并声明）。
-// ⚠ 诚实声明：派系地形归属与专长为记忆重建，无法在线核对；专长是否需要
-// 要塞（SH）在官方中各不相同，此处按记忆标注 shAbility；存疑项标「? 待核对」。
+// 家园地形已按 jsnell/terra-mystica 官方派系色核对（2026-10-26）；
+// 专长实现仍为记忆重建（官方获取途径如「开放行动」在此简化为主行动），存疑项标「? 待核对」。
 
 // special 钩子名（engine.js 分发）：
 //   digCoin    每挖 1 铲得 1 金币（innate）
@@ -12,7 +12,7 @@
 //   witchDwelling   升级后可免费在任意空森林格放 1 民居（需 SH）
 //   cultBuild       每次建/升级后邪教推进 1（需 SH）
 //   leechWorker     他人从你的建筑吸能时你得 1 工人（需 SH）
-//   cheapBridge     桥费用改为 1 工人（需 SH）
+//   cheapBridge     造桥费用改为 2 工人（innate，官方 ACTE 开放行动的简化）
 //   chaosCult       动作：付 1 祭司任一轨迹推进 2，每轮 1 次（需 SH）
 
 export const FACTIONS = [
@@ -22,12 +22,12 @@ export const FACTIONS = [
     desc: { zh: '每挖 1 铲获得 1 金币', en: 'Gain 1 coin per spade dug' },
   },
   {
-    id: 'engineers', terrain: 'plains', special: 'cheapBridge', shAbility: true,
+    id: 'engineers', terrain: 'mountain', special: 'cheapBridge', shAbility: false,
     name: { zh: '工程师', en: 'Engineers' },
-    desc: { zh: '要塞后：造桥仅费 1 工人', en: 'After SH: bridges cost 1 worker' },
+    desc: { zh: '造桥仅费 2 工人', en: 'Bridges cost only 2 workers' },
   },
   {
-    id: 'cultists', terrain: 'swamp', special: 'cultBuild', shAbility: true,
+    id: 'cultists', terrain: 'plains', special: 'cultBuild', shAbility: true,
     name: { zh: '邪教徒', en: 'Cultists' },
     desc: { zh: '要塞后：每次建造/升级邪教推进 1', en: 'After SH: +1 cult on each build' },
   },
@@ -52,7 +52,7 @@ export const FACTIONS = [
     desc: { zh: '要塞后：升级后可免费在空森林格放民居', en: 'After SH: free dwelling on forest after upgrade' },
   },
   {
-    id: 'giants', terrain: 'mountain', special: 'digDouble', shAbility: false,
+    id: 'giants', terrain: 'wasteland', special: 'digDouble', shAbility: false,
     name: { zh: '巨人', en: 'Giants' },
     desc: { zh: '每 1 铲推进 2 步地形轮', en: 'Each spade moves 2 steps on terrain wheel' },
   },
