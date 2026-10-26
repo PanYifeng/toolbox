@@ -44,6 +44,7 @@ var lbScoreCaps = map[string]int{
 	"game-terra":   300,    // 神秘大地终局总分（起始 20 + 城镇/邪教/收入 VP），generous 上限
 	"game-agricola": 150,  // 农场主终局总分（负分区乞讨卡存在，上限按正常经营 generous 覆盖）
 	"game-splendor": 30,  // 璀璨宝石终局 VP（15 分触发终局，含贵族加成 generous 上限）
+	"game-catan":   15,   // 卡坦岛终局 VP（10 分获胜，含最长路/最大军队 +2 加成 generous 上限）
 }
 
 // leaderboardEntry 单条榜单记录。IP/SignedCode 不下发前端（top() 已剥离 IP）。

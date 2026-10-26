@@ -1382,3 +1382,101 @@ pre {
   .sl-card { width: 104px; height: 80px; }
   .sl-pres .sl-card { width: 84px; height: 58px; }
 }
+
+/* —— 卡坦岛（game-catan）—— */
+.ct-prompt { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ct-sub { color: var(--muted); font-size: 12.5px; }
+.ct-wrap { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.ct-left { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.ct-players { flex: 0 1 320px; display: flex; flex-direction: column; gap: 8px; min-width: 280px; }
+.ct-player { border: 1px solid var(--border); border-left: 4px solid var(--pc, var(--border)); border-radius: 10px; padding: 7px 10px; background: var(--bg-soft); display: flex; flex-direction: column; gap: 5px; }
+.ct-player.ct-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.ct-phead { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
+.ct-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--border); flex: none; }
+.ct-vp { margin-left: auto; font-weight: 700; font-size: 12.5px; }
+.ct-badge { font-size: 11px; border: 1px solid var(--accent); color: var(--accent); border-radius: 6px; padding: 0 5px; }
+.ct-res { display: flex; gap: 5px; flex-wrap: wrap; }
+.ct-chip { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; background: var(--bg); font-size: 13px; }
+.ct-chip b { font-size: 12px; }
+.ct-chip-zero { opacity: 0.4; }
+.ct-chip-act { cursor: pointer; border-color: var(--accent); }
+.ct-chip-act:hover { background: color-mix(in srgb, var(--accent) 14%, var(--bg)); }
+.ct-pdev { font-size: 13px; display: flex; gap: 7px; flex-wrap: wrap; }
+.ct-dev { border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; background: var(--bg); }
+.ct-dev-play { border-color: var(--accent); color: var(--accent); font-weight: 700; cursor: pointer; }
+.ct-ppieces { font-size: 12.5px; color: var(--muted); }
+.ct-svg { width: 100%; height: auto; display: block; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; }
+.ct-hex { stroke: var(--border); stroke-width: 1; }
+.ct-num { fill: #faf7ef; stroke: var(--border); stroke-width: 1; }
+.ct-numtxt { font-size: 13px; font-weight: 700; fill: #2c2c30; pointer-events: none; }
+.ct-numtxt-red { fill: #c0392b; }
+.ct-robber { fill: #2c2c30; opacity: 0.85; pointer-events: none; }
+.ct-robber-txt { font-size: 9px; font-weight: 700; fill: #fff; pointer-events: none; }
+.ct-harbor text { font-size: 11px; font-weight: 700; fill: var(--fg); }
+.ct-harbor-line { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.ct-road { stroke-width: 7; stroke-linecap: round; stroke: var(--border); pointer-events: none; }
+.ct-settle, .ct-city { stroke: #fff; stroke-width: 1.5; pointer-events: none; }
+.ct-hexbtn { cursor: pointer; }
+.ct-hexbtn:hover .ct-ring { stroke-width: 4; }
+.ct-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 4 4; pointer-events: none; }
+.ct-vertexbtn, .ct-edgebtn { cursor: pointer; }
+.ct-vertex-hit { fill: transparent; }
+.ct-vertex-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; pointer-events: none; }
+.ct-edge-hit { stroke: transparent; stroke-width: 16; }
+.ct-edge-ring { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; pointer-events: none; }
+.ct-vertexbtn:hover .ct-vertex-ring { stroke-width: 4.5; }
+.ct-edgebtn:hover .ct-edge-ring { stroke-width: 6; }
+.ct-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; font-size: 13px; }
+.ct-offer { border: 1px solid var(--accent); border-radius: 10px; padding: 7px 10px; background: var(--bg-soft); }
+.ct-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; background: var(--bg-soft); font-size: 13px; width: 100%; }
+.ct-ft { font-weight: 700; font-size: 12.5px; }
+.ct-ratio { color: var(--accent); }
+.ct-sel, .ct-numin { border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); font-size: 13px; padding: 2px 5px; }
+.ct-numin { width: 52px; }
+@media (max-width: 760px) {
+  .ct-wrap { flex-direction: column; }
+  .ct-players { flex-direction: row; flex-wrap: wrap; flex: 1 1 auto; }
+  .ct-player { flex: 1 1 150px; min-width: 0; }
+  .ct-vp { margin-left: 4px; }
+}
+
+/* 联机对局层（core/online.js，全桌游共用） */
+.on-root { max-width: 1100px; margin: 0 auto; }
+.on-card {
+  max-width: 560px; margin: 32px auto; padding: 24px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  display: flex; flex-direction: column; gap: 12px; text-align: left;
+}
+.on-card h3 { margin: 0; }
+.on-code { font-size: 1.35em; letter-spacing: 0.18em; color: var(--accent); }
+.on-invite {
+  display: block; padding: 6px 8px; margin-top: 4px; border-radius: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  font-size: 0.85em; word-break: break-all; user-select: all;
+}
+.on-join-row { display: flex; gap: 8px; }
+.on-join-row input { flex: 1; }
+.on-seats { display: flex; flex-direction: column; gap: 4px; }
+.on-seat-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
+}
+.on-seat-mine { border-color: var(--accent); }
+.on-tag {
+  margin-left: auto; padding: 1px 8px; border-radius: 999px; font-size: 0.78em;
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg)); color: var(--accent);
+}
+.on-tag-open { background: var(--bg); color: var(--muted); border: 1px dashed var(--border); }
+.on-warn { color: var(--muted); font-size: 0.85em; }
+.on-lobby-actions { display: flex; align-items: center; gap: 12px; }
+.on-conn {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #57b06a; display: inline-block; flex: none;
+}
+.on-conn-off { background: #e0b23c; animation: on-blink 1.2s infinite; }
+@keyframes on-blink { 50% { opacity: 0.35; } }
+.on-toast {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 999;
+  padding: 8px 16px; border-radius: 8px; font-size: 0.9em;
+  background: var(--fg); color: var(--bg); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
