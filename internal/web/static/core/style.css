@@ -1069,7 +1069,8 @@ pre {
 .bg-kind { min-width: 96px; }
 .bg-kind-ai { border-color: var(--accent); color: var(--accent); }
 #bg-start { align-self: flex-start; }
-.bg-setup-actions { display: flex; gap: 10px; }
+.bg-setup-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.bg-quick-hint { margin: 0; font-size: 13px; line-height: 1.6; }
 .bg-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
 .bg-banner { display: inline-flex; align-items: center; gap: 6px; }
 .bg-layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 14px; margin-top: 8px; }

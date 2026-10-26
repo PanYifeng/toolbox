@@ -7,7 +7,7 @@
 // 双驱竞态由服务端 base 409 裁决后重同步收敛。
 // 联机模式不提供存档/付费悔棋；隐藏信息游戏的手牌经中继同步至各端（好友对局信任模型）。
 import { t, tr } from '/core/i18n.js';
-import { fmt } from '/core/boardgame.js';
+import { fmt, wireRulesBtn } from '/core/boardgame.js';
 import { mountGameCard } from '/core/game-card.js';
 
 const ON_AI_DELAY = 550;    // 机器人代驱延迟（与热座节奏一致）
@@ -382,6 +382,7 @@ export function mountOnlineRoom(el, game, code) {
         <div class="game-bar">
           <span id="on-banner" class="bg-banner"></span>
           <span id="on-conn" class="on-conn"></span>
+          <button id="on-rules" class="btn-soft" title="${t('bg.rules')}">❓ ${t('bg.rules')}</button>
           <button id="on-leave2" class="btn-soft">${t('on.leave')}</button>
         </div>
         <div class="bg-layout">
@@ -392,6 +393,7 @@ export function mountOnlineRoom(el, game, code) {
           </aside>
         </div>`;
       $root.querySelector('#on-leave2').onclick = onLeave;
+      wireRulesBtn($root.querySelector('#on-rules'));
     }
     updateGameChrome();
     const legal = game.legalActions(state);

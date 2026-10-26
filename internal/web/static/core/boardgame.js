@@ -81,6 +81,7 @@ export function mountBoardGame(el, game) {
     $root.innerHTML = `
       <div class="bg-setup">
         <h3>${tr(game.name)}</h3>
+        <p class="muted bg-quick-hint">💡 ${t('bg.quickHint')}</p>
         <div class="bg-setup-row">
           <label>${t('bg.players')}
             <select id="bg-count">${countOptions()}</select>
@@ -91,14 +92,28 @@ export function mountBoardGame(el, game) {
         </div>
         <div id="bg-seats"></div>
         <div id="bg-extras"></div>
-        <button id="bg-start">${t('bg.start')}</button>
-        <button id="bg-online" class="btn-soft">🌐 ${t('on.create')}</button>
+        <div class="bg-setup-actions">
+          <button id="bg-quick">⚡ ${t('bg.quick')}</button>
+          <button id="bg-start">${t('bg.start')}</button>
+          <button id="bg-online" class="btn-soft">🌐 ${t('on.create')}</button>
+        </div>
       </div>`;
     const $count = $root.querySelector('#bg-count');
     $count.onchange = () => { renderSeatRows(); renderExtras(); };
+    $root.querySelector('#bg-quick').onclick = onQuickStart;
     $root.querySelector('#bg-start').onclick = onStart;
     $root.querySelector('#bg-online').onclick = onOnlineCreate;
     renderSeatRows(); renderExtras();
+  }
+
+  // onQuickStart 新手一键开局：1 位真人 + 其余 AI（人数取 3 并夹到游戏支持区间）
+  function onQuickStart() {
+    const count = Math.min(Math.max(3, game.minPlayers), game.maxPlayers);
+    const $count = $root.querySelector('#bg-count');
+    $count.value = String(count);
+    renderSeatRows(); renderExtras();
+    $root.querySelectorAll('.bg-kind').forEach((b, i) => { if (i >= 1) b.click(); });
+    onStart();
   }
 
   function countOptions() {
@@ -176,6 +191,7 @@ export function mountBoardGame(el, game) {
     $root.innerHTML = `
       <div class="game-bar">
         <span id="bg-banner" class="bg-banner"></span>
+        <button id="bg-rules" class="btn-soft" title="${t('bg.rules')}">❓ ${t('bg.rules')}</button>
         <button id="bg-undo">${t('bg.undo')}</button>
         <button id="bg-newgame">${t('bg.new')}</button>
       </div>
@@ -187,6 +203,7 @@ export function mountBoardGame(el, game) {
         </aside>
       </div>
       <div id="bg-privacy" class="bg-overlay" style="display:none"></div>`;
+    wireRulesBtn($root.querySelector('#bg-rules'));
     $root.querySelector('#bg-undo').onclick = onUndo;
     $root.querySelector('#bg-newgame').onclick = () => {
       if (session && !session.state.gameOver && !confirm(t('bg.confirmNew'))) return;
@@ -338,6 +355,14 @@ export function mountBoardGame(el, game) {
     const r = results.find((x) => !x.isAI);
     return r ? r.total : 0;
   }
+}
+
+// wireRulesBtn 对局栏「玩法」按钮：滚回页面顶部的工具说明区（无说明区则隐藏）
+export function wireRulesBtn($btn) {
+  if (!$btn) return;
+  const guide = document.querySelector('.tool-guide');
+  if (!guide) { $btn.style.display = 'none'; return; }
+  $btn.onclick = () => guide.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // esc 转义玩家输入，防注入
