@@ -77,17 +77,17 @@ eq(incomeOf(21), 104, '21 城收入 104');
 // 首城免连接费 + 区域门槛
 {
   const s = mkGame(2, 1);
-  s.regions = ['north', 'east', 'west'];
+  s.regions = ['northwest', 'east', 'west'];
   s.phase = { kind: 'cities', queue: [1, 0], idx: 0, cur: 1 };
-  eq(reachCost(s, s.players[1], 'Kiel'), 0, '首城连接费 0');
-  eq(buildTotalCost(s, s.players[1], 'Kiel'), 10, 'step1 首城总价 = 房价 10');
-  ok(!cityBuildable(s, s.players[1], 'München'), '未选区域城市不可建');
+  eq(reachCost(s, s.players[1], 'kiel'), 0, '首城连接费 0');
+  eq(buildTotalCost(s, s.players[1], 'kiel'), 10, 'step1 首城总价 = 房价 10');
+  ok(!cityBuildable(s, s.players[1], 'muenchen'), '未选区域城市不可建');
 }
 
 // 首轮拍卖强制购厂
 {
   const s = mkGame(3, 2);
-  s.regions = ['north', 'east', 'west'];
+  s.regions = ['northwest', 'east', 'west'];
   s.phase = { kind: 'auction', order: turnOrderOf(s), turnIdx: 0, cur: 0, plant: null, bid: 0, bidders: [], bidderIdx: 0, bought: [], passedOffer: [] };
   const legal = legalActions(s);
   ok(!legal.some((a) => a.kind === 'passOffer'), '首轮无人可弃拍');
@@ -97,11 +97,11 @@ eq(incomeOf(21), 104, '21 城收入 104');
 // 发电收入与燃料消耗
 {
   const s = mkGame(2, 3);
-  s.regions = ['north', 'east', 'west'];
+  s.regions = ['northwest', 'east', 'west'];
   const p = s.players[0];
   p.plants = [{ ...PLANT_BY_ID[7] }, { ...PLANT_BY_ID[13] }]; // 煤2cap2 + 生态cap1
   p.res.coal = 2;
-  p.cities = ['Kiel', 'Hamburg', 'Berlin'];
+  p.cities = ['kiel', 'hamburg', 'berlin'];
   for (const c of p.cities) s.map[c].owners.push(0);
   s.phase = { kind: 'bureaucracy', queue: [0, 1], idx: 0, cur: 0 };
   const s2 = apply(s, { kind: 'power', plants: [7, 13] });

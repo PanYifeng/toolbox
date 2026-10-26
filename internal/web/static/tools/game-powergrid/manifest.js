@@ -24,7 +24,7 @@ export default {
 - **存储容量**：每种燃料可存该类电厂需求量 ×2；混燃（煤/油）容量煤油共享
 - **终局条件**：任一玩家城市数达标（按人数 21/17/15/17/14），本轮打完结算：供电城市数 → 电厂容量 → 余额
 - **悔棋**：付费悔棋回退到最近一次人类待决策状态
-- **地图与数据**：⚠ 地图为按真实德国地理自制的近似图（官方邻接与费用无法在线核对）；数值表来自对官方规则的记忆整理，存疑项已在代码中标注「待核对」`,
+- **地图与数据**：地图为官方德国版图誊录（42 城、6 区各 7 城、83 条连接边逐边费用，经三个独立开源实现交叉验证）；数值表来自对官方规则的记忆整理，存疑项已在代码中标注「待核对」`,
     en: `## Features
 
 A full-rules implementation of Power Grid (2-6 players): five phases each round — plant auction in turn order (4 current + future market, opening bid = face value), resource buying (the emptier the market the higher the price; uranium jumps 10/12/14/16 from slot 9), city building (first city free of connection cost, Dijkstra shortest path), and bureaucracy income settlement, followed by resource refill and removing the highest plant. Step 1/2/3 progression (7th city triggers Step 2, drawing the Step 3 card enters Step 3) and player-count endgame city targets (21/17/15/17/14) are all implemented.
@@ -43,7 +43,7 @@ A full-rules implementation of Power Grid (2-6 players): five phases each round 
 - **Storage**: each fuel type stores 2× its plants' demand; hybrid (coal/oil) capacity is shared between the two
 - **Game end**: when any player reaches the city target (21/17/15/17/14 by player count), finish the round and score: powered cities → plant capacity → cash
 - **Undo**: paid undo rolls back to your latest decision point
-- **Map & data**: ⚠ the map is an approximation built from real German geography (official adjacency and costs could not be verified online); numeric tables are from memory of the official rules; uncertain items are flagged "to verify" in code`,
+- **Map & data**: the map is a faithful transcription of the official Germany board (42 cities, 6 regions of 7, all 83 connection costs cross-validated against three independent open-source implementations); numeric tables are from memory of the official rules; uncertain items are flagged "to verify" in code`,
   },
   component: () => import('./component.js'),
 };
