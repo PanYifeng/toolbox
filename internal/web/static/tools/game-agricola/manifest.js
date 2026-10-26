@@ -1,7 +1,7 @@
 export default {
   id: 'game_agricola',
   name: { zh: '农场主', en: 'Agricola' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '🌾',
   keywords: ['agricola', '农场主', 'board game', '桌游', '德式桌游', 'worker placement', '工人放置', 'strategy', '热座', 'hot seat'],
   desc: '德式经典《农场主》规则复刻：14 轮 6 阶段工人放置、5×3 农场经营（建房/犁田/播种/围栏牧场）、收获喂食压力、40 职业 + 40 小改进 + 10 大设施。1-5 人热座同屏对局（手牌隐私交接），支持 AI 机器人补位，纯前端运行。',

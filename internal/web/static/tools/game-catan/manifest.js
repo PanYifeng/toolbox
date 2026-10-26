@@ -1,7 +1,7 @@
 export default {
   id: 'game_catan',
   name: { zh: '卡坦岛', en: 'Catan' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '🏝️',
   keywords: ['catan', '卡坦岛', 'board game', '桌游', 'settlers', '拓殖', '骰子', 'dice', '资源', 'trading', '交易', 'strategy', '热座', 'hot seat'],
   desc: '经典资源拓殖桌游《卡坦岛》基础版完整复刻：官方 19 格岛屿变体摆盘 + 数字 token + 9 港口、蛇形初始放置、双骰产出、村庄/城市/道路建造、银行与港口交易、国内贸易、强盗与骑士、最长路/最大军队、发展卡、10 分获胜。3-4 人热座同屏明牌对局，支持 AI 机器人补位，纯前端运行。',

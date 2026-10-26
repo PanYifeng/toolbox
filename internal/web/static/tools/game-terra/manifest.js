@@ -1,7 +1,7 @@
 export default {
   id: 'game_terra',
   name: { zh: '神秘大地', en: 'Terra Mystica' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '⛰️',
   keywords: ['terra mystica', '神秘大地', 'board game', '桌游', '德式桌游', 'cult', '邪教', 'strategy', '热座', 'hot seat'],
   desc: '德式经典《神秘大地》规则复刻：官方 113 格棋盘誊录、11 派系地形改造、三碗能量流转、四条邪教轨、建镇连接与六轮经济引擎。2-5 人热座同屏对局，支持 AI 机器人补位，纯前端运行。',

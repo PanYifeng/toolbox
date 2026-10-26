@@ -1,7 +1,7 @@
 export default {
   id: 'game_pr',
   name: { zh: '波多黎各', en: 'Puerto Rico' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '🚢',
   keywords: ['puerto rico', '波多黎各', 'board game', '桌游', '德式桌游', 'strategy', '热座', 'hot seat', 'role selection'],
   desc: '德式经典《波多黎各》完整规则复刻：角色选择+跟随、种植园经济、23 种建筑、货船装运。3-5 人热座同屏对局，支持 AI 机器人补位，纯前端运行。',

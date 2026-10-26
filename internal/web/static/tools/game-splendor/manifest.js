@@ -1,7 +1,7 @@
 export default {
   id: 'game_splendor',
   name: { zh: '璀璨宝石', en: 'Splendor' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '💎',
   keywords: ['splendor', '璀璨宝石', 'board game', '桌游', 'engine building', '宝石', '贵族', '卡牌', 'strategy', '热座', 'hot seat'],
   desc: '经典引擎构筑桌游《璀璨宝石》完整复刻：官方 90 张发展卡 + 10 贵族三源交叉核对、拿宝石/预留/购卡三选一、产出色永久折扣、贵族来访、15 分触发终局。2-4 人热座同屏对局，支持 AI 机器人补位，纯前端运行。',

@@ -1527,6 +1527,35 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
   width: 9px; height: 9px; border-radius: 50% 50% 50% 0;
   background: currentColor; transform: rotate(-45deg); display: inline-block;
 }
+
+/* 桌游交互元素统一微过渡：hover/高亮/当前玩家标记平滑变化而非生硬跳变 */
+.sl-card, .sl-chip, .sl-noble, .sl-res-btn, .sl-player,
+.ct-chip, .ct-dev, .ct-player, .ct-hexbtn, .ct-vertexbtn,
+.ca-player, .ca-legal, .ca-dot,
+.pr-role, .pr-tile, .pr-slot, .pr-player,
+.pg-card, .pg-player, .tm-fcard, .tm-player,
+.ag-space, .ag-cell, .ag-majorbtn, .ag-player {
+  transition: background-color .15s ease, border-color .15s ease,
+    box-shadow .15s ease, opacity .15s ease;
+}
+/* SVG 描边类交互元素只过渡笔画属性 */
+.ct-hexbtn:hover .ct-ring, .ct-vertexbtn:hover .ct-vertex-ring,
+.ca-legal, .ca-dot,
+.pg-citybtn:hover .pg-buildring, .tm-hexbtn:hover .tm-ring {
+  transition: fill .15s ease, stroke-width .15s ease;
+}
+/* 波多黎各可点击元素补齐 hover 反馈（旧四款中唯一缺 hover 规则的游戏） */
+.pr-role.pr-click:hover, .pr-tile.pr-click:hover, .pr-slot.pr-click:hover {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-card, .sl-chip, .sl-noble, .sl-res-btn, .sl-player,
+  .ct-chip, .ct-dev, .ct-player, .ca-player, .ca-legal, .ca-dot,
+  .pr-role, .pr-tile, .pr-slot, .pr-player,
+  .pg-card, .pg-player, .tm-fcard, .tm-player,
+  .ag-space, .ag-cell, .ag-majorbtn, .ag-player { transition: none; }
+}
+
 /* 方舟动物园（tools/game-arknova） */
 .an-wrap { display: flex; flex-direction: column; gap: 10px; }
 .an-prompt {

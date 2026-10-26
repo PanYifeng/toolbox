@@ -1,7 +1,7 @@
 export default {
   id: 'game_powergrid',
   name: { zh: '电力公司', en: 'Power Grid' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '⚡',
   keywords: ['power grid', '电力公司', 'board game', '桌游', '德式桌游', 'auction', '拍卖', 'strategy', '热座', 'hot seat'],
   desc: '德式经典《电力公司》完整规则复刻：电厂拍卖、动态资源价格梯、德国地图城市扩张、三阶段节奏与结算。2-6 人热座同屏对局，支持 AI 机器人补位，纯前端运行。',

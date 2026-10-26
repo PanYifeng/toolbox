@@ -1,7 +1,7 @@
 export default {
   id: 'game_carcassonne',
   name: { zh: '卡卡颂', en: 'Carcassonne' },
-  category: { zh: '游戏', en: 'Games' },
+  category: { zh: '桌游', en: 'Board Games' },
   icon: '🏰',
   keywords: ['carcassonne', '卡卡颂', 'board game', '桌游', 'tile placement', '拼块', 'meeple', '随从', '农夫', 'city building', '策略', '热座', 'hot seat'],
   desc: '经典拼块桌游《卡卡颂》基础版完整复刻：72 块地形块（起始块 + 71 抽牌堆）、四类地形（城市/道路/草地/修道院）、边三段槽位农田连接模型、随从驻守与多数方计分、完成城市/道路/修道院即时结算、终局未完成减半 + 农夫 3 分/完成城市（C1 规则）。2-5 人热座同屏对局，支持 AI 机器人补位，纯前端运行。',

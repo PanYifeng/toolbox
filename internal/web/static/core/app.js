@@ -12,6 +12,7 @@ let BOOT = null; // /api/bootstrap 返回的站点/功能/赞助配置
 
 // 分类展示顺序（按 zh 键排序，未列出的追加到末尾）
 const CAT_ORDER = [
+  { zh: '桌游', en: 'Board Games' },
   { zh: '编码', en: 'Encoding' },
   { zh: '时间', en: 'Time' },
   { zh: '文本', en: 'Text' },
