@@ -9,7 +9,7 @@ import {
 import { RES_ICON, incomeOf, resPrice, SETUP } from './tables.js';
 
 const RES_KINDS = ['coal', 'oil', 'garbage', 'uranium'];
-const PLANT_ICON = { coal: '⚫', oil: '🛢️', garbage: '🗑️', uranium: '☢️', hybrid: '🛤️', eco: '🍃' };
+const PLANT_ICON = { coal: '🪨', oil: '🛢️', garbage: '🗑️', uranium: '☢️', hybrid: '🪨🛢️', eco: '🍃' };
 let ui = { stamp: '', powerSel: null };
 let ctx = null; // {el, s, legal, pick}，供局部重绘
 
@@ -117,7 +117,7 @@ function renderMap(s, legal, human) {
 function plantMini(p, pl) {
   const d = pl;
   return `<span class="pg-pplant" title="${tr({ zh: '容量', en: 'capacity' })} ${d.cap}">
-    <b>#${pl.id}</b>${PLANT_ICON[d.type]}${d.fuel ? `${d.fuel}` : ''}<i>${d.cap}城</i></span>`;
+    <b>#${pl.id}</b>${PLANT_ICON[d.type]}${d.fuel ? `<span class="pg-pfueltag">×${d.fuel}</span>` : ''}<i>⚡${d.cap}</i></span>`;
 }
 
 function renderPlayers(s) {
@@ -143,10 +143,10 @@ function renderPlayers(s) {
 function plantCard(id, opts) {
   const d = PLANT_BY_ID[id];
   const o = opts || {};
-  return `<span class="pg-card ${o.cls || ''}" ${o.attr || ''}
+  return `<span class="pg-card pg-card-c-${d.type} ${o.cls || ''}" ${o.attr || ''}
     title="${d.type} · ${d.fuel ? `${t('pg.ui.fuel')} ${d.fuel}` : t('pg.ui.eco')}">
     <b>#${id}</b>${PLANT_ICON[d.type]}
-    <span class="pg-card-fuel">${d.fuel || '—'}</span>
+    <span class="pg-card-fuel">${d.fuel ? `×${d.fuel}` : '—'}</span>
     <span class="pg-card-cap">⚡${d.cap}</span>
   </span>`;
 }

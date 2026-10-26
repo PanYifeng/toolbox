@@ -12,7 +12,22 @@ export const GOOD_NAMES = {
   coffee: { zh: '咖啡', en: 'Coffee' },
 };
 export const GOOD_VALUE = { corn: 0, indigo: 1, sugar: 2, tobacco: 3, coffee: 4 };
-export const GOOD_ICON = { corn: '🌽', indigo: '🟦', sugar: '🍭', tobacco: '🍂', coffee: '☕' };
+export const GOOD_ICON = { corn: '🌽', indigo: '🪣', sugar: '🍬', tobacco: '🍂', coffee: '☕' };
+
+// ROLE_ICON 角色图标（角色牌视觉锚点，纯文本场景可拼接）
+export const ROLE_ICON = {
+  settler: '🌱', builder: '🏗️', mayor: '🎩', craftsman: '🧑‍🏭', trader: '⚖️', captain: '⚓', prospector: '💎',
+};
+
+// BUILDING_ICON 建筑图标：生产建筑沿用产物图腾，紫建筑/大建筑各有区分度
+export const BUILDING_ICON = {
+  small_indigo: '🪣', large_indigo: '🪣', small_sugar: '🍬', sugar_mill: '🍬',
+  tobacco_storage: '🍂', coffee_roaster: '☕',
+  small_market: '🏪', hacienda: '🌴', construction_hut: '🧱', small_warehouse: '📦',
+  hospice: '🏠', office: '🤝', large_market: '🏬', large_warehouse: '🗄️',
+  factory: '🏭', university: '🎓', harbor: '🛳️', wharf: '⚓',
+  guild_hall: '🏛️', residence: '🏯', fortress: '🏰', customs_house: '🛃', city_hall: '🏢',
+};
 
 // ROLES 角色定义（prospector 数量随人数，见 SETUP）
 export const ROLE_IDS = ['settler', 'builder', 'mayor', 'craftsman', 'trader', 'captain', 'prospector'];

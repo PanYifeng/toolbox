@@ -73,6 +73,13 @@ export const FACTIONS = [
   },
 ];
 
+// FACTION_ICON 派系图标（选派系卡与玩家面板视觉锚点）
+export const FACTION_ICON = {
+  halflings: '🧝', engineers: '⚙️', cultists: '🕯️', alchemists: '⚗️', mermaids: '🧜',
+  swarmlings: '🐝', witches: '🧙', giants: '🗿', nomads: '🐪', fakirs: '🪄',
+  chaosmagicians: '🔮',
+};
+
 // factionById 按 id 取派系
 export function factionById(id) {
   return FACTIONS.find((f) => f.id === id) || null;

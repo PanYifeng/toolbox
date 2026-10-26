@@ -2,7 +2,7 @@
 // SVG 六边形棋盘（地形底色 + 玩家色建筑 + 桥）+ 邪教轨/能量动作/板块区 + 阶段操作区。
 import { t, tr, getLang } from '/core/i18n.js';
 import { HEXES } from './map-data.js';
-import { TERRAIN_NAMES, factionById } from './data-factions.js';
+import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
   BUILDINGS, POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, CULT_TOP,
   cultSpaceReward, SHIPPING_COST,
@@ -52,9 +52,9 @@ function hexPoints(x, y) {
 function incStr(g) {
   const parts = [];
   if (g.coins) parts.push(`💰${g.coins}`);
-  if (g.workers) parts.push(`🧑${g.workers}`);
-  if (g.priests) parts.push(`✨${g.priests}`);
-  if (g.spades) parts.push(`⛏${g.spades}`);
+  if (g.workers) parts.push(`👷${g.workers}`);
+  if (g.priests) parts.push(`🙏${g.priests}`);
+  if (g.spades) parts.push(`⛏️${g.spades}`);
   if (g.powerGain) parts.push(`⚡${g.powerGain}`);
   return parts.join(' ') || '—';
 }
@@ -152,13 +152,13 @@ function renderMap(s, legal, human) {
   return `<svg viewBox="${VB}" class="tm-svg" role="img">${hexes}${bridges}</svg>`;
 }
 
-// bldMark 建筑标记：玩家色圆 + 类别缩写
+// bldMark 建筑标记：玩家色圆 + 类别图标（D 民居 🏠 / TP 贸易站 🏪 / TE 神庙 ⛪ / SA 圣域 ✨ / SH 要塞 🏰）
 function bldMark(s, st, c) {
   const p = s.players[st.owner];
-  const lbl = st.bld === 'TP2' ? 'TP' : st.bld;
+  const lbl = st.bld === 'D' ? '🏠' : st.bld === 'TP' ? '🏪' : st.bld === 'TP2' ? '🏪' : st.bld === 'TE' ? '⛪' : st.bld === 'SA' ? '✨' : st.bld === 'SH' ? '🏰' : st.bld;
   return `
     <circle cx="${c.x}" cy="${c.y}" r="13" fill="${p.color}" stroke="var(--bg)" stroke-width="1.5"></circle>
-    <text x="${c.x}" y="${c.y + 3.5}" class="tm-bldlbl" text-anchor="middle">${lbl}</text>`;
+    <text x="${c.x}" y="${c.y + 4}" class="tm-bldlbl" text-anchor="middle">${lbl}</text>`;
 }
 
 // —— 玩家面板 ——
@@ -182,12 +182,12 @@ function renderPlayers(s) {
       <div class="tm-player ${isCur ? 'tm-cur' : ''}" style="--pc:${p.color}">
         <div class="tm-phead">
           <span class="bg-dot" style="background:${p.color}"></span>
-          <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
+          <b>${FACTION_ICON[p.faction] || ''} ${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
           <span class="tm-vp">🏆${p.vp}</span>
         </div>
         ${f ? `<div class="tm-pfac"><i class="tm-terr" style="background:${TERR_COLOR[f.terrain]}"></i>
           ${tr(TERRAIN_NAMES[f.terrain])} · ${tr(f.desc)}${f.shAbility ? ` · ${t('tm.ui.needSH')}` : ''}</div>` : ''}
-        <div class="tm-pres">💰${p.coins} 🧑${p.workers} ✨${p.priests} ⛏${p.spades} ⚓${p.shipping} 🏘️${p.towns.length}</div>
+        <div class="tm-pres">💰${p.coins} 👷${p.workers} 🙏${p.priests} ⛏️${p.spades} ⚓${p.shipping} 🏘️${p.towns.length}</div>
         ${renderBowls(p)}
         <div class="tm-pcult">${cult}</div>
         ${p.bonus !== null ? `<div class="tm-pbonus">${incStr(BONUS_TILES[p.bonus].income)}</div>` : ''}
@@ -262,7 +262,7 @@ function factionPanel(legal) {
     const f = factionById(a.faction);
     return `
       <button class="tm-fcard" data-fac="${f.id}">
-        <span class="tm-fname">${tr(f.name)}</span>
+        <span class="tm-fname"><i class="tm-fico">${FACTION_ICON[f.id] || '🏳️'}</i> ${tr(f.name)}</span>
         <span class="tm-fterr"><i class="tm-terr" style="background:${TERR_COLOR[f.terrain]}"></i>${tr(TERRAIN_NAMES[f.terrain])}</span>
         <span class="tm-fdesc">${tr(f.desc)}${f.shAbility ? ` · ${t('tm.ui.needSH')}` : ''}</span>
       </button>`;

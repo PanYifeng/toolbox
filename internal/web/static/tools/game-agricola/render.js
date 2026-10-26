@@ -5,10 +5,10 @@ import { t, tr } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
 import {
   RES_INFO, RES_KEYS, ANIMAL_KEYS, MAT_NAMES, visibleSpaces,
-  FARM_COLS, FARM_SPACES, HARVEST_ROUNDS, TOTAL_ROUNDS,
+  FARM_COLS, FARM_SPACES, HARVEST_ROUNDS, TOTAL_ROUNDS, SPACE_ICON,
 } from './actionboard-data.js';
 import { OCC_BY_ID, MINOR_BY_ID } from './cards-data.js';
-import { MAJORS, MAJOR_BY_ID } from './majors.js';
+import { MAJORS, MAJOR_BY_ID, MAJOR_ICON } from './majors.js';
 import * as E from './engine.js';
 import * as I from './cards-interp.js';
 
@@ -69,7 +69,7 @@ function renderBoardSpaces(s, legal, human) {
     return `
       <button class="${cls}" ${act && human ? `data-act='${esc(JSON.stringify(act))}'` : 'disabled'}
         style="${taker ? `--tk:${taker.color}` : ''}">
-        <span class="ag-space-name">${tr(sp.name)}</span>
+        <span class="ag-space-name">${SPACE_ICON[sp.id] || ''} ${tr(sp.name)}</span>
         ${grant ? `<span class="ag-space-grant">${E.gainList(grant)}</span>` : ''}
         ${taker ? `<span class="ag-space-mark">${esc(taker.name)}</span>` : ''}
       </button>`;
@@ -153,7 +153,7 @@ function majorCardBtn(s, a) {
   const m = MAJOR_BY_ID[a.id];
   return `
     <button class="ag-majorbtn" data-act='${esc(JSON.stringify(a))}'>
-      <b>${tr(m.name)}</b>
+      <b><i class="ag-bico">${MAJOR_ICON[a.id] || '🏺'}</i> ${tr(m.name)}</b>
       <span class="ag-majorcost">${E.gainList(m.cost)}</span>
       <span class="muted">${tr(m.desc)}</span>
     </button>`;
@@ -255,7 +255,7 @@ function renderPlayers(s, legal, human) {
         <div class="ag-pbar">${resBar(p)}</div>
         ${ca ? `<div class="muted">${fmt(t('ag.ui.cardAnimal'), { a: RES_INFO[ca.type] ? RES_INFO[ca.type].emoji : '', n: ca.n })}</div>` : ''}
         ${p.majors.length ? `<div class="ag-mrow">${p.majors.map((id) =>
-          `<span class="ag-mchip">${tr(MAJOR_BY_ID[id].name)}</span>`).join('')}</div>` : ''}
+          `<span class="ag-mchip">${MAJOR_ICON[id] || '🏺'} ${tr(MAJOR_BY_ID[id].name)}</span>`).join('')}</div>` : ''}
         ${renderFarm(s, p, isCur ? clickMap : new Map(), human && isCur)}
       </div>`;
   }).join('')}</div>`;
@@ -271,7 +271,7 @@ function renderHand(s, p, legal) {
     return `
       <button class="ag-card ag-card-occ ${occLegal.has(id) ? 'ag-card-act' : ''}"
         ${occLegal.has(id) ? `data-act='${esc(JSON.stringify({ kind: 'subOcc', id }))}'` : 'disabled'}>
-        <b>${tr(c.name)}</b><span class="muted">${tr(c.desc)}</span>
+        <b><i class="ag-bico">🧑‍🌾</i> ${tr(c.name)}</b><span class="muted">${tr(c.desc)}</span>
       </button>`;
   }).join('');
   const minorRow = p.handMinor.map((id) => {
@@ -279,7 +279,7 @@ function renderHand(s, p, legal) {
     return `
       <button class="ag-card ag-card-minor ${minorLegal.has(id) ? 'ag-card-act' : ''}"
         ${minorLegal.has(id) ? `data-act='${esc(JSON.stringify({ kind: 'subMinor', id }))}'` : 'disabled'}>
-        <b>${tr(c.name)}</b>
+        <b><i class="ag-bico">🃏</i> ${tr(c.name)}</b>
         <span class="muted">${E.gainList(c.cost || {}) || '—'} · ${tr(c.desc)}</span>
       </button>`;
   }).join('');
@@ -319,7 +319,7 @@ function renderMajorsLeft(s) {
   const chips = MAJORS.map((m) => {
     const owner = E.ownsMajor(s, m.id) ? s.players.find((x) => x.majors.includes(m.id)) : null;
     return `<span class="ag-mchip ${owner ? 'ag-mchip-own' : ''}" ${owner ? `style="--tk:${owner.color}"` : ''}
-      title="${esc(tr(m.desc))}">${tr(m.name)}${E.gainList(m.cost)}</span>`;
+      title="${esc(tr(m.desc))}">${MAJOR_ICON[m.id] || '🏺'} ${tr(m.name)}${E.gainList(m.cost)}</span>`;
   }).join('');
   return `<div class="ag-majors"><span class="ag-label">${t('ag.ui.majorsLeft')}</span>${chips}</div>`;
 }

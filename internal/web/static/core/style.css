@@ -1120,6 +1120,8 @@ pre {
 .pr-pisland { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; min-height: 30px; }
 .pr-city { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
 .pr-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font-size: 11.5px; padding: 2px; text-align: center; background: var(--bg); overflow: hidden; }
+.pr-slotin { display: inline-flex; align-items: center; gap: 3px; line-height: 1.2; }
+.pr-bico { font-style: normal; font-size: 14px; line-height: 1; flex: none; }
 .pr-slot i { font-style: normal; color: var(--muted); font-size: 10.5px; }
 .pr-slot.pr-empty { border-style: dashed; opacity: 0.4; }
 .pr-slot.pr-occ { border-color: color-mix(in srgb, var(--pc) 60%, var(--border)); }
@@ -1168,11 +1170,19 @@ pre {
 .pg-pplants { margin-top: 5px; }
 .pg-pplant { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 12px; background: var(--bg); margin-right: 4px; }
 .pg-pplant i { font-style: normal; color: var(--muted); font-size: 10.5px; }
+.pg-pfueltag { color: var(--muted); font-size: 10.5px; }
 .pg-pres { margin-top: 4px; font-size: 12.5px; display: flex; gap: 8px; flex-wrap: wrap; }
 .pg-market, .pg-resmarket { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 8px 10px; }
 .pg-mkrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; margin-bottom: 6px; }
 .pg-label { color: var(--muted); font-size: 12px; min-width: 34px; }
-.pg-card { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; font-size: 13px; background: var(--bg); }
+.pg-card { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); border-left-width: 3px; border-radius: 8px; padding: 3px 8px; font-size: 13px; background: var(--bg); white-space: nowrap; }
+/* 电厂卡左色带按燃料类型区分（煤/油/垃圾/铀/混燃/生态） */
+.pg-card-c-coal { border-left-color: #6b6b6b; }
+.pg-card-c-oil { border-left-color: #8a6d3b; }
+.pg-card-c-garbage { border-left-color: #6a8759; }
+.pg-card-c-uranium { border-left-color: #4f9e8f; }
+.pg-card-c-hybrid { border-left-color: #7a5c8a; }
+.pg-card-c-eco { border-left-color: #5cad6a; }
 .pg-card b { color: var(--accent); }
 .pg-card-fuel { color: var(--muted); font-size: 11.5px; }
 .pg-card-cap { font-size: 11.5px; }
@@ -1212,7 +1222,7 @@ pre {
 .tm-ring { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 4 4; pointer-events: none; }
 .tm-hexbtn { cursor: pointer; }
 .tm-hexbtn:hover .tm-ring { stroke-width: 4; }
-.tm-bldlbl { font-size: 11px; font-weight: 700; fill: #fff; pointer-events: none; }
+.tm-bldlbl { font-size: 12px; font-weight: 700; fill: #fff; pointer-events: none; }
 .tm-bridge { stroke-width: 5; stroke-linecap: round; opacity: 0.9; stroke-dasharray: 7 5; pointer-events: none; }
 .tm-side { flex: 0 1 340px; display: flex; flex-direction: column; gap: 8px; min-width: 290px; }
 .tm-players { display: flex; flex-direction: column; gap: 8px; }
@@ -1251,6 +1261,7 @@ pre {
 .tm-fcard { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--bg); cursor: pointer; text-align: left; }
 .tm-fcard:hover { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
 .tm-fname { font-weight: 700; font-size: 14px; }
+.tm-fico { font-style: normal; font-size: 17px; margin-right: 3px; }
 .tm-fterr { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; }
 .tm-fdesc { font-size: 12px; color: var(--muted); }
 .tm-upbtn.tm-usel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--bg)); }
@@ -1293,6 +1304,7 @@ pre {
 .ag-majorbtn { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 9px; background: var(--bg); font-size: 12.5px; cursor: pointer; text-align: left; max-width: 240px; }
 .ag-majorbtn:hover { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
 .ag-majorcost { font-weight: 700; }
+.ag-bico { font-style: normal; font-size: 14px; margin-right: 2px; }
 .ag-cookrow { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); border-radius: 8px; padding: 2px 7px; background: var(--bg); }
 .ag-players { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
 .ag-player { border: 1px solid var(--border); border-left: 4px solid var(--pc); border-radius: 10px; padding: 7px 10px; background: var(--bg-soft); }
@@ -1730,12 +1742,17 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
 
 /* —— 卡面可视化：真实照片 + emoji 角标 + 类群色带 —— */
 .an-cemoji { font-size: 15px; line-height: 1; margin-right: 4px; }
+/* contain 完整显示（不裁切）：源图 ≤160px，卡面高度向下取整缩放始终清晰 */
 .an-photo {
-  width: 100%; height: 64px; object-fit: cover; border-radius: 6px 6px 0 0;
+  height: 64px; object-fit: contain; object-position: center; border-radius: 6px 6px 0 0;
   margin: -6px -8px 4px; width: calc(100% + 16px); background: var(--bg);
 }
 .an-hcard .an-photo { height: 58px; }
-.an-modal .an-photo { height: 150px; margin: 0 0 8px; width: 100%; border-radius: 8px; }
+/* 弹窗按源图原生尺寸展示（≤160px），不放大不裁切 */
+.an-modal .an-photo {
+  height: auto; max-height: 160px; width: auto; max-width: 100%;
+  margin: 0 auto 8px; display: block; border-radius: 8px;
+}
 /* 行动卡各卡色（5 张卡独立色调） */
 .an-acard-c-animals { background: color-mix(in srgb, #e2a05c 14%, var(--bg)); }
 .an-acard-c-association { background: color-mix(in srgb, #d6a94e 14%, var(--bg)); }

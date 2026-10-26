@@ -52,5 +52,11 @@ export const MAJORS = [
   },
 ];
 
+// MAJOR_ICON 大设施图标（视觉锚点，含义对应）
+export const MAJOR_ICON = {
+  fireplace: '🔥', hearth: '🍳', clayOven: '🫓', stoneOven: '🍞', well: '🪣',
+  joinery: '🪚', pottery: '🏺', basket: '🧺', woodcutter: '🪓', quarry: '⛏️',
+};
+
 // MAJOR_BY_ID 大设施反查
 export const MAJOR_BY_ID = Object.fromEntries(MAJORS.map((x) => [x.id, x]));

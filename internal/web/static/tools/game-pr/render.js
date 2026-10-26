@@ -2,7 +2,7 @@
 // 多步收集（市长安置、弃货保留、装货数量）用模块级 ui 暂存；同一决策点内重绘不清空。
 import { t, tr } from '/core/i18n.js';
 import {
-  GOODS, GOOD_VALUE, GOOD_ICON, BUILDINGS, BUILDING_BY_ID, ROLE_NAMES, hasOccupied,
+  GOODS, GOOD_VALUE, GOOD_ICON, ROLE_ICON, BUILDING_ICON, BUILDINGS, BUILDING_BY_ID, ROLE_NAMES, hasOccupied,
 } from './data.js';
 import { prodCapacity, buildCost, sellPrice, keepFeasible } from './engine.js';
 
@@ -41,7 +41,7 @@ function renderSupply(s, legal, human) {
       const ok = canPick && legal.some((a) => a.role === id);
       return `<span class="pr-role ${ok ? 'pr-click' : ''} ${r.taken !== null ? 'pr-taken' : ''}"
         ${ok ? `data-act='${JSON.stringify({ kind: 'pickRole', role: id })}'` : ''}>
-        ${tr(ROLE_NAMES[id])}${r.bonus ? `<b class="pr-bonus">💰${r.bonus}</b>` : ''}
+        ${ROLE_ICON[id]} ${tr(ROLE_NAMES[id])}${r.bonus ? `<b class="pr-bonus">💰${r.bonus}</b>` : ''}
         ${taker ? `<i class="pr-taker" style="color:${taker.color}">${esc(taker.name)}</i>` : ''}</span>`;
     }).join('');
   const offers = s.phase.kind === 'settler'
@@ -91,7 +91,7 @@ function renderPlayer(s, p, human) {
     const clickable = mayorMode && free > 0;
     return `<span class="pr-slot ${slot.occ >= b.circles || sel ? 'pr-occ' : ''} ${sel ? 'pr-sel' : ''} ${clickable ? 'pr-click' : ''}"
       ${clickable ? `data-mayor="city:${i}"` : ''} title="${tr(b.name)} · ${slot.occ}/${b.circles}">
-      ${tr(b.name)}<i>${slot.occ + sel}/${b.circles}</i></span>`;
+      <span class="pr-slotin"><i class="pr-bico">${BUILDING_ICON[slot.id] || '🏛️'}</i>${tr(b.name)}</span><i>${slot.occ + sel}/${b.circles}</i></span>`;
   }).join('');
   const goods = GOODS.filter((g) => p.goods[g] > 0)
     .map((g) => `<span class="pr-good" title="${tr({ zh: '产能', en: 'capacity' })} ${prodCapacity(p, g)}">${GOOD_ICON[g]}×${p.goods[g]}</span>`)
@@ -152,7 +152,7 @@ function builderPanel(s, legal, p, ph) {
     if (b.type !== lastType) { out += `<div class="pr-grp">${typeLabel[b.type]}</div>`; lastType = b.type; }
     const cost = buildCost(p, a.building, chooser);
     out += `<button class="btn-soft pr-buildbtn" data-act='${JSON.stringify(a)}'>
-      ${tr(b.name)} <i>💰${cost} · ${t('pr.ui.stock')}${s.buildingStock[a.building]}</i></button>`;
+      ${BUILDING_ICON[a.building] || '🏛️'} ${tr(b.name)} <i>💰${cost} · ${t('pr.ui.stock')}${s.buildingStock[a.building]}</i></button>`;
   }
   const pass = legal.find((a) => a.kind === 'buildPass');
   return `<div class="pr-buildmarket">${out || `<span class="muted">${t('pr.ui.noneAffordable')}</span>`}</div>

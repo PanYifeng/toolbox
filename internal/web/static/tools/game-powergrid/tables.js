@@ -63,4 +63,4 @@ export const RES_NAMES = {
   garbage: { zh: '垃圾', en: 'Garbage' }, uranium: { zh: '铀', en: 'Uranium' },
   hybrid: { zh: '混合', en: 'Hybrid' }, eco: { zh: '生态', en: 'Ecological' },
 };
-export const RES_ICON = { coal: '⚫', oil: '🛢️', garbage: '🗑️', uranium: '☢️' };
+export const RES_ICON = { coal: '🪨', oil: '🛢️', garbage: '🗑️', uranium: '☢️' };

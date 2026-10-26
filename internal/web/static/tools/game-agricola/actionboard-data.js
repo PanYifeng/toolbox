@@ -34,6 +34,15 @@ export const RENOV_CHAIN = { wood: 'clay', clay: 'stone' };
 export const HARVEST_ROUNDS = [4, 7, 9, 11, 13, 14];
 export const TOTAL_ROUNDS = 14;
 
+// SPACE_ICON 行动格图标（id → emoji，一眼区分行动类型；资源格沿用资源 emoji）
+export const SPACE_ICON = {
+  build: '🏠', start: '🥇', grain: '🌾', laborer: '🧺', fishing: '🎣',
+  plow: '🚜', wood: '🪵', clay: '🧱', reed: '🎋', occ: '🧑‍🌾', minor: '🃏',
+  sow: '🌱', sheep: '🐑', growth: '👶', renov: '🔨', stone: '🪨',
+  boar: '🐗', veg: '🥬', fence: '🚧', cattle: '🐄', stone2: '⛏️',
+  plowsow: '🚜', growth2: '🧑', laborer2: '🧺', wood2: '🪵',
+};
+
 // SPACES 行动板：id / stage(0=常驻) / zh,en 名称 / kind / fixed 或 acc（累积初始量）
 // kind 语义：
 //   takeResource — 拿取（fixed 每轮重置；acc 未被拿则 +1/轮）
