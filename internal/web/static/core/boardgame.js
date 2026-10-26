@@ -17,6 +17,7 @@
 import { t, tr, getLang } from '/core/i18n.js';
 import { mountGameCard } from '/core/game-card.js';
 import { requestPaidUndo } from '/core/pay-undo.js';
+import { mountOnlineRoom, mountOnlineCreate } from '/core/online.js';
 
 const AI_DELAY = 550;      // AI 行动基础延迟（ms），营造思考节奏
 const AI_JITTER = 350;     // AI 行动随机抖动上限
@@ -45,8 +46,14 @@ function writeSave(id, state, usedUndo) {
 }
 function clearSave(id) { try { localStorage.removeItem(saveKey(id)); } catch { /* 忽略 */ } }
 
-// mountBoardGame 唯一入口：负责 setup → play → results 三屏流转
+// mountBoardGame 唯一入口：负责 setup → play → results 三屏流转；
+// ?room=CODE（邀请链接）时转联机流程（建房/加入/SSE 同步见 core/online.js）
 export function mountBoardGame(el, game) {
+  const roomCode = new URLSearchParams(location.search).get('room');
+  if (roomCode) {
+    mountOnlineRoom(el, game, roomCode);
+    return;
+  }
   let session = null; // {state, history:[], usedUndo, reqId, lastHumanSeen}
   el.innerHTML = '<div class="bg-root"></div>';
   const $root = el.querySelector('.bg-root');
@@ -85,10 +92,12 @@ export function mountBoardGame(el, game) {
         <div id="bg-seats"></div>
         <div id="bg-extras"></div>
         <button id="bg-start">${t('bg.start')}</button>
+        <button id="bg-online" class="btn-soft">🌐 ${t('on.create')}</button>
       </div>`;
     const $count = $root.querySelector('#bg-count');
     $count.onchange = () => { renderSeatRows(); renderExtras(); };
     $root.querySelector('#bg-start').onclick = onStart;
+    $root.querySelector('#bg-online').onclick = onOnlineCreate;
     renderSeatRows(); renderExtras();
   }
 
@@ -133,8 +142,8 @@ export function mountBoardGame(el, game) {
     game.setupOptions($ex, { count });
   }
 
-  // onStart 收集座位与附加项，调 initialState 开局
-  function onStart() {
+  // gatherSetup 收集座位与附加项（本地开局与联机建房共用）
+  function gatherSetup() {
     const count = Number($root.querySelector('#bg-count').value);
     const seats = [];
     $root.querySelectorAll('.bg-seat-row').forEach(($row, i) => {
@@ -143,10 +152,21 @@ export function mountBoardGame(el, game) {
       seats.push({ name, isAI: $row.querySelector('.bg-kind').dataset.ai === '1', color: game.colors[i] });
     });
     const extras = game.setupOptions ? game.setupOptions($root.querySelector('#bg-extras'), { count }) : undefined;
+    return { seats, extras };
+  }
+
+  // onStart 收集座位与附加项，调 initialState 开局
+  function onStart() {
+    const { seats, extras } = gatherSetup();
     const seedIn = Number($root.querySelector('#bg-seed').value);
     const seed = Number.isFinite(seedIn) && seedIn > 0 ? Math.floor(seedIn) : Math.floor(Math.random() * 2 ** 31);
     const state = game.initialState({ seats, extras, seed });
     startSession(state, [], false, true);
+  }
+
+  // onOnlineCreate 用当前座位配置创建联机房间（座位 0 = 房主，种子由服务端生成）
+  function onOnlineCreate() {
+    mountOnlineCreate(el, game, gatherSetup());
   }
 
   // startSession 进入对局屏。fromSetup=false 表示从存档恢复（悔棋历史不恢复）

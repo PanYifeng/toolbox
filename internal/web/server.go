@@ -24,42 +24,50 @@ var staticFS embed.FS
 
 // Server HTTP 服务
 type Server struct {
-	cfg        *config.Config
-	queue      *queue.Queue
-	mux        *http.ServeMux
-	uploadRL   *rateLimiter
-	seo        *seoStore
-	fileServer http.Handler
-	track      *trackStore
-	pro        *proTokenStore
-	proReq     *proRequestStore
-	lb         *leaderboardStore
-	rv         *recordVerifyStore
-	ec         *errataVerifyStore
-	pr         *paidReportStore
-	lbRL       *rateLimiter
-	payRL      *rateLimiter
-	fbRL       *rateLimiter
+	cfg          *config.Config
+	queue        *queue.Queue
+	mux          *http.ServeMux
+	uploadRL     *rateLimiter
+	seo          *seoStore
+	fileServer   http.Handler
+	track        *trackStore
+	pro          *proTokenStore
+	proReq       *proRequestStore
+	lb           *leaderboardStore
+	rv           *recordVerifyStore
+	ec           *errataVerifyStore
+	pr           *paidReportStore
+	rooms        *roomStore
+	lbRL         *rateLimiter
+	payRL        *rateLimiter
+	fbRL         *rateLimiter
+	roomCreateRL *rateLimiter
+	roomJoinRL   *rateLimiter
+	roomActRL    *rateLimiter
 }
 
 // NewServer 创建服务
 func NewServer(cfg *config.Config) *Server {
 	s := &Server{
-		cfg:        cfg,
-		queue:      queue.New(cfg.Limits.HeavyConcurrency, cfg.Limits.JobTimeoutSeconds),
-		uploadRL:   newRateLimiter(20, time.Minute), // 上传接口每 IP 每分钟最多 20 次，防滥用
-		seo:        newSEOStore(),
-		fileServer: http.FileServer(http.FS(mustSub())),
-		track:      newTrackStore(),
-		pro:        newProTokenStore(cfg.Pro.TokensFile),
-		proReq:     newProRequestStore(cfg.Pro.RequestsFile),
-		lb:         newLeaderboardStore(cfg.Leaderboard, cfg.Pro.AdminSecret, cfg.Site.URL),
-		rv:         newRecordVerifyStore(cfg.Leaderboard.ClaimsFile),
-		ec:         newErrataVerifyStore("./errata-claims.json"),
-		pr:         newPaidReportStore("./paid-reports.json"),
-		lbRL:       newRateLimiter(5, 10*time.Minute), // 排行榜提交每 IP 每 10 分钟最多 5 次，防刷榜
-		payRL:      newRateLimiter(5, 10*time.Minute), // 支付对账通知每 IP 每 10 分钟最多 5 次，防刷通知
-		fbRL:       newRateLimiter(5, 10*time.Minute), // 用户反馈每 IP 每 10 分钟最多 5 次，防刷反馈
+		cfg:          cfg,
+		queue:        queue.New(cfg.Limits.HeavyConcurrency, cfg.Limits.JobTimeoutSeconds),
+		uploadRL:     newRateLimiter(20, time.Minute), // 上传接口每 IP 每分钟最多 20 次，防滥用
+		seo:          newSEOStore(),
+		fileServer:   http.FileServer(http.FS(mustSub())),
+		track:        newTrackStore(),
+		pro:          newProTokenStore(cfg.Pro.TokensFile),
+		proReq:       newProRequestStore(cfg.Pro.RequestsFile),
+		lb:           newLeaderboardStore(cfg.Leaderboard, cfg.Pro.AdminSecret, cfg.Site.URL),
+		rv:           newRecordVerifyStore(cfg.Leaderboard.ClaimsFile),
+		ec:           newErrataVerifyStore("./errata-claims.json"),
+		pr:           newPaidReportStore("./paid-reports.json"),
+		rooms:        newRoomStore("./rooms.json"),
+		lbRL:         newRateLimiter(5, 10*time.Minute),  // 排行榜提交每 IP 每 10 分钟最多 5 次，防刷榜
+		payRL:        newRateLimiter(5, 10*time.Minute),  // 支付对账通知每 IP 每 10 分钟最多 5 次，防刷通知
+		fbRL:         newRateLimiter(5, 10*time.Minute),  // 用户反馈每 IP 每 10 分钟最多 5 次，防刷反馈
+		roomCreateRL: newRateLimiter(5, 10*time.Minute),  // 建房每 IP 每 10 分钟最多 5 次，防灌房
+		roomJoinRL:   newRateLimiter(30, 10*time.Minute), // 加入/离开/关闭每 IP 每 10 分钟最多 30 次
+		roomActRL:    newRateLimiter(120, time.Minute),   // 行动提交每 IP 每分钟最多 120 次（含代驱机器人）
 	}
 	s.routes()
 	return s
@@ -72,6 +80,14 @@ func (s *Server) routes() {
 	// 上传接口加限流（Pro token 旁路）
 	mux.Handle("POST /api/tools/{id}", s.uploadRL.middleware(http.HandlerFunc(s.handleSubmitTool), s.isProRequest))
 	mux.HandleFunc("GET /api/jobs/{id}", s.handleGetJob)
+	// 联机对局房间中继（全桌游共用：建房/加入/行动/SSE）
+	mux.Handle("POST /api/rooms", s.roomCreateRL.middleware(http.HandlerFunc(s.handleRoomCreate), nil))
+	mux.HandleFunc("GET /api/rooms/{code}", s.handleRoomGet)
+	mux.Handle("POST /api/rooms/{code}/join", s.roomJoinRL.middleware(http.HandlerFunc(s.handleRoomJoin), nil))
+	mux.Handle("POST /api/rooms/{code}/leave", s.roomJoinRL.middleware(http.HandlerFunc(s.handleRoomLeave), nil))
+	mux.Handle("POST /api/rooms/{code}/action", s.roomActRL.middleware(http.HandlerFunc(s.handleRoomAction), nil))
+	mux.Handle("POST /api/rooms/{code}/close", s.roomJoinRL.middleware(http.HandlerFunc(s.handleRoomClose), nil))
+	mux.HandleFunc("GET /api/rooms/{code}/events", s.handleRoomEvents)
 	mux.HandleFunc("GET /api/jobs/{id}/download", s.handleDownload)
 	mux.HandleFunc("GET /api/ads", s.handleAds)
 	mux.HandleFunc("POST /api/cert/send", s.handleCertSend)
