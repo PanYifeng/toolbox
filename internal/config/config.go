@@ -18,6 +18,7 @@ type Config struct {
 	Compliance       ComplianceConfig   `json:"compliance"`
 	Donation         DonationConfig     `json:"donation"`
 	Leaderboard      LeaderboardConfig  `json:"leaderboard"`
+	Storage          StorageConfig      `json:"storage"`
 	SEO              SEOConfig          `json:"seo"`
 	SiteVerification []VerificationFile `json:"siteVerification"`
 }
@@ -131,6 +132,27 @@ type FeaturesConfig struct {
 // ComplianceConfig 合规预设
 type ComplianceConfig struct {
 	Strict bool `json:"strict"` // true=大陆合规预设：强制关闭宗教/纪念卡/署名/埋点
+}
+
+// StorageConfig state 存储策略：redis = 外部 Redis（默认，pod 替换不丢数据），
+// local = 本地 JSON 文件。密码经环境变量 REDIS_PASSWORD 注入，不写入 config.json。
+// redis 不可达时启动即失败，避免静默丢写；driver=redis 但 host 为空时降级 local 并告警。
+type StorageConfig struct {
+	Driver string      `json:"driver"` // "redis"（默认） | "local"
+	Redis  RedisConfig `json:"redis"`
+}
+
+// RedisConfig Redis 连接参数
+type RedisConfig struct {
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	DB        int    `json:"db"`        // 逻辑库（默认 0）
+	KeyPrefix string `json:"keyPrefix"` // 键前缀（默认 "tb:"），避免与实例上其它业务混淆
+}
+
+// Configured 是否启用了 redis 存储
+func (c *StorageConfig) UseRedis() bool {
+	return c.Driver == "redis"
 }
 
 // LeaderboardConfig 小游戏持久化排行榜配置。
@@ -255,6 +277,15 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Leaderboard.ClaimsFile == "" {
 		c.Leaderboard.ClaimsFile = "./record-claims.json"
+	}
+	if c.Storage.Driver == "" {
+		c.Storage.Driver = "redis"
+	}
+	if c.Storage.Redis.Port == 0 {
+		c.Storage.Redis.Port = 6379
+	}
+	if c.Storage.Redis.KeyPrefix == "" {
+		c.Storage.Redis.KeyPrefix = "tb:"
 	}
 	if c.Pro.AutoApproveTTL == "" {
 		c.Pro.AutoApproveTTL = "1h"

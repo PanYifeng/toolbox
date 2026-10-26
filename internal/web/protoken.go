@@ -3,13 +3,12 @@ package web
 import (
 	"crypto/subtle"
 	"encoding/json"
-	"os"
-	"path/filepath"
+	"log"
 	"sync"
 	"time"
 )
 
-// proTokenEntry 单个已签发 token（作者手动维护 pro-tokens.json）
+// proTokenEntry 单个已签发 token（作者手动维护）
 type proTokenEntry struct {
 	Token     string `json:"token"`
 	Type      string `json:"type"`      // time / count
@@ -35,27 +34,29 @@ type proTokenInfo struct {
 	expiresAt string
 }
 
-// proTokenStore 管理已签发 token：加载 / mtime 重载 / 校验 / 次数扣减 / 持久化。
-// 次数型需运行时改写剩余次数，故 token 存独立 state 文件而非 config.json。
+// proTokenStore 管理已签发 token：加载 / 变更重载 / 校验 / 次数扣减 / 持久化。
+// 次数型需运行时改写剩余次数，故 token 存独立 state（local 文件或 redis 键）而非 config.json。
+// 读写经 stateIO 门面（kvstate.go），存储策略由 config.storage 驱动。
 type proTokenStore struct {
-	path  string
+	st    stateIO
 	mu    sync.RWMutex
 	items map[string]proTokenEntry
-	mtime time.Time
 }
 
-// newProTokenStore 创建并加载 store；文件不存在视为空 store，不报错
-func newProTokenStore(path string) *proTokenStore {
-	st := &proTokenStore{path: path, items: map[string]proTokenEntry{}}
-	st.load()
+// newProTokenStore 创建并加载 store；无数据视为空 store，不报错
+func newProTokenStore(path string, kv stateKV) *proTokenStore {
+	st := &proTokenStore{st: newStateIO(path, kvKeyProTokens, kv), items: map[string]proTokenEntry{}}
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	st.reloadLocked()
 	return st
 }
 
-// load 从文件加载（文件缺失或解析失败均降级为空 store）
-func (s *proTokenStore) load() {
-	entries, ok := readTokenFile(s.path)
-	if !ok {
-		return
+// parseTokenData 解析 token 列表数据
+func parseTokenData(data []byte) (map[string]proTokenEntry, bool) {
+	var entries []proTokenEntry
+	if json.Unmarshal(data, &entries) != nil {
+		return nil, false
 	}
 	m := map[string]proTokenEntry{}
 	for _, e := range entries {
@@ -63,53 +64,29 @@ func (s *proTokenStore) load() {
 			m[e.Token] = e
 		}
 	}
-	s.items = m
-	if fi, err := os.Stat(s.path); err == nil {
-		s.mtime = fi.ModTime()
-	}
+	return m, true
 }
 
-// readTokenFile 读取并解析 token 文件
-func readTokenFile(path string) ([]proTokenEntry, bool) {
-	data, err := os.ReadFile(path)
+// reloadLocked 读取并解析最新数据（数据未变化时跳过；解析失败保留旧表；调用方须持写锁）
+func (s *proTokenStore) reloadLocked() {
+	data, changed, err := s.st.loadSync()
 	if err != nil {
-		return nil, false
+		log.Printf("pro tokens load failed: %v", err)
+		return
 	}
-	var entries []proTokenEntry
-	if err := json.Unmarshal(data, &entries); err != nil {
-		return nil, false
+	if !changed {
+		return
 	}
-	return entries, true
+	if m, ok := parseTokenData(data); ok {
+		s.items = m
+	}
 }
 
-// maybeReload 文件 mtime 变化时重载（作者外部追加 token 后自动生效）
+// maybeReload 数据变化时重载（作者外部追加 token 后自动生效；redis 模式本进程即唯一写者，实际不再触发）
 func (s *proTokenStore) maybeReload() {
-	fi, err := os.Stat(s.path)
-	if err != nil {
-		return
-	}
-	s.mu.RLock()
-	same := !fi.ModTime().After(s.mtime)
-	s.mu.RUnlock()
-	if same {
-		return
-	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if !fi.ModTime().After(s.mtime) {
-		return
-	}
-	// 重载：运行时扣减后立即写回文件，文件始终是最新剩余，故外部重载安全
-	if entries, ok := readTokenFile(s.path); ok {
-		m := map[string]proTokenEntry{}
-		for _, e := range entries {
-			if e.Token != "" {
-				m[e.Token] = e
-			}
-		}
-		s.items = m
-		s.mtime = fi.ModTime()
-	}
+	s.reloadLocked()
 }
 
 // validate 校验 token 有效性（不扣减）
@@ -179,33 +156,17 @@ func (s *proTokenStore) addToken(entry proTokenEntry) {
 	s.persistLocked()
 }
 
-// persistLocked 原子写回整个 token 列表（调用方持写锁）
+// persistLocked 写回整个 token 列表（调用方持写锁）
 func (s *proTokenStore) persistLocked() {
 	entries := make([]proTokenEntry, 0, len(s.items))
 	for _, e := range s.items {
 		entries = append(entries, e)
 	}
-	data, err := json.MarshalIndent(entries, "", "  ")
+	data, err := s.st.marshal(entries)
 	if err != nil {
 		return
 	}
-	dir := filepath.Dir(s.path)
-	if dir == "" {
-		dir = "."
-	}
-	tmp, err := os.CreateTemp(dir, ".pro-tokens-*.tmp")
-	if err != nil {
-		return
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return
-	}
-	tmp.Close()
-	if err := os.Rename(tmp.Name(), s.path); err == nil {
-		if fi, err := os.Stat(s.path); err == nil {
-			s.mtime = fi.ModTime()
-		}
+	if err := s.st.write(data); err != nil {
+		log.Printf("pro tokens persist failed: %v", err)
 	}
 }

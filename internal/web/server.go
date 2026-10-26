@@ -46,8 +46,12 @@ type Server struct {
 	roomActRL    *rateLimiter
 }
 
-// NewServer 创建服务
-func NewServer(cfg *config.Config) *Server {
+// NewServer 创建服务。storage.driver=redis 时在此拨号鉴权，失败即返回错误（fail-fast，避免静默丢写）
+func NewServer(cfg *config.Config) (*Server, error) {
+	kv, err := newStateKV(cfg.Storage)
+	if err != nil {
+		return nil, err
+	}
 	s := &Server{
 		cfg:          cfg,
 		queue:        queue.New(cfg.Limits.HeavyConcurrency, cfg.Limits.JobTimeoutSeconds),
@@ -55,13 +59,13 @@ func NewServer(cfg *config.Config) *Server {
 		seo:          newSEOStore(),
 		fileServer:   http.FileServer(http.FS(mustSub())),
 		track:        newTrackStore(),
-		pro:          newProTokenStore(cfg.Pro.TokensFile),
-		proReq:       newProRequestStore(cfg.Pro.RequestsFile),
-		lb:           newLeaderboardStore(cfg.Leaderboard, cfg.Pro.AdminSecret, cfg.Site.URL),
-		rv:           newRecordVerifyStore(cfg.Leaderboard.ClaimsFile),
-		ec:           newErrataVerifyStore("./errata-claims.json"),
-		pr:           newPaidReportStore("./paid-reports.json"),
-		rooms:        newRoomStore("./rooms.json"),
+		pro:          newProTokenStore(cfg.Pro.TokensFile, kv),
+		proReq:       newProRequestStore(cfg.Pro.RequestsFile, kv),
+		lb:           newLeaderboardStore(cfg.Leaderboard, cfg.Pro.AdminSecret, cfg.Site.URL, kv),
+		rv:           newRecordVerifyStore(cfg.Leaderboard.ClaimsFile, kv),
+		ec:           newErrataVerifyStore("./errata-claims.json", kv),
+		pr:           newPaidReportStore("./paid-reports.json", kv),
+		rooms:        newRoomStore("./rooms.json", kv),
 		lbRL:         newRateLimiter(5, 10*time.Minute),  // 排行榜提交每 IP 每 10 分钟最多 5 次，防刷榜
 		payRL:        newRateLimiter(5, 10*time.Minute),  // 支付对账通知每 IP 每 10 分钟最多 5 次，防刷通知
 		fbRL:         newRateLimiter(5, 10*time.Minute),  // 用户反馈每 IP 每 10 分钟最多 5 次，防刷反馈
@@ -70,7 +74,7 @@ func NewServer(cfg *config.Config) *Server {
 		roomActRL:    newRateLimiter(120, time.Minute),   // 行动提交每 IP 每分钟最多 120 次（含代驱机器人）
 	}
 	s.routes()
-	return s
+	return s, nil
 }
 
 // routes 注册路由

@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,10 +14,10 @@ import (
 	"toolbox/internal/config"
 )
 
-// 小游戏持久化排行榜：服务端落盘 top N、IP 限频、分数 sanity 上限，
+// 小游戏持久化排行榜：服务端保存 top N、IP 限频、分数 sanity 上限，
 // 破纪录（#1）由服务端 HMAC 签发 TB-R- 防伪码——区别于纯前端复算的普通纪念卡，
 // 破纪录卡不可自造，可在「纪念卡验真」走 /api/leaderboard/verify 复验。
-// 落盘模式镜像 protoken.go 的 proTokenStore（load/maybeReload/persistLocked 原子写）。
+// 读写经 stateIO 门面（kvstate.go），存储策略由 config.storage 驱动。
 
 const (
 	lbTopN         = 10                                // 每游戏保留与展示的前 N 名
@@ -58,18 +56,17 @@ type leaderboardEntry struct {
 	SignedCode string `json:"signedCode,omitempty"` // 仅破纪录（曾为 #1）项持有，永久有效
 }
 
-// leaderboardStore 管理各游戏 top N：加载 / mtime 重载 / 提交入榜 / 签发 / 验签 / 持久化。
+// leaderboardStore 管理各游戏 top N：加载 / 变更重载 / 提交入榜 / 签发 / 验签 / 持久化。
 type leaderboardStore struct {
-	path   string
+	st     stateIO
 	secret []byte
 	mu     sync.RWMutex
 	data   map[string][]leaderboardEntry // 键=game 主题键，值已按 score 降序
-	mtime  time.Time
 }
 
 // newLeaderboardStore 创建并加载 store；HMAC 密钥按 Secret→AdminSecret→Site.URL 派生。
-// 文件缺失视为空 store，不报错（镜像 protoken.go 行为）。
-func newLeaderboardStore(cfg config.LeaderboardConfig, adminSecret, siteURL string) *leaderboardStore {
+// 无数据视为空 store，不报错。
+func newLeaderboardStore(cfg config.LeaderboardConfig, adminSecret, siteURL string, kv stateKV) *leaderboardStore {
 	secret := []byte(cfg.Secret)
 	if len(secret) == 0 && adminSecret != "" {
 		secret = []byte(adminSecret)
@@ -79,63 +76,38 @@ func newLeaderboardStore(cfg config.LeaderboardConfig, adminSecret, siteURL stri
 		log.Printf("leaderboard: secret/adminSecret empty, falling back to site.URL-derived HMAC key — record cards only weakly protected")
 		secret = []byte(siteURL)
 	}
-	st := &leaderboardStore{path: cfg.File, secret: secret, data: map[string][]leaderboardEntry{}}
-	st.load()
+	st := &leaderboardStore{
+		st:     newStateIO(cfg.File, kvKeyLeaderboard, kv),
+		secret: secret,
+		data:   map[string][]leaderboardEntry{},
+	}
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	st.reloadLocked()
 	return st
 }
 
-// load 从文件加载（缺失或解析失败均降级为空 store）
-func (s *leaderboardStore) load() {
-	data, err := os.ReadFile(s.path)
+// reloadLocked 读取并解析最新数据（数据未变化时跳过；解析失败保留旧表；调用方须持写锁）
+func (s *leaderboardStore) reloadLocked() {
+	data, changed, err := s.st.loadSync()
 	if err != nil {
+		log.Printf("leaderboard load failed: %v", err)
+		return
+	}
+	if !changed {
 		return
 	}
 	m := map[string][]leaderboardEntry{}
-	if err := json.Unmarshal(data, &m); err != nil {
-		return
+	if json.Unmarshal(data, &m) == nil {
+		s.data = m
 	}
-	s.mu.Lock()
-	s.data = m
-	if fi, err := os.Stat(s.path); err == nil {
-		s.mtime = fi.ModTime()
-	}
-	s.mu.Unlock()
 }
 
-// maybeReload 文件 mtime 变化时重载（作者外部编辑后自动生效）
+// maybeReload 数据变化时重载（作者外部编辑后自动生效；redis 模式本进程即唯一写者，实际不再触发）
 func (s *leaderboardStore) maybeReload() {
-	fi, err := os.Stat(s.path)
-	if err != nil {
-		return
-	}
-	s.mu.RLock()
-	same := !fi.ModTime().After(s.mtime)
-	s.mu.RUnlock()
-	if same {
-		return
-	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if !fi.ModTime().After(s.mtime) {
-		return
-	}
-	if m, err := readLBFile(s.path); err == nil {
-		s.data = m
-		s.mtime = fi.ModTime()
-	}
-}
-
-// readLBFile 读取并解析排行榜文件
-func readLBFile(path string) (map[string][]leaderboardEntry, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	m := map[string][]leaderboardEntry{}
-	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	s.reloadLocked()
 }
 
 // top 返回某游戏前 n 名的副本（剥离 IP 字段，前端不可见）
@@ -272,30 +244,14 @@ func normLBCode(s string) string {
 	return s
 }
 
-// persistLocked 原子写回整个排行榜（调用方持写锁）。镜像 protoken.go。
+// persistLocked 写回整个排行榜（调用方持写锁）
 func (s *leaderboardStore) persistLocked() {
-	data, err := json.MarshalIndent(s.data, "", "  ")
+	data, err := s.st.marshal(s.data)
 	if err != nil {
 		return
 	}
-	dir := filepath.Dir(s.path)
-	if dir == "" {
-		dir = "."
-	}
-	tmp, err := os.CreateTemp(dir, ".leaderboard-*.tmp")
-	if err != nil {
-		return
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return
-	}
-	tmp.Close()
-	if err := os.Rename(tmp.Name(), s.path); err == nil {
-		if fi, err := os.Stat(s.path); err == nil {
-			s.mtime = fi.ModTime()
-		}
+	if err := s.st.write(data); err != nil {
+		log.Printf("leaderboard persist failed: %v", err)
 	}
 }
 

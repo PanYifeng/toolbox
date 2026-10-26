@@ -2,8 +2,7 @@ package web
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -13,6 +12,7 @@ import (
 // 访客一次性提交 {邮箱,交易号,语言,报告文本} → pending 落盘 → 站主收确认邮件
 // → 点 HMAC 签名链接通过 → 报告以纯文本邮件发至访客邮箱。
 // 供人格测试完整版（¥5）等"付费解锁内容经邮件送达"场景复用；前端无自解锁。
+// 读写经 stateIO 门面（kvstate.go），存储策略由 config.storage 驱动。
 
 const (
 	prPending  = "pending"  // 已提交申请，待站主确认收款
@@ -21,8 +21,8 @@ const (
 
 // paidReportInput 创建付费报告申请所需要素（访客一次性提交）
 type paidReportInput struct {
-	Feature string // 付费项标识，如 "MBTI 完整版人格报告"
-	Title   string // 邮件主题（默认取 Feature）
+	Feature string  // 付费项标识，如 "MBTI 完整版人格报告"
+	Title   string  // 邮件主题（默认取 Feature）
 	Amount  float64 // 金额（元）
 	Email   string  // 访客邮箱
 	Name    string  // 访客姓名（金卡持证人 + PDF 持证人行）
@@ -49,85 +49,62 @@ type paidReportEntry struct {
 	ActivatedAt string  `json:"activatedAt"`
 }
 
-// paidReportStore 管理付费报告解锁申请：加载 / mtime 重载 / 创建 / 查询 / 状态流转 / 持久化。
-// 落盘模式镜像 errataVerifyStore（load/maybeReload/persistLocked 原子写）。
+// paidReportStore 管理付费报告解锁申请：加载 / 变更重载 / 创建 / 查询 / 状态流转 / 持久化。
+// 落盘模式镜像 errataVerifyStore。
 type paidReportStore struct {
-	path  string
+	st    stateIO
 	mu    sync.RWMutex
 	items map[string]paidReportEntry
 	order []string // 保持写入顺序
-	mtime time.Time
 }
 
-// newPaidReportStore 创建并加载；文件缺失视为空 store
-func newPaidReportStore(path string) *paidReportStore {
-	st := &paidReportStore{path: path, items: map[string]paidReportEntry{}}
-	st.load()
+// newPaidReportStore 创建并加载；无数据视为空 store
+func newPaidReportStore(path string, kv stateKV) *paidReportStore {
+	st := &paidReportStore{st: newStateIO(path, kvKeyPaidReports, kv), items: map[string]paidReportEntry{}}
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	st.reloadLocked()
 	return st
 }
 
-// load 从文件加载（缺失或解析失败降级为空 store）
-func (s *paidReportStore) load() {
-	entries, ok := readPRFile(s.path)
-	if !ok {
-		return
+// parsePRData 解析付费报告申请列表数据
+func parsePRData(data []byte) (map[string]paidReportEntry, []string, bool) {
+	var entries []paidReportEntry
+	if json.Unmarshal(data, &entries) != nil {
+		return nil, nil, false
 	}
 	m := map[string]paidReportEntry{}
+	var order []string
 	for _, e := range entries {
 		if e.ID != "" {
 			m[e.ID] = e
-			s.order = append(s.order, e.ID)
+			order = append(order, e.ID)
 		}
 	}
-	s.items = m
-	if fi, err := os.Stat(s.path); err == nil {
-		s.mtime = fi.ModTime()
-	}
+	return m, order, true
 }
 
-// readPRFile 读取并解析付费报告申请文件
-func readPRFile(path string) ([]paidReportEntry, bool) {
-	data, err := os.ReadFile(path)
+// reloadLocked 读取并解析最新数据（数据未变化时跳过；解析失败保留旧表；调用方须持写锁）
+func (s *paidReportStore) reloadLocked() {
+	data, changed, err := s.st.loadSync()
 	if err != nil {
-		return nil, false
-	}
-	var entries []paidReportEntry
-	if err := json.Unmarshal(data, &entries); err != nil {
-		return nil, false
-	}
-	return entries, true
-}
-
-// maybeReload mtime 变化时重载（作者外部操作后自动同步）
-func (s *paidReportStore) maybeReload() {
-	fi, err := os.Stat(s.path)
-	if err != nil {
+		log.Printf("paid reports load failed: %v", err)
 		return
 	}
-	s.mu.RLock()
-	same := !fi.ModTime().After(s.mtime)
-	s.mu.RUnlock()
-	if same {
+	if !changed {
 		return
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if !fi.ModTime().After(s.mtime) {
-		return
-	}
-	if entries, ok := readPRFile(s.path); ok {
-		m := map[string]paidReportEntry{}
-		var order []string
-		for _, e := range entries {
-			if e.ID != "" {
-				m[e.ID] = e
-				order = append(order, e.ID)
-			}
-		}
+	if m, order, ok := parsePRData(data); ok {
 		s.items = m
 		s.order = order
-		s.mtime = fi.ModTime()
 	}
+}
+
+// maybeReload 数据变化时重载（作者外部操作后自动同步；redis 模式实际不再触发）
+func (s *paidReportStore) maybeReload() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.reloadLocked()
 }
 
 // create 访客一次性提交申请：创建 pending 记录并持久化（含报告文本）
@@ -178,7 +155,7 @@ func (s *paidReportStore) setStatus(id, status string) bool {
 	return true
 }
 
-// persistLocked 原子写回整个申请列表（调用方持写锁）。镜像 errataVerifyStore。
+// persistLocked 写回整个申请列表（调用方持写锁）。镜像 errataVerifyStore。
 func (s *paidReportStore) persistLocked() {
 	entries := make([]paidReportEntry, 0, len(s.order))
 	for _, id := range s.order {
@@ -186,27 +163,11 @@ func (s *paidReportStore) persistLocked() {
 			entries = append(entries, e)
 		}
 	}
-	data, err := json.MarshalIndent(entries, "", "  ")
+	data, err := s.st.marshal(entries)
 	if err != nil {
 		return
 	}
-	dir := filepath.Dir(s.path)
-	if dir == "" {
-		dir = "."
-	}
-	tmp, err := os.CreateTemp(dir, ".paid-reports-*.tmp")
-	if err != nil {
-		return
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return
-	}
-	tmp.Close()
-	if err := os.Rename(tmp.Name(), s.path); err == nil {
-		if fi, err := os.Stat(s.path); err == nil {
-			s.mtime = fi.ModTime()
-		}
+	if err := s.st.write(data); err != nil {
+		log.Printf("paid reports persist failed: %v", err)
 	}
 }

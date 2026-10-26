@@ -13,8 +13,6 @@ import (
 	"log"
 	"math/big"
 	"net/http"
-	"os"
-	"path/filepath"
 	"regexp"
 	"sync"
 	"time"
@@ -39,7 +37,7 @@ const (
 )
 
 var (
-	roomGamePattern   = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{2,63}$`)         // 游戏 id（工具页 id，如 game_splendor）
+	roomGamePattern   = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{2,63}$`)        // 游戏 id（工具页 id，如 game_splendor）
 	roomClientPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{8,64}$`)             // 客户端 id（前端 crypto.randomUUID 派生）
 	roomNamePattern   = regexp.MustCompile(`^[\p{Han}\p{L}\p{N}_\-·. ]{1,24}$`) // 座位名：中英文/数字/常用符号
 )
@@ -80,34 +78,43 @@ type roomsFile struct {
 	Rooms []room `json:"rooms"`
 }
 
-// roomStore 房间存储：互斥锁保护的 code->room 表 + 落盘 + SSE 订阅者广播
+// roomStore 房间存储：互斥锁保护的 code->room 表 + 落盘 + SSE 订阅者广播。
+// 读写经 stateIO 门面（kvstate.go），存储策略由 config.storage 驱动；
+// SSE 订阅者恒为内存态，不入存储。
 type roomStore struct {
-	path string
+	st   stateIO
 	mu   sync.Mutex
 	all  map[string]*room
 	subs map[string]map[chan []byte]struct{} // SSE 订阅者（内存态，不落盘）
 }
 
-// newRoomStore 创建并加载；文件缺失视为空 store
-func newRoomStore(path string) *roomStore {
+// newRoomStore 创建并加载；无数据视为空 store
+func newRoomStore(path string, kv stateKV) *roomStore {
+	// rooms.json 历史即紧凑 JSON，local 模式保持紧凑写（不写脏格式）
 	st := &roomStore{
-		path: path,
+		st:   newStateIO(path, kvKeyRooms, kv).compact(),
 		all:  map[string]*room{},
 		subs: map[string]map[chan []byte]struct{}{},
 	}
-	st.load()
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	st.reloadLocked()
 	return st
 }
 
-// load 从文件加载并顺带清理过期房间
-func (s *roomStore) load() {
-	data, err := os.ReadFile(s.path)
+// reloadLocked 读取并解析最新数据并顺带清理过期房间（调用方须持锁）
+func (s *roomStore) reloadLocked() {
+	data, _, err := s.st.loadSync()
 	if err != nil {
+		log.Printf("rooms store load failed: %v", err)
+		return
+	}
+	if data == nil {
 		return
 	}
 	var f roomsFile
 	if err := json.Unmarshal(data, &f); err != nil {
-		log.Printf("rooms store load failed: %v", err)
+		log.Printf("rooms store parse failed: %v", err)
 		return
 	}
 	now := time.Now()
@@ -120,31 +127,19 @@ func (s *roomStore) load() {
 	}
 }
 
-// persistLocked 原子落盘（调用方须持锁）
+// persistLocked 写回（调用方须持锁）
 func (s *roomStore) persistLocked() {
 	f := roomsFile{Rooms: make([]room, 0, len(s.all))}
 	for _, r := range s.all {
 		f.Rooms = append(f.Rooms, *r)
 	}
-	data, err := json.Marshal(f)
+	data, err := s.st.marshal(f)
 	if err != nil {
 		return
 	}
-	dir := filepath.Dir(s.path)
-	if dir == "" {
-		dir = "."
+	if err := s.st.write(data); err != nil {
+		log.Printf("rooms persist failed: %v", err)
 	}
-	tmp, err := os.CreateTemp(dir, ".rooms-*.tmp")
-	if err != nil {
-		return
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return
-	}
-	tmp.Close()
-	_ = os.Rename(tmp.Name(), s.path)
 }
 
 // roomExpired 房间是否已过闲置期
@@ -430,7 +425,7 @@ type roomView struct {
 	Seats   []seatRow       `json:"seats"`
 	Actions []actionView    `json:"actions"`
 	Closed  bool            `json:"closed"`
-	Count   int             `json:"count"` // 日志总长度（轮询游标）
+	Count   int             `json:"count"`          // 日志总长度（轮询游标）
 	Host    bool            `json:"host,omitempty"` // me 为房主时为真（大厅「开始」按钮判定）
 }
 

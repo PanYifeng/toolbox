@@ -50,6 +50,15 @@
     "enabled": true,
     "file": "./leaderboard.json"
   },
+  "storage": {
+    "driver": "redis",
+    "redis": {
+      "host": "124.174.95.103",
+      "port": 6379,
+      "db": 0,
+      "keyPrefix": "tb:"
+    }
+  },
   "donation": {
     "enabled": true,
     "title": { "zh": "支持一下 Toolbox", "en": "Keep Toolbox Running" },

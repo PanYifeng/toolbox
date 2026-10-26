@@ -28,7 +28,10 @@ func main() {
 		log.Fatalf("load config failed: %v", err)
 	}
 
-	srv := web.NewServer(cfg)
+	srv, err := web.NewServer(cfg)
+	if err != nil {
+		log.Fatalf("init server failed: %v", err)
+	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 

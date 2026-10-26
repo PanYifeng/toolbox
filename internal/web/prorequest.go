@@ -4,8 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"os"
-	"path/filepath"
+	"log"
 	"sync"
 	"time"
 )
@@ -18,7 +17,7 @@ const (
 )
 
 // proRequestEntry 单条支付核销请求：用户提交支付信息后，预生成 token 并等待确认。
-// 确认（邮件点击或超时自动）前 token 不进 pro-tokens.json，即未生效。
+// 确认（邮件点击或超时自动）前 token 未激活，即不生效。
 type proRequestEntry struct {
 	ID          string `json:"id"`
 	PlanID      string `json:"planId"`
@@ -30,84 +29,62 @@ type proRequestEntry struct {
 	ActivatedAt string `json:"activatedAt"` // 生效时间（RFC3339）
 }
 
-// proRequestStore 管理支付核销请求：加载 / mtime 重载 / 创建 / 查询 / 状态流转 / 持久化。
+// proRequestStore 管理支付核销请求：加载 / 变更重载 / 创建 / 查询 / 状态流转 / 持久化。
+// 读写经 stateIO 门面（kvstate.go），存储策略由 config.storage 驱动。
 type proRequestStore struct {
-	path  string
+	st    stateIO
 	mu    sync.RWMutex
 	items map[string]proRequestEntry
 	order []string // 保持写入顺序，便于 listPending 稳定
-	mtime time.Time
 }
 
-// newProRequestStore 创建并加载；文件不存在视为空 store
-func newProRequestStore(path string) *proRequestStore {
-	st := &proRequestStore{path: path, items: map[string]proRequestEntry{}}
-	st.load()
+// newProRequestStore 创建并加载；无数据视为空 store
+func newProRequestStore(path string, kv stateKV) *proRequestStore {
+	st := &proRequestStore{st: newStateIO(path, kvKeyProRequests, kv), items: map[string]proRequestEntry{}}
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	st.reloadLocked()
 	return st
 }
 
-// load 从文件加载（缺失或解析失败降级为空 store）
-func (s *proRequestStore) load() {
-	entries, ok := readRequestFile(s.path)
-	if !ok {
-		return
+// parseRequestData 解析请求列表数据
+func parseRequestData(data []byte) (map[string]proRequestEntry, []string, bool) {
+	var entries []proRequestEntry
+	if json.Unmarshal(data, &entries) != nil {
+		return nil, nil, false
 	}
 	m := map[string]proRequestEntry{}
+	var order []string
 	for _, e := range entries {
 		if e.ID != "" {
 			m[e.ID] = e
-			s.order = append(s.order, e.ID)
+			order = append(order, e.ID)
 		}
 	}
-	s.items = m
-	if fi, err := os.Stat(s.path); err == nil {
-		s.mtime = fi.ModTime()
-	}
+	return m, order, true
 }
 
-// readRequestFile 读取并解析请求文件
-func readRequestFile(path string) ([]proRequestEntry, bool) {
-	data, err := os.ReadFile(path)
+// reloadLocked 读取并解析最新数据（数据未变化时跳过；解析失败保留旧表；调用方须持写锁）
+func (s *proRequestStore) reloadLocked() {
+	data, changed, err := s.st.loadSync()
 	if err != nil {
-		return nil, false
-	}
-	var entries []proRequestEntry
-	if err := json.Unmarshal(data, &entries); err != nil {
-		return nil, false
-	}
-	return entries, true
-}
-
-// maybeReload mtime 变化时重载（作者外部操作或其它进程写入后自动同步）
-func (s *proRequestStore) maybeReload() {
-	fi, err := os.Stat(s.path)
-	if err != nil {
+		log.Printf("pro requests load failed: %v", err)
 		return
 	}
-	s.mu.RLock()
-	same := !fi.ModTime().After(s.mtime)
-	s.mu.RUnlock()
-	if same {
+	if !changed {
 		return
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if !fi.ModTime().After(s.mtime) {
-		return
-	}
-	if entries, ok := readRequestFile(s.path); ok {
-		m := map[string]proRequestEntry{}
-		var order []string
-		for _, e := range entries {
-			if e.ID != "" {
-				m[e.ID] = e
-				order = append(order, e.ID)
-			}
-		}
+	if m, order, ok := parseRequestData(data); ok {
 		s.items = m
 		s.order = order
-		s.mtime = fi.ModTime()
 	}
+}
+
+// maybeReload 数据变化时重载（作者外部操作或其它进程写入后自动同步；redis 模式实际不再触发）
+func (s *proRequestStore) maybeReload() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.reloadLocked()
 }
 
 // newID 生成请求 ID（16 字节 hex）与 token 串
@@ -174,7 +151,7 @@ func (s *proRequestStore) setStatus(id, status string) bool {
 	return true
 }
 
-// persistLocked 原子写回整个请求列表（调用方持写锁）
+// persistLocked 写回整个请求列表（调用方持写锁）
 func (s *proRequestStore) persistLocked() {
 	entries := make([]proRequestEntry, 0, len(s.order))
 	for _, id := range s.order {
@@ -182,27 +159,11 @@ func (s *proRequestStore) persistLocked() {
 			entries = append(entries, e)
 		}
 	}
-	data, err := json.MarshalIndent(entries, "", "  ")
+	data, err := s.st.marshal(entries)
 	if err != nil {
 		return
 	}
-	dir := filepath.Dir(s.path)
-	if dir == "" {
-		dir = "."
-	}
-	tmp, err := os.CreateTemp(dir, ".pro-requests-*.tmp")
-	if err != nil {
-		return
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return
-	}
-	tmp.Close()
-	if err := os.Rename(tmp.Name(), s.path); err == nil {
-		if fi, err := os.Stat(s.path); err == nil {
-			s.mtime = fi.ModTime()
-		}
+	if err := s.st.write(data); err != nil {
+		log.Printf("pro requests persist failed: %v", err)
 	}
 }
