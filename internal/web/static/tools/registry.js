@@ -10,6 +10,7 @@ import doc_convert from './doc_convert/manifest.js';
 import duration from './duration/manifest.js';
 import game_2048 from './game-2048/manifest.js';
 import game_agricola from './game-agricola/manifest.js';
+import game_carcassonne from './game-carcassonne/manifest.js';
 import game_catan from './game-catan/manifest.js';
 import game_chess from './game-chess/manifest.js';
 import game_flappy from './game-flappy/manifest.js';
@@ -53,4 +54,4 @@ import uuid from './uuid/manifest.js';
 import video_convert from './video_convert/manifest.js';
 import video_cut from './video_cut/manifest.js';
 
-export const registry = [ascii_art, audio_convert, base64, big_five, cert_verify, color, disc, doc_convert, duration, game_2048, game_agricola, game_catan, game_chess, game_flappy, game_match3, game_minesweeper, game_powergrid, game_pr, game_snake, game_spider, game_splendor, game_suika, game_terra, game_tetris, game_ttt, game_wordle, game_xiangqi, hash, html_entity, json_format, jwt, knowledge_quiz, lorem, markdown, mbti, password, pixel_art, radix, regex, religion_buddhism, religion_christianity, religion_islam, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];
+export const registry = [ascii_art, audio_convert, base64, big_five, cert_verify, color, disc, doc_convert, duration, game_2048, game_agricola, game_carcassonne, game_catan, game_chess, game_flappy, game_match3, game_minesweeper, game_powergrid, game_pr, game_snake, game_spider, game_splendor, game_suika, game_terra, game_tetris, game_ttt, game_wordle, game_xiangqi, hash, html_entity, json_format, jwt, knowledge_quiz, lorem, markdown, mbti, password, pixel_art, radix, regex, religion_buddhism, religion_christianity, religion_islam, slugify, text_case, text_diff, text_lines, text_stats, timestamp, url_encode, url_parse, uuid, video_convert, video_cut];

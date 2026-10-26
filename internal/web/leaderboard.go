@@ -22,8 +22,8 @@ import (
 // 落盘模式镜像 protoken.go 的 proTokenStore（load/maybeReload/persistLocked 原子写）。
 
 const (
-	lbTopN         = 10                  // 每游戏保留与展示的前 N 名
-	lbRecordPrefix = "TB-R-"             // 破纪录卡防伪码前缀（区别于普通 TB-）
+	lbTopN         = 10                                // 每游戏保留与展示的前 N 名
+	lbRecordPrefix = "TB-R-"                           // 破纪录卡防伪码前缀（区别于普通 TB-）
 	lbAntiAlphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789" // 31 字符表，与 cert.js fmtCode 一致
 )
 
@@ -36,23 +36,24 @@ var lbScoreCaps = map[string]int{
 	"game-ttt":         2000000000, // 无实际上限：连胜数计分，仅反伪造 sanity 边界
 	"game-spider":      5000,
 	"game-minesweeper": 2000000000, // 无实际上限：速度累计分，仅作反伪造 sanity 边界（真实游玩远达不到）
-	"game-match3":  100000,   // 30 步最高连消，s generous 上限
-	"game-xiangqi": 50,      // best=历史最高连胜(peak streak)，连胜数远小于累计胜局，cap 调小
-	"game-chess":   50,      // best=历史最高连胜(peak streak)
-	"game-pr":      200,     // 波多黎各终局总分（VP+建筑+大建筑加成），generous 上限
-	"game-powergrid": 30,   // 电力公司终局供电城市数（≤ 终局城市数 21），generous 上限
-	"game-terra":   300,    // 神秘大地终局总分（起始 20 + 城镇/邪教/收入 VP），generous 上限
-	"game-agricola": 150,  // 农场主终局总分（负分区乞讨卡存在，上限按正常经营 generous 覆盖）
-	"game-splendor": 30,  // 璀璨宝石终局 VP（15 分触发终局，含贵族加成 generous 上限）
-	"game-catan":   15,   // 卡坦岛终局 VP（10 分获胜，含最长路/最大军队 +2 加成 generous 上限）
+	"game-match3":      100000,     // 30 步最高连消，s generous 上限
+	"game-xiangqi":     50,         // best=历史最高连胜(peak streak)，连胜数远小于累计胜局，cap 调小
+	"game-chess":       50,         // best=历史最高连胜(peak streak)
+	"game-pr":          200,        // 波多黎各终局总分（VP+建筑+大建筑加成），generous 上限
+	"game-powergrid":   30,         // 电力公司终局供电城市数（≤ 终局城市数 21），generous 上限
+	"game-terra":       300,        // 神秘大地终局总分（起始 20 + 城镇/邪教/收入 VP），generous 上限
+	"game-agricola":    150,        // 农场主终局总分（负分区乞讨卡存在，上限按正常经营 generous 覆盖）
+	"game-splendor":    30,         // 璀璨宝石终局 VP（15 分触发终局，含贵族加成 generous 上限）
+	"game-catan":       15,         // 卡坦岛终局 VP（10 分获胜，含最长路/最大军队 +2 加成 generous 上限）
+	"game-carcassonne": 300,        // 卡卡颂终局总分（72 块全计分 + 农夫，AI 对局实测量级 ~50-90），generous 上限
 }
 
 // leaderboardEntry 单条榜单记录。IP/SignedCode 不下发前端（top() 已剥离 IP）。
 type leaderboardEntry struct {
 	Name       string `json:"name"`
 	Score      int    `json:"score"`
-	Time       string `json:"time"`               // ISO8601 到分钟，与卡面 displayTime 一致
-	IP         string `json:"ip,omitempty"`        // 仅服务端审计，不下发前端
+	Time       string `json:"time"`                 // ISO8601 到分钟，与卡面 displayTime 一致
+	IP         string `json:"ip,omitempty"`         // 仅服务端审计，不下发前端
 	SignedCode string `json:"signedCode,omitempty"` // 仅破纪录（曾为 #1）项持有，永久有效
 }
 

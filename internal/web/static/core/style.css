@@ -1480,3 +1480,49 @@ pre {
   padding: 8px 16px; border-radius: 8px; font-size: 0.9em;
   background: var(--fg); color: var(--bg); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
+
+/* 卡卡颂（tools/game-carcassonne） */
+.ca-prompt { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ca-wrap { display: flex; flex-direction: column; gap: 10px; }
+.ca-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ca-preview {
+  width: 54px; height: 54px; flex: none; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
+}
+.ca-preview-empty { color: var(--muted); }
+.ca-deck { font-size: 13px; color: var(--muted); }
+.ca-boardwrap { border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 6px; overflow: auto; }
+.ca-board { display: block; width: 100%; max-height: 62vh; }
+.ca-grass { fill: #a8c47f; stroke: #8aa860; stroke-width: 1; }
+.ca-city { fill: #d4b483; stroke: #8a6d3b; stroke-width: 1.2; }
+line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
+.ca-road-case { stroke: #8a7a5c; stroke-width: 7; stroke-linecap: round; fill: none; }
+.ca-road { stroke: #efe3c8; stroke-width: 4; stroke-linecap: round; fill: none; }
+.ca-mon-wall { fill: #e8dcc0; stroke: #8a6d3b; stroke-width: 1; }
+.ca-mon-roof { fill: #b0563c; stroke: #7c3a28; stroke-width: 1; }
+.ca-pennant { fill: #3f6fd9; stroke: #fff; stroke-width: 1; }
+.ca-meeple { stroke: #fff; stroke-width: 1.6; }
+.ca-legal {
+  fill: rgba(87, 176, 106, 0.22); stroke: #57b06a; stroke-width: 1.6;
+  stroke-dasharray: 5 3; cursor: pointer;
+}
+.ca-legal:hover { fill: rgba(87, 176, 106, 0.4); }
+.ca-last { fill: none; stroke: var(--accent); stroke-width: 2; pointer-events: none; }
+.ca-dot {
+  fill: rgba(255, 255, 255, 0.75); stroke: #d94f4f; stroke-width: 2.4;
+  cursor: pointer; pointer-events: all;
+}
+.ca-dot:hover { fill: #fff; stroke-width: 3.2; }
+.ca-players { display: flex; gap: 8px; flex-wrap: wrap; }
+.ca-player {
+  flex: 1 1 140px; min-width: 130px; border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; background: var(--bg);
+}
+.ca-player-active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
+.ca-player-head { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.ca-score { margin-left: auto; font-size: 18px; font-weight: 700; }
+.ca-player-meeples { display: flex; gap: 4px; margin-top: 6px; min-height: 10px; flex-wrap: wrap; }
+.ca-meeple-mini {
+  width: 9px; height: 9px; border-radius: 50% 50% 50% 0;
+  background: currentColor; transform: rotate(-45deg); display: inline-block;
+}
