@@ -19,6 +19,7 @@ type Config struct {
 	Donation         DonationConfig     `json:"donation"`
 	Leaderboard      LeaderboardConfig  `json:"leaderboard"`
 	Storage          StorageConfig      `json:"storage"`
+	Nacos            NacosConfig        `json:"nacos"`
 	SEO              SEOConfig          `json:"seo"`
 	SiteVerification []VerificationFile `json:"siteVerification"`
 }
@@ -235,7 +236,8 @@ func (c *Config) EffectiveFeatures() FeaturesConfig {
 	return f
 }
 
-// Load 从路径加载配置
+// Load 从路径加载配置（文件 + 内置默认值，不含覆盖层）。
+// 完整优先级链请用 Build。
 func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -246,6 +248,34 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 	c.applyDefaults()
+	return c, nil
+}
+
+// Build 按统一优先级构建配置（高 → 低）：
+//  1. CLI -set 覆盖（如 -set storage.driver=redis）
+//  2. TOOLBOX_* 环境变量（如 TOOLBOX_STORAGE_DRIVER=redis）
+//  3. Nacos 远程配置（可选，nacos.enabled 开启）
+//  4. config.json 文件
+//  5. 内置默认值（applyDefaults）
+//
+// 默认值最先填充（显式 false/0 不被吞掉），覆盖层按 nacos → env → flag 逐层生效；
+// 任一覆盖层字段名拼错或类型不匹配即报错（fail-fast，防静默失效）。
+func Build(path string, flagSets []string) (*Config, error) {
+	c, err := Load(path)
+	if err != nil {
+		return nil, err
+	}
+	if err := ApplyNacos(c); err != nil {
+		return nil, err
+	}
+	flagOvs, err := ParseFlagSets(flagSets)
+	if err != nil {
+		return nil, err
+	}
+	ovs := append(EnvOverrides(), flagOvs...) // env 先应用，flag 后应用即更高优先
+	if err := ApplyOverrides(c, ovs); err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 

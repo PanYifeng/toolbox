@@ -59,6 +59,15 @@
       "keyPrefix": "tb:"
     }
   },
+  "nacos": {
+    "enabled": false,
+    "serverAddr": "10.112.140.127:8848",
+    "namespace": "",
+    "group": "DEFAULT_GROUP",
+    "dataId": "toolbox.json",
+    "username": "nacos",
+    "password": ""
+  },
   "donation": {
     "enabled": true,
     "title": { "zh": "支持一下 Toolbox", "en": "Keep Toolbox Running" },
