@@ -46,7 +46,7 @@ export function renderBoard(el, s, legal, pick) {
 function draw() {
   const { el, s, legal, human } = ctx;
   el.innerHTML = `
-    <div class="ca-prompt">${promptHtml(s)}</div>
+    <div class="ca-prompt" data-bg-focus>${promptHtml(s)}</div>
     <div class="ca-wrap">
       ${toolbarHtml(s, legal, human)}
       <div class="ca-boardwrap">${boardSvg(s, legal, human)}</div>

@@ -249,12 +249,12 @@ function renderTable(s) {
 function renderAction(s, legal, human) {
   const ph = s.phase.kind;
   const prompt = `<p class="tm-prompt">${t('tm.ui.prompt.' + ph)}</p>`;
-  if (!human) return `<div class="tm-action">${prompt}</div>`;
+  if (!human) return `<div class="tm-action" data-bg-focus>${prompt}</div>`;
   let body = '';
   if (ph === 'chooseFaction') body = factionPanel(legal);
   else if (ph === 'act') body = actPanel(s, legal);
   else if (ph === 'resolve') body = resolvePanel(legal);
-  return `<div class="tm-action">${prompt}${body}</div>`;
+  return `<div class="tm-action" data-bg-focus>${prompt}${body}</div>`;
 }
 
 function factionPanel(legal) {

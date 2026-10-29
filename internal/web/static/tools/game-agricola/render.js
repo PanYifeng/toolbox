@@ -145,7 +145,7 @@ function subPanel(s, p, pd, legal, human) {
         actBtn(a, `${RES_INFO[a.crop].emoji} #${a.idx + 1}`)).join('')}</div>` : ''}
       ${bakes.length ? `<div class="ag-btns"><span class="ag-label">${t('ag.ui.bake')}</span>${bakeBtns}</div>` : ''}`;
   }
-  return `<div class="ag-action">${body}${tail}</div>`;
+  return `<div class="ag-action" data-bg-focus>${body}${tail}</div>`;
 }
 
 // majorCardBtn 大设施购买按钮（名 + 费用 + 说明）
@@ -173,7 +173,7 @@ function feedPanel(s, p, legal) {
     <span class="ag-cookrow">${RES_INFO[res].emoji}${acts.map((a) =>
       actBtn(a, `${a.n}→🍞${I.cookRates(p)[res] * a.n}`)).join('')}</span>`).join('');
   return `
-    <div class="ag-action">
+    <div class="ag-action" data-bg-focus>
       <p>${fmt(t('ag.ui.feedNeed'), { n: need, m: p.food })}${short ? ` <b class="ag-warn">${fmt(t('ag.ui.feedShort'), { n: short })}</b>` : ''}</p>
       ${cookBtns ? `<div class="ag-btns">${cookBtns}</div>` : ''}
       <div class="ag-btns">${actBtn(legal.find((x) => x.kind === 'feedConfirm'), `✅ ${t('ag.ui.feedConfirm')}`, 'ag-primary')}</div>
@@ -299,7 +299,7 @@ export function renderBoard(el, s, legal, pick) {
   const human = !p.isAI;
   const promptKey = s.phase.kind === 'place' ? 'ag.ui.prompt.place'
     : s.phase.kind === 'feed' ? 'ag.ui.prompt.feed' : 'ag.ui.prompt.sub';
-  let panel = `<div class="ag-action"><p class="muted">${t(promptKey)}</p></div>`;
+  let panel = `<div class="ag-action" data-bg-focus><p class="muted">${t(promptKey)}</p></div>`;
   if (s.phase.kind === 'sub' && human) panel = subPanel(s, p, s.pending, legal, human);
   else if (s.phase.kind === 'feed' && human) panel = feedPanel(s, p, legal);
   el.innerHTML = `

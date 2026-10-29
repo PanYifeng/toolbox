@@ -187,7 +187,7 @@ export function mountBoardGame(el, game) {
   // startSession 进入对局屏。fromSetup=false 表示从存档恢复（悔棋历史不恢复）
   function startSession(state, history, usedUndo, fromSetup) {
     if (fromSetup) clearSave(game.id);
-    session = { state, history, usedUndo, reqId: 0, lastHumanSeen: null };
+    session = { state, history, usedUndo, reqId: 0, lastHumanSeen: null, focusSeat: null };
     $root.innerHTML = `
       <div class="game-bar">
         <span id="bg-banner" class="bg-banner"></span>
@@ -228,6 +228,9 @@ export function mountBoardGame(el, game) {
     refresh();
   }
 
+  // E2E 调试钩子：暴露会话与提交入口供自动化整局走查（纯前端游戏状态，无敏感信息）
+  window.__bgDebug = { game, get session() { return session; }, pick, step: commit };
+
   // refresh 每次状态变化后的统一入口：结算 / 隐私交接 / 渲染 / AI 调度
   function refresh() {
     if (game.isGameOver(session.state)) { renderResults(); return; }
@@ -236,7 +239,24 @@ export function mountBoardGame(el, game) {
     const legal = game.legalActions(session.state);
     game.renderBoard($root.querySelector('#bg-board'), session.state, legal, pick);
     renderLog();
+    focusHumanAction();
     scheduleAI();
+  }
+
+  // focusHumanAction 人类座位轮到时滚动让操作区进视野：重策棋盘很高（地图+邪教轨动辄 1500px+），
+  // 操作区排在页面底部，不滚屏时人类玩家根本看不到自己的待办按钮（神秘大地开局选派系就是被埋在折叠线下）。
+  // 约定：各游戏 renderBoard 的阶段操作区容器标注 data-bg-focus，框架在此统一聚焦。
+  function focusHumanAction() {
+    const seat = game.currentPlayer(session.state);
+    const p = session.state.players[seat];
+    if (p.isAI) return;
+    if (session.focusSeat === seat) return; // 同一人类连续决策（多步微阶段）不重复滚屏
+    session.focusSeat = seat;
+    const $act = $root.querySelector('[data-bg-focus]');
+    if (!$act) return;
+    const r = $act.getBoundingClientRect();
+    if (r.top >= 0 && r.bottom <= innerHeight) return; // 已在视野内则不打扰
+    $act.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function updateBanner() {
@@ -317,6 +337,7 @@ export function mountBoardGame(el, game) {
     session.state = JSON.parse(snap);
     session.usedUndo = true;
     session.lastHumanSeen = null;
+    session.focusSeat = null; // 悔棋后重聚焦操作区
     writeSave(game.id, session.state, session.usedUndo);
     refresh();
   }

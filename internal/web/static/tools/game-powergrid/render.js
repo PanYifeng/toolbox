@@ -211,17 +211,17 @@ function renderAction(s, legal, human) {
   const ph = s.phase;
   const p = s.players[ph.cur];
   const prompt = `<p class="pg-prompt">${t('pg.ui.prompt.' + ph.kind)}</p>`;
-  if (!human) return `<div class="pg-action">${prompt}</div>`;
+  if (!human) return `<div class="pg-action" data-bg-focus>${prompt}</div>`;
   switch (ph.kind) {
-    case 'chooseRegion': return `<div class="pg-action">${prompt}${regionChips(s, legal)}</div>`;
-    case 'auction': return `<div class="pg-action">${prompt}${ph.plant === null
+    case 'chooseRegion': return `<div class="pg-action" data-bg-focus>${prompt}${regionChips(s, legal)}</div>`;
+    case 'auction': return `<div class="pg-action" data-bg-focus>${prompt}${ph.plant === null
       ? offerPanel(legal) : bidPanel(s, ph, p)}</div>`;
-    case 'discardPlant': return `<div class="pg-action">${prompt}${discardPanel(p)}</div>`;
-    case 'resources': return `<div class="pg-action">${prompt}
+    case 'discardPlant': return `<div class="pg-action" data-bg-focus>${prompt}${discardPanel(p)}</div>`;
+    case 'resources': return `<div class="pg-action" data-bg-focus>${prompt}
       <div class="pg-btns">${actBtn({ kind: 'passRes' }, t('pg.ui.done'))}</div></div>`;
-    case 'cities': return `<div class="pg-action">${prompt}${cityPanel(s, legal, p)}</div>`;
-    case 'bureaucracy': return `<div class="pg-action">${prompt}${powerPanel(s, p)}</div>`;
-    default: return `<div class="pg-action">${prompt}</div>`;
+    case 'cities': return `<div class="pg-action" data-bg-focus>${prompt}${cityPanel(s, legal, p)}</div>`;
+    case 'bureaucracy': return `<div class="pg-action" data-bg-focus>${prompt}${powerPanel(s, p)}</div>`;
+    default: return `<div class="pg-action" data-bg-focus>${prompt}</div>`;
   }
 }
 

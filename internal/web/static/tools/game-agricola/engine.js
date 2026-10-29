@@ -20,6 +20,7 @@ import {
   SCORE_FIELDS, SCORE_PASTURES, SCORE_GRAIN, SCORE_VEG, SCORE_ANIMAL,
   SCORE_FAMILY, SCORE_ROOM_CLAY, SCORE_ROOM_STONE, SCORE_STABLE_FENCED,
   SCORE_UNUSED, SCORE_BEGGAR, RES_INFO, ANIMAL_KEYS, MAT_NAMES, RENOV_CHAIN,
+  FAMILY_MAX,
 } from './actionboard-data.js';
 import { OCCUPATIONS, MINOR_IMPROVEMENTS, OCC_BY_ID, MINOR_BY_ID } from './cards-data.js';
 import { MAJORS, MAJOR_BY_ID } from './majors.js';
@@ -547,8 +548,8 @@ function spaceOk(s, p, sp) {
     }
     case 'occ': return p.handOcc.some((id) => occPlayable(s, p, id));
     case 'minor': return p.handMinor.some((id) => minorPlayable(s, p, id));
-    case 'growth': return freeRooms(p) > 0;
-    case 'growth2': return true;
+    case 'growth': return freeRooms(p) > 0 && p.family < FAMILY_MAX;
+    case 'growth2': return p.family < FAMILY_MAX;
     case 'renov': return canRenovate(p) || affordMajors(s, p).length > 0;
     case 'fence': return p.wood >= minFenceCost(p);
     default: return true;

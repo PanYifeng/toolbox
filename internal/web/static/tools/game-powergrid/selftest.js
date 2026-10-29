@@ -120,10 +120,10 @@ function mkSeats(n) {
 function mkGame(n, seed) { return initialState({ seats: mkSeats(n), seed }); }
 
 function invariants(s, tag) {
-  // 资源：市场 + 供应 + 玩家持有 ≤ 总量（发电消耗只减不增）
+  // 资源总量守恒：发电烧掉/弃厂溢出的燃料回供应池，市场 + 供应 + 玩家持有恒等于总量
   for (const k of RES_KINDS) {
     const held = s.players.reduce((a, p) => a + p.res[k], 0);
-    ok(s.resMarket[k] + s.resSupply[k] + held <= RES_CAPACITY[k], `${tag} 资源不超总量 ${k}`);
+    eq(s.resMarket[k] + s.resSupply[k] + held, RES_CAPACITY[k], `${tag} 资源总量守恒 ${k}`);
     ok(s.resMarket[k] >= 0 && s.resSupply[k] >= 0, `${tag} 市场资源非负 ${k}`);
   }
   // 电厂无重复：市场 + 牌堆 + 玩家

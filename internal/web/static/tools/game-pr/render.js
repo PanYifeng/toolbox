@@ -115,17 +115,17 @@ function renderAction(s, legal, human) {
   const ph = s.phase;
   const p = s.players[ph.cur];
   const prompt = `<p class="pr-prompt">${t('pr.ui.prompt.' + ph.kind)}</p>`;
-  if (!human) return `<div class="pr-action">${prompt}</div>`;
+  if (!human) return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
   switch (ph.kind) {
-    case 'pickRole': return `<div class="pr-action">${prompt}</div>`;
-    case 'settler': return `<div class="pr-action">${prompt}${settlerBtns(s, legal)}</div>`;
-    case 'builder': return `<div class="pr-action">${prompt}${builderPanel(s, legal, p, ph)}</div>`;
-    case 'mayor': return `<div class="pr-action">${prompt}${mayorPanel(s, legal, p, ph)}</div>`;
-    case 'craftsman': return `<div class="pr-action">${prompt}${craftsmanBtns(legal)}</div>`;
-    case 'trader': return `<div class="pr-action">${prompt}${traderBtns(s, legal, p, ph)}</div>`;
-    case 'captain': return `<div class="pr-action">${prompt}${captainPanel(s, legal)}</div>`;
-    case 'discard': return `<div class="pr-action">${prompt}${discardPanel(s, p)}</div>`;
-    default: return `<div class="pr-action">${prompt}</div>`;
+    case 'pickRole': return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
+    case 'settler': return `<div class="pr-action" data-bg-focus>${prompt}${settlerBtns(s, legal)}</div>`;
+    case 'builder': return `<div class="pr-action" data-bg-focus>${prompt}${builderPanel(s, legal, p, ph)}</div>`;
+    case 'mayor': return `<div class="pr-action" data-bg-focus>${prompt}${mayorPanel(s, legal, p, ph)}</div>`;
+    case 'craftsman': return `<div class="pr-action" data-bg-focus>${prompt}${craftsmanBtns(legal)}</div>`;
+    case 'trader': return `<div class="pr-action" data-bg-focus>${prompt}${traderBtns(s, legal, p, ph)}</div>`;
+    case 'captain': return `<div class="pr-action" data-bg-focus>${prompt}${captainPanel(s, legal)}</div>`;
+    case 'discard': return `<div class="pr-action" data-bg-focus>${prompt}${discardPanel(s, p)}</div>`;
+    default: return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
   }
 }
 

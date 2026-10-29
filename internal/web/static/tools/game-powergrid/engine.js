@@ -93,20 +93,23 @@ export function canPowerPlant(p, plantId) {
   return p.res[pl.type] >= pl.fuel;
 }
 
-// consumeFuel 发电消耗（hybrid 自动取存量较多的一种优先，满额后补另一种）。简化：非玩家手选
+// consumeFuel 发电消耗（hybrid 自动取存量较多的一种优先，满额后补另一种）。简化：非玩家手选。
+// 返回实际消耗明细 {资源: 件数}：官方规则烧掉的燃料回总供应池（REFILL 表按轮回填市场，总量守恒）
 export function consumeFuel(p, plantId) {
   const pl = p.plants.find((x) => x.id === plantId);
-  if (pl.type === 'eco') return;
+  if (pl.type === 'eco') return {};
   if (pl.type === 'hybrid') {
     let need = pl.fuel;
     const first = p.res.coal >= p.res.oil ? 'coal' : 'oil';
     const second = first === 'coal' ? 'oil' : 'coal';
     const take1 = Math.min(p.res[first], need);
     p.res[first] -= take1; need -= take1;
-    p.res[second] -= take1 === pl.fuel ? 0 : Math.min(p.res[second], need);
-    return;
+    const take2 = take1 === pl.fuel ? 0 : Math.min(p.res[second], need);
+    p.res[second] -= take2;
+    return { [first]: take1, [second]: take2 };
   }
   p.res[pl.type] -= pl.fuel;
+  return { [pl.type]: pl.fuel };
 }
 
 // plantResCap 电厂资源存储上限：免燃料厂 0，其余 2× 消耗（hybrid 煤油合计）
@@ -481,24 +484,28 @@ function shuffle(s, arr) {
 // applyDiscardPlant 弃到 3 厂后恢复拍卖上下文；超容量资源移出本局（? 待核对）
 function applyDiscardPlant(s, a, ph, p) {
   p.plants = p.plants.filter((x) => x.id !== a.plant);
-  clampResources(p);
+  const removed = clampResources(p);
+  for (const [k, v] of Object.entries(removed)) s.resSupply[k] += v; // 超容量资源回供应池
   log(s, p.seat, 'pg.log.discardPlant', { n: p.name, c: a.plant });
   s.phase = ph.saved;
   nextOfferer(s, s.phase);
 }
 
-// clampResources 弃厂后将资源截到剩余电厂存储容量内（超容量部分移出本局）
+// clampResources 弃厂后将资源截到剩余电厂存储容量内，返回被移除的明细（回供应池）
 function clampResources(p) {
+  const removed = {};
   for (const k of ['garbage', 'uranium']) {
     const cap = p.plants.filter((x) => x.type === k).reduce((a, x) => a + x.fuel * 2, 0);
-    p.res[k] = Math.min(p.res[k], cap);
+    if (p.res[k] > cap) { removed[k] = p.res[k] - cap; p.res[k] = cap; }
   }
   const capCO = p.plants.filter((x) => ['hybrid', 'coal', 'oil'].includes(x.type))
     .reduce((a, x) => a + x.fuel * 2, 0);
   while (p.res.coal + p.res.oil > capCO) {
-    if (p.res.coal >= p.res.oil) p.res.coal -= 1;
-    else p.res.oil -= 1;
+    const k = p.res.coal >= p.res.oil ? 'coal' : 'oil';
+    p.res[k] -= 1;
+    removed[k] = (removed[k] || 0) + 1;
   }
+  return removed;
 }
 
 // applyPassOffer 放弃起拍（本轮退出拍卖）
@@ -583,12 +590,13 @@ function startBureaucracy(s) {
   s.phase = { kind: 'bureaucracy', queue, idx: 0, cur: queue[0] };
 }
 
-// applyPower 发电：消耗燃料、按供电城数付收入
+// applyPower 发电：消耗燃料（烧掉回供应池）、按供电城数付收入
 function applyPower(s, a, ph, p) {
   const ids = a.plants || [];
   let cap = 0;
   for (const id of ids) {
-    consumeFuel(p, id);
+    const burnt = consumeFuel(p, id);
+    for (const [k, v] of Object.entries(burnt)) s.resSupply[k] += v;
     cap += PLANT_BY_ID[id].cap;
   }
   const powered = Math.min(cap, p.cities.length);

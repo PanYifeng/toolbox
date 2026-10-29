@@ -509,8 +509,9 @@ function legalAct(s) {
   const p = s.players[s.phase.cur];
   const acts = [];
   for (const hex of buildRangeSet(s, p)) {
-    if (canAffordBuild(s, p, hex, false)) acts.push({ kind: 'build', hex });
-    if (canAffordBuild(s, p, hex, true) && spadesNeeded(p, s.hexes[hex].terrain) > p.spades) {
+    // 民居配件数上限 7：建满后不可再新建（升级链不受此限）
+    if (builtCount(p, ['D']) < BLD_CAP.D && canAffordBuild(s, p, hex, false)) acts.push({ kind: 'build', hex });
+    if (builtCount(p, ['D']) < BLD_CAP.D && canAffordBuild(s, p, hex, true) && spadesNeeded(p, s.hexes[hex].terrain) > p.spades) {
       acts.push({ kind: 'build', hex, coinDig: true });
     }
   }
@@ -529,13 +530,16 @@ function legalAct(s) {
   return acts;
 }
 
-// pushUpgradeActions 升级动作（TE/SA 附带恩惠板块选择）
+// pushUpgradeActions 升级枚举。官方建筑配件数上限：民居 7 / 交易站 6 / 神殿 3 / 要塞 1 / 圣所 1
+const BLD_CAP = { D: 7, TP: 6, TE: 3, SH: 1, SA: 1 };
 function pushUpgradeActions(s, p, acts) {
   const favors = freeFavorTiles(s);
   for (const [hex, cur] of Object.entries(p.buildings)) {
     for (const to of chainOf(cur)) {
-      if ((to === 'SH' || to === 'SA') && builtCount(p, [to]) > 0) continue;
       const key = to === 'TP' ? tpVariant(s, hex) : to;
+      // TP2 与 TP 共享交易站配件数
+      const cnt = key === 'TP2' ? builtCount(p, ['TP', 'TP2']) : builtCount(p, [key]);
+      if (cnt >= BLD_CAP[key]) continue;
       if (!afford(p, BUILDINGS[key].cost)) continue;
       if (to === 'TE' || to === 'SA') {
         for (const f of favors) acts.push({ kind: 'upgrade', hex, to, favor: f.id });

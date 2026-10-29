@@ -84,7 +84,7 @@ export function renderBoard(el, s, legal, pick) {
     .map((a) => a.reserved));
 
   el.innerHTML = `
-    <div class="sl-prompt">${promptHtml(s, pendingDiscard, pendingNoble, humanMain)}</div>
+    <div class="sl-prompt" data-bg-focus>${promptHtml(s, pendingDiscard, pendingNoble, humanMain)}</div>
     <div class="sl-wrap">
       <div class="sl-board">
         <div class="sl-row"><span class="sl-label">${t('sl.ui.nobles')}</span>

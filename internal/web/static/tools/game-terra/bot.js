@@ -5,8 +5,12 @@ import { BUILDINGS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, TOWN_VP } from './tab
 import { ADJACENCY } from './map-data.js';
 import { factionById } from './data-factions.js';
 
-// BLD_VALUE 建筑长期价值（评估用）
-const BLD_VALUE = { D: 3, TP: 4.5, TP2: 5, TE: 6, SH: 5, SA: 7 };
+// BLD_VALUE 建筑长期价值（评估用，含后续轮收入折算）
+const BLD_VALUE = { D: 4, TP: 6.5, TP2: 7, TE: 8, SH: 6.5, SA: 9.5 };
+
+// soft 资源软上限：过量囤积（工人 10+/金币 12+）几乎换不出价值，
+// 线性估值会让 1-ply 觉得「留着不花」更优而从第 3 轮起全程空过
+function soft(v, cap) { return Math.min(v, cap) + Math.max(0, v - cap) * 0.1; }
 
 // bot 框架入口：按阶段分发
 export function bot(state, legal) {
@@ -114,7 +118,7 @@ function pickFavor(legal, p, base) {
 // evaluate 局面价值（当前资源 + 建筑投资 + 邪教期望 + 城镇进度 + 领先差）
 function evaluate(s, seat) {
   const p = s.players[seat];
-  let v = p.vp + p.coins * 0.25 + p.workers * 0.4 + p.priests * 1.2 + p.spades * 1.2;
+  let v = p.vp + soft(p.coins, 12) * 0.25 + soft(p.workers, 10) * 0.4 + soft(p.priests, 3) * 1.2 + soft(p.spades, 3) * 1.2;
   v += p.power.iii * 0.5 + p.power.ii * 0.25 + p.power.i * 0.05;
   v += p.shipping * 0.8;
   for (const b of Object.values(p.buildings)) v += BLD_VALUE[b];

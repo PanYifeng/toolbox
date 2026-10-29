@@ -258,9 +258,9 @@ function actionHtml(s, legal, human) {
   if (!human) return '';
   if (s.pending) return pendingHtml(s, legal);
   if (s.phase === 'roll') {
-    return `<div class="ct-actions"><button class="btn-soft" data-act="roll">🎲 ${t('ct.ui.roll')}</button></div>`;
+    return `<div class="ct-actions" data-bg-focus><button class="btn-soft" data-act="roll">🎲 ${t('ct.ui.roll')}</button></div>`;
   }
-  return `<div class="ct-actions">
+  return `<div class="ct-actions" data-bg-focus>
     ${mainButtonsHtml(legal)}
     ${bankFormHtml(s, legal)}
     ${domFormHtml(s)}
@@ -271,23 +271,23 @@ function actionHtml(s, legal, human) {
 // pendingHtml 微阶段面板
 function pendingHtml(s, legal) {
   const k = s.pending.kind;
-  if (k === 'steal') return `<div class="ct-actions"><div class="ct-sub">${t('ct.ui.prompt.steal')}</div>
+  if (k === 'steal') return `<div class="ct-actions" data-bg-focus><div class="ct-sub">${t('ct.ui.prompt.steal')}</div>
     ${legal.map((a) => `<button class="btn-soft" data-act="steal" data-victim="${a.victim}" data-res="${a.res}">
       ${esc(s.players[a.victim].name)} ${RES_ICON[a.res]}</button>`).join('')}</div>`;
   if (k === 'yop' || k === 'mono') {
-    return `<div class="ct-actions"><div class="ct-sub">${t('ct.ui.prompt.' + k)}</div>
+    return `<div class="ct-actions" data-bg-focus><div class="ct-sub">${t('ct.ui.prompt.' + k)}</div>
       ${legal.map((a) => `<button class="btn-soft" data-act="${k === 'yop' ? 'yopTake' : 'monoPick'}" data-res="${a.res}">
       ${RES_ICON[a.res]}</button>`).join('')}</div>`;
   }
   if (k === 'tradeOffer') return tradeOfferHtml(s);
-  return `<div class="ct-actions"><div class="ct-sub">${t('ct.ui.prompt.' + k)}</div></div>`;
+  return `<div class="ct-actions" data-bg-focus><div class="ct-sub">${t('ct.ui.prompt.' + k)}</div></div>`;
 }
 
 // tradeOfferHtml 交易提议裁决面板（收到方视角）
 function tradeOfferHtml(s) {
   const pd = s.pending;
   const from = s.players[pd.from];
-  return `<div class="ct-actions ct-offer"><b>${esc(from.name)}</b> ${t('ct.ui.offers')}
+  return `<div class="ct-actions ct-offer" data-bg-focus><b>${esc(from.name)}</b> ${t('ct.ui.offers')}
     <span class="ct-chip">→ ${resList(pd.give)}</span> / <span class="ct-chip">← ${resList(pd.get)}</span>
     <button class="btn-soft" data-act="tradeAccept">✅ ${t('ct.ui.tradeAccept')}</button>
     <button class="btn-soft" data-act="tradeDecline">❌ ${t('ct.ui.tradeDecline')}</button></div>`;

@@ -38,7 +38,8 @@ function plantValue(p, id) {
   return v;
 }
 
-// botOffer 起拍：首轮必买；之后仅在「市场最优容量 > 自有最差容量」时升级，否则弃拍
+// botOffer 起拍：首轮必买；产能缺口（总容量撑不起城数 + 余量）才升级，否则弃拍。
+// 无节制换厂会把钱烧进产能军备竞赛，城数常年停滞（实测卡 1 城拖到 14 轮）
 function botOffer(s, ph, p, legal) {
   const offers = legal.filter((a) => a.kind === 'offer');
   const pass = legal.find((a) => a.kind === 'passOffer');
@@ -50,9 +51,9 @@ function botOffer(s, ph, p, legal) {
   }
   const must = s.round === 1 && !ph.bought.includes(p.seat);
   if (must || p.plants.length < 2) return best;
-  const bestCap = PLANT_BY_ID[best.plant].cap;
-  const worstCap = Math.min(...p.plants.map((x) => x.cap));
-  return bestCap > worstCap ? best : (pass || best);
+  const cap = p.plants.reduce((a, x) => a + PLANT_BY_ID[x.id].cap, 0);
+  if (cap < p.cities.length + 4) return best; // 容量缺口：值得补厂
+  return (pass || best);
 }
 
 // botBid 竞拍：最小加价，出价上限 = 估值
@@ -79,15 +80,19 @@ function needRes(p, res) {
     || (pl.type === 'hybrid' && (res === 'coal' || res === 'oil')));
 }
 
-// botResources 逐件贪心：买「下一件单价最低」的自有电厂可用资源，留余额缓冲
+// botResources 逐件贪心：买「下一件单价最低」的自有电厂可用资源，留余额缓冲。
+// 终局期发电即分数——燃料几乎总是值回票价（1 件铀点亮 5-6 城收入 60+），
+// 价格帽放到梯子顶（铀 16）且缓冲降到 4，别揣着钱饿死电厂
 function botResources(s, p, legal) {
-  const buffer = s.round <= 2 ? 25 : 10;
+  const endCities = SETUP[s.n].endCities;
+  const endgame = s.step === 3 || s.players.some((x) => x.cities.length >= endCities - 4);
+  const buffer = endgame ? 4 : (s.round <= 2 ? 25 : 10);
   let best = null, bestPrice = Infinity;
   for (const res of RES_KINDS) {
     const remain = s.resMarket[res];
     if (!remain || resStorageLeft(p, res) <= 0 || !needRes(p, res)) continue;
     const price = resPrice(res, remain - 1);
-    const cap = res === 'uranium' ? 14 : 8;
+    const cap = res === 'uranium' ? 16 : 8;
     if (price <= cap && price < bestPrice && p.electro - price >= buffer) {
       bestPrice = price; best = res;
     }

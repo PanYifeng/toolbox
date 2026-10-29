@@ -496,7 +496,7 @@ function phasePrompt(s) {
     extra = ` — ${t('an.ui.budget')} <b>${s.sub.budget - s.sub.spent}</b>`;
   }
   if (s.finalRound) extra += ` · 🏁 ${t('an.ui.finalRound')}`;
-  return k ? `<div class="an-prompt">💡 <b>${t(k)}</b>${extra}</div>` : '';
+  return k ? `<div class="an-prompt" data-bg-focus>💡 <b>${t(k)}</b>${extra}</div>` : '';
 }
 
 // —— 主入口 ——

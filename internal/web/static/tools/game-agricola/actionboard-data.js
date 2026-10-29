@@ -124,3 +124,4 @@ export const FARM_COLS = 5;                            // 农场 5×3 = 15 格
 export const FARM_ROWS = 3;
 export const FARM_SPACES = 15;
 export const START_ROOMS = [5, 6];                     // 初始 2 间木房（第 2 行前两格）
+export const FAMILY_MAX = 5;                            // 家庭成员上限 5（官方规则）

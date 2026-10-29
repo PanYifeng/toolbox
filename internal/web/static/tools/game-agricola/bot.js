@@ -179,20 +179,34 @@ function placeBot(s, p, legal) {
   return best;
 }
 
+// growthScore 家庭成长/建房分值：口粮富余（够现有家庭 + 新成员 + 缓冲）才给满速，
+// 否则降档——先去攒粮，别让乞讨卡滚雪球
+function growthScore(s, p, base) {
+  const gap = nextHarvestGap(s.round);
+  const need = 2 * (p.family + 1) + (gap <= 1 ? 0 : 2);
+  return p.food >= need ? base : base - 6;
+}
+
 // spaceScore 各空间启发式分值
 function spaceScore(s, p, id) {
   const gap = nextHarvestGap(s.round);
   const foodShort = p.food < 2 * p.family + (gap === 0 ? 0 : 2);
   const rooms = E.roomCountOf(p);
   switch (id) {
-    case 'growth': return E.freeRooms(p) > 0 ? 9 : 0;
-    case 'growth2': return 10;
-    case 'build': return E.canPay(p, E.roomCostOf(p)) && rooms < 5 ? 6.5 : 1;
+    // 家庭成长是最大分差来源，但先看口粮：新增成员每轮多吃 2 食，
+    // 粮仓见底还硬grow会滚出十几张乞讨卡（-3/张）直接崩盘
+    case 'growth': return growthScore(s, p, 9);
+    case 'growth2': return growthScore(s, p, 10);
+    // 建房/芦苇是家庭成长的前置瓶颈：没空房时成长位永远拿不到，实测 14 轮 2 人不增
+    case 'build': {
+      if (E.canPay(p, E.roomCostOf(p)) && rooms < 5) return rooms <= p.family ? growthScore(s, p, 8) : 6.5;
+      return 1;
+    }
     case 'start': return 2 + (s.round <= 3 ? 1 : 0);
     case 'wood': return 4 - s.round * 0.12;
     case 'clay': return s.round <= 8 ? 3.6 : 1.5;
     case 'stone': case 'stone2': return s.round >= 8 ? 3.4 : 1.2;
-    case 'reed': return E.freeRooms(p) >= 0 && rooms < 5 ? 3 : 1.5;
+    case 'reed': return rooms <= p.family && rooms < 5 ? 5 : (E.freeRooms(p) >= 0 && rooms < 5 ? 3 : 1.5);
     case 'grain': return p.grain === 0 ? 4 : 0.8;
     case 'veg': return p.veg === 0 && s.round >= 6 ? 3 : 0.8;
     case 'laborer': case 'fishing': return foodShort ? 5 : 0.4;
