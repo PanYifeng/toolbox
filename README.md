@@ -1,6 +1,6 @@
 # Toolbox · 一站式开发者工具站
 
-> 在线 demo：https://app.allin1box.dpdns.org（47 个工具 · 纯前端零成本 · 可安装到桌面）
+> 55 个工具 · 纯前端零成本 · 可安装到桌面
 
 JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站式网页服务。**纯前端工具文件不上传**，隐私友好；可安装为桌面/移动 PWA 离线使用。
 
@@ -15,7 +15,7 @@ JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站
 
 ## 技术栈
 
-- 后端：Go 1.21+，零第三方依赖
+- 后端：Go 1.22+，仅一个第三方依赖（gofpdf，报告 PDF 生成）
 - 前端：原生 ES Modules，无框架
 - PWA：manifest + service worker，可安装到桌面、离线可用
 - SEO：每工具独立 meta description / canonical / OG 图 / JSON-LD，noscript 注入文案供爬虫索引，自动生成 sitemap.xml
@@ -39,6 +39,7 @@ JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站
 | 宗教文化 | 佛教文化、基督文化、伊斯兰文化（考试 + 错题解析 + 结业纪念卡） |
 | 知识 · 趣味 | 趣味知识问答（及格发卡 / 付费错题解析）、MBTI / 大五人格 / DISC（免费简版 + ¥5 完整版报告） |
 | 游戏 | 2048、贪吃蛇、井字棋、蜘蛛纸牌、扫雷、俄罗斯方块、Flappy Bird、Wordle、合成水果、消消乐、中国象棋、国际象棋（均纯前端，计分 + 通关纪念卡 + 排行榜；象棋悔棋 ¥5/次、计连胜） |
+| 桌游 | 波多黎各、电力公司、神秘大地、农场主、璀璨宝石、卡坦岛、卡卡颂、方舟动物园——完整规则复刻：热座 + 启发式 AI 机器人补位 + 联机房间（纯函数引擎确定性重放），付费悔棋 ¥5/次，排行榜计分 |
 | 纪念卡 | 纪念卡验真（防伪码复算校验） |
 
 > 纯前端工具零服务器成本；视频/音频/文档转换走服务端队列限流。PDF→docx 依赖 `pip install pdf2docx`，docx→pdf 等依赖 LibreOffice。
@@ -49,17 +50,19 @@ JSON 格式化、时间戳转换、视频转码等常用开发者工具的一站
 toolbox/
 ├── cmd/server/main.go                 # 启动入口
 ├── internal/
-│   ├── config/                        # 配置加载
+│   ├── config/                        # 配置加载（flag > env(TOOLBOX_*) > Nacos > 文件 > 默认值）
 │   ├── queue/                         # 内存任务队列（限流）
 │   ├── tools/
 │   │   ├── registry.go                # 工具注册中心
 │   │   └── server/video_convert/      # 服务端工具示例
 │   └── web/
 │       ├── server.go                  # HTTP 服务 + embed
+│       ├── rooms.go                   # 联机房间中继（座位表 + 行动日志 + SSE）
 │       └── static/                    # 前端源码（embed 进二进制）
-│           ├── core/                  # 应用框架 / 样式
-│           └── tools/                 # 每个前端工具一个目录
+│           ├── core/                  # 应用框架 / 样式 / 桌游框架（boardgame.js + online.js 联机层）
+│           └── tools/                 # 每个前端工具一个目录（桌游含 selftest.js 引擎自测）
 ├── scripts/gen-registry.sh            # 重新生成前端工具索引
+├── docs/                              # 深度文档（部署/商业化等）
 ├── config.json                        # 运行配置
 └── Dockerfile
 ```
@@ -136,6 +139,17 @@ func init() {
 }
 ```
 
+### 德式桌游（复杂规则游戏）
+
+桌游走独立的纯函数引擎范式，不写 DOM 逻辑，框架统一提供热座 / AI / 联机 / 悔棋 / 排行榜：
+
+1. 在 `internal/web/static/tools/game-<name>/` 下新建目录（id 用下划线，如 `game_pr`）
+2. 实现引擎契约：`initialState(setup)` / `legalActions(state)` / `apply(state, action)` / `currentPlayer` / `isGameOver` / `score`——**零 DOM / i18n 依赖，state 必须 JSON-safe 且含 rng（seed+counter），保证重放/联机/悔棋确定性**
+3. 写 `bot.js`（`bot(state, legal) -> action` 同步启发式）、`render.js`（棋盘渲染）、`selftest.js`（`node selftest.js` 跑：随机对局不变量 ×N + 规则定点断言，提交前必过）
+4. 在 `internal/web/leaderboard.go` 的 `lbScoreCaps` 加分数上限，运行 `bash scripts/gen-registry.sh`
+
+框架 `core/boardgame.js`（`mountBoardGame(el, game)`）自动获得：座位配置屏、AI 循环、行动日志、付费悔棋（快照栈）、隐私交接遮罩、自动存档、终局结算 + 排行榜；联机模式 `core/online.js` 用同一引擎重放行动日志（服务端只中继，不跑游戏逻辑）。参照实现：`game-splendor/`（较简单）或 `game-agricola/`（含子阶段/卡牌解释器）。
+
 ## 视频处理在 1C2G 上的保护策略
 
 - 文件大小硬限（默认 1GB，见 `config.json`）
@@ -204,11 +218,15 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 | 字段 | 说明 | 默认值 |
 |------|------|--------|
 | `server.addr` | 监听地址 | `:8080` |
+| `storage.driver` | 状态持久化后端：`local`（JSON 文件）/ `redis` | `redis` |
+| `storage.redis.{host,port,db,keyPrefix}` | Redis 连接参数（密码只经 `REDIS_PASSWORD` 环境变量注入，不写配置文件） | 见 config.json |
 | `limits.maxUploadBytes` | 上传上限 | 1073741824 (1GB) |
 | `limits.heavyConcurrency` | 重型任务并发数（视频/音频/文档，其余排队） | 3 |
 | `limits.jobTimeoutSeconds` | 任务超时 | 300 |
 | `pro.tokens` | Pro token 列表 | `[]` |
 | `pro.maxUploadBytes` | Pro 上传上限 | 2147483648 (2GB) |
+
+> 配置覆盖链：命令行 flag > 环境变量（`TOOLBOX_*` 前缀，如 `TOOLBOX_STORAGE_DRIVER=local`；Redis 密码走独立的 `REDIS_PASSWORD`）> Nacos 远程配置（`nacos.enabled` 开启）> config.json > 内置默认值。敏感值经环境变量注入，config.json 不落盘。
 
 ## 中英文切换
 
@@ -225,6 +243,7 @@ curl -X POST -H "X-Pro-Token: issued-token-1" \
 - **路径穿越防护**：下载产物路径校验绝对路径 + `..` 段拒绝。
 - **HTTP 加固**：`ReadHeaderTimeout` 防 slowloris、`MaxHeaderBytes` 限制、安全响应头（CSP / X-Frame-Options / nosniff / Referrer-Policy）。
 - **文件名安全**：上传文件用 `CreateTemp` 落盘，输出用时间戳命名，不信任客户端文件名。
+- **联机房间加固**：服务端只存座位表与行动日志（不跑游戏逻辑，无状态注入面），建/加入/行动三类接口各自每 IP 限流，乐观并发 base 校验裁决双驱竞态，房间自动过期回收。
 - **LibreOffice 隔离**：文档转换每任务独立输出目录 + 独立 UserInstallation profile（防锁冲突与 profile 污染），`--headless --norestore --nologo` 不执行宏；输入/输出格式白名单。
 
 > 生产建议：在 ffmpeg/LibreOffice 进程外用 cgroup 限制内存上限（如 1G），并用反代（Nginx/Caddy）做 TLS 与连接级限流。**建议在主机防火墙屏蔽全部出站网络**——本服务无需出站，可直接消除 ffmpeg/LibreOffice 处理恶意文件时的 SSRF 面。

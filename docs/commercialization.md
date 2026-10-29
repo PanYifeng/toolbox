@@ -24,6 +24,8 @@ config.json
   "signature": true,    // 个人署名（逸丰 ❤ 思宏）
   "religion": true,     // 宗教文化分类（合规风险）
   "memorialCard": true, // 纪念卡 + 验真（发证资质风险）
+  "leaderboard": true,  // 小游戏/桌游排行榜 + 破纪录签发卡
+  "errata": true,       // 错题解析付费项（非满分可付费看解析）
   "analytics": false    // 匿名埋点上报（默认关）
 }
 ```
