@@ -203,7 +203,8 @@ function renderPlayers(s) {
     // 建筑计数（TP2 计入交易站）
     const cnt = { D: 0, TP: 0, TE: 0, SH: 0, SA: 0 };
     for (const b of Object.values(p.buildings)) cnt[b === 'TP2' ? 'TP' : b] += 1;
-    const income = incStr(incomeOf(s, p));
+    // 收入提示须待第 1 轮开始（incomeOf 读 roundTiles[round-1]，round=0 时未定义）
+    const income = s.round >= 1 ? incStr(incomeOf(s, p)) : '—';
     return `
       <div class="tm-player ${isCur ? 'tm-cur' : ''}" style="--pc:${p.color}">
         <div class="tm-phead">
