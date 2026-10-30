@@ -5,9 +5,9 @@ import { HEXES } from './map-data.js';
 import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
   BUILDINGS, POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, CULT_TOP,
-  cultSpaceReward, SHIPPING_COST,
+  cultSpaceReward, SHIPPING_COST, WHEEL, wheelDist,
 } from './tables.js';
-import { buildCost, tpVariant, BLD_NAME, CULT_NAME, currentPlayer } from './engine.js';
+import { buildCost, tpVariant, BLD_NAME, CULT_NAME, currentPlayer, incomeOf } from './engine.js';
 
 const TERR_COLOR = {
   plains: '#d8c98e', swamp: '#7d9268', lakes: '#7fb5dd', forest: '#4e8a5f',
@@ -63,6 +63,18 @@ function incStr(g) {
 function colon() { return getLang() === 'zh' ? '：' : ': '; }
 function paren(x) { return getLang() === 'zh' ? `（${x}）` : ` (${x})`; }
 
+// digSpades 指定派系视角：挖到目标地形需几铲（巨人每铲 2 步减半）
+function digSpades(f, terr) {
+  const d = wheelDist(terr, f.terrain);
+  return f.special === 'digDouble' ? Math.ceil(d / 2) : d;
+}
+
+// curFaction 当前行动玩家的派系（选派系阶段为 null）
+function curFaction(s) {
+  const p = s.players[currentPlayer(s)];
+  return p && p.faction ? factionById(p.faction) : null;
+}
+
 // actBtn 通用动作按钮
 function actBtn(action, label) {
   return `<button class="btn-soft" data-act='${JSON.stringify(action)}'>${label}</button>`;
@@ -78,7 +90,7 @@ export function renderBoard(el, s, legal, pick) {
       ${renderStatus(s)}
       <div class="tm-main">
         <div class="tm-mapwrap">${renderMap(s, legal, human)}</div>
-        <div class="tm-side">${renderPlayers(s)}</div>
+        <div class="tm-side">${renderPlayers(s)}${renderWheel(s)}</div>
       </div>
       ${renderTable(s)}
       ${renderAction(s, legal, human)}
@@ -87,7 +99,6 @@ export function renderBoard(el, s, legal, pick) {
 }
 
 // —— 顶部状态条 ——
-
 function renderStatus(s) {
   const tile = s.round >= 1 ? s.roundTiles[s.round - 1] : null;
   const order = s.round >= 1 ? s.turnOrder : s.players.map((p) => p.seat);
@@ -130,16 +141,25 @@ function hexTitle(s, a) {
 
 function renderMap(s, legal, human) {
   const clicks = clickableHexes(legal, human);
+  const f = curFaction(s);
   const hexes = HEXES.map((h) => {
     const c = POS[h.id];
     const st = s.hexes[h.id];
     const a = clicks.get(h.id);
     const dug = st.terrain !== h.terrain ? ' stroke="var(--fg)" stroke-width="1.5"' : '';
+    // 空陆地块的铲数角标：挖到此地形需几铲（家园地形 = 0 免挖）
+    let dig = '';
+    if (f && st.owner === null && st.terrain !== 'river' && st.terrain !== f.terrain) {
+      const n = digSpades(f, st.terrain);
+      const tone = n === 1 ? 'tm-dig1' : n === 2 ? 'tm-dig2' : 'tm-dig3';
+      dig = `<text x="${c.x - S + 11}" y="${c.y - S + 16}" class="tm-dig ${tone}">${n}</text>`;
+    }
     return `
       <g ${a ? `class="tm-hexbtn" data-hex="${h.id}">` : '>'}
         <polygon points="${hexPoints(c.x, c.y)}" class="tm-hex" fill="${TERR_COLOR[st.terrain]}"${dug}></polygon>
         ${a ? `<polygon points="${hexPoints(c.x, c.y)}" class="tm-ring"></polygon>
           <title>${hexTitle(s, a)}</title>` : ''}
+        ${dig}
         ${st.owner !== null ? bldMark(s, st, c) : ''}
       </g>`;
   }).join('');
@@ -172,28 +192,54 @@ function favChip(f) {
   return `<span class="tm-fav" title="${tr(CULT_NAME[f.track])} +${f.advance}">${CULT_ICON[f.track]}${incStr(f.income)}</span>`;
 }
 
+// renderPlayers 玩家面板：布局对齐官方派系面板——
+// 头部（派色头像 + 派系名 + 座位名 + VP）→ 资源行 → 三碗能量 → 建筑计数 → 邪教 → 奖励/恩惠
 function renderPlayers(s) {
   return `<div class="tm-players">${s.players.map((p) => {
     const f = factionById(p.faction);
     const isCur = p.seat === currentPlayer(s);
     const cult = CULT_TRACKS.map((k) =>
       `<span class="tm-cchip">${CULT_ICON[k]}${p.cult[k]}${p.priestsOnCult[k] ? `🔒${p.priestsOnCult[k]}` : ''}</span>`).join('');
+    // 建筑计数（TP2 计入交易站）
+    const cnt = { D: 0, TP: 0, TE: 0, SH: 0, SA: 0 };
+    for (const b of Object.values(p.buildings)) cnt[b === 'TP2' ? 'TP' : b] += 1;
+    const income = incStr(incomeOf(s, p));
     return `
       <div class="tm-player ${isCur ? 'tm-cur' : ''}" style="--pc:${p.color}">
         <div class="tm-phead">
-          <span class="bg-dot" style="background:${p.color}"></span>
-          <b>${FACTION_ICON[p.faction] || ''} ${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
+          ${f ? `<span class="tm-fava" style="background:${f.color}">${FACTION_ICON[p.faction] || '🏳️'}</span><b class="tm-pfacname">${tr(f.name)}</b>` : `<span class="bg-dot" style="background:${p.color}"></span><b>${esc(p.name)}</b>`}
+          <span class="tm-pseat">${f ? esc(p.name) : ''}${p.isAI ? ' 🤖' : ''}</span>
           <span class="tm-vp">🏆${p.vp}</span>
         </div>
         ${f ? `<div class="tm-pfac"><i class="tm-terr" style="background:${TERR_COLOR[f.terrain]}"></i>
           ${tr(TERRAIN_NAMES[f.terrain])} · ${tr(f.desc)}${f.shAbility ? ` · ${t('tm.ui.needSH')}` : ''}</div>` : ''}
-        <div class="tm-pres">💰${p.coins} 👷${p.workers} 🙏${p.priests} ⛏️${p.spades} ⚓${p.shipping} 🏘️${p.towns.length}</div>
+        <div class="tm-pres" title="${t('tm.ui.income')}${colon()}${income}">💰${p.coins} 👷${p.workers} 🙏${p.priests} ⛏️${p.spades} ⚓${p.shipping} 🏘️${p.towns.length}</div>
         ${renderBowls(p)}
+        <div class="tm-pbld" title="${t('tm.ui.bldIncome')}">🏠${cnt.D}/7 🏪${cnt.TP}/6 ⛪${cnt.TE}/3 🏰${cnt.SH}/1 ✨${cnt.SA}/1</div>
         <div class="tm-pcult">${cult}</div>
         ${p.bonus !== null ? `<div class="tm-pbonus">${incStr(BONUS_TILES[p.bonus].income)}</div>` : ''}
         ${p.favor.length ? `<div class="tm-pfavor">${p.favor.map((fid) => favChip(FAVOR_TILES.find((x) => x.id === fid))).join('')}</div>` : ''}
       </div>`;
   }).join('')}</div>`;
+}
+
+// renderWheel 地形轮图例（侧栏底部）：7 地形按官方轮盘环序排列，
+// 当前玩家家园高亮 ⌂，其余地形标注挖到需几铲（巨人已减半）
+function renderWheel(s) {
+  const f = curFaction(s);
+  const cells = WHEEL.map((terr) => {
+    const isHome = f && terr === f.terrain;
+    const n = f && !isHome ? digSpades(f, terr) : null;
+    const cls = isHome ? 'tm-whome' : n === 1 ? 'tm-w1' : n === 2 ? 'tm-w2' : n === 3 ? 'tm-w3' : '';
+    return `<span class="tm-wcell ${cls}" title="${tr(TERRAIN_NAMES[terr])}${n !== null ? `${colon()}⛏️${n}` : ''}">
+      <i class="tm-terr" style="background:${TERR_COLOR[terr]}"></i>${isHome ? '⌂' : n !== null ? `⛏️${n}` : ''}</span>`;
+  }).join('');
+  return `
+    <div class="tm-wheel" title="${t('tm.ui.wheel')}">
+      <span class="tm-label">${t('tm.ui.wheel')}</span>
+      <div class="tm-wcells">${cells}</div>
+      <span class="tm-wwork">${t('tm.ui.spadeRate')}</span>
+    </div>`;
 }
 
 // —— 中央表区：邪教轨 + 能量动作 + 奖励板块 ——
@@ -257,13 +303,18 @@ function renderAction(s, legal, human) {
   return `<div class="tm-action" data-bg-focus>${prompt}${body}</div>`;
 }
 
+// factionPanel 选派系卡：派色头像 + 派系名 + 家园地形 + 六地形挖铲行 + 专长
 function factionPanel(legal) {
   const cards = legal.filter((a) => a.kind === 'faction').map((a) => {
     const f = factionById(a.faction);
+    const digs = WHEEL.filter((terr) => terr !== f.terrain)
+      .map((terr) => ({ terr, n: digSpades(f, terr) }));
     return `
-      <button class="tm-fcard" data-fac="${f.id}">
-        <span class="tm-fname"><i class="tm-fico">${FACTION_ICON[f.id] || '🏳️'}</i> ${tr(f.name)}</span>
+      <button class="tm-fcard" data-fac="${f.id}" style="--fc:${f.color}">
+        <span class="tm-fname"><span class="tm-fava" style="background:${f.color}">${FACTION_ICON[f.id] || '🏳️'}</span>${tr(f.name)}</span>
         <span class="tm-fterr"><i class="tm-terr" style="background:${TERR_COLOR[f.terrain]}"></i>${tr(TERRAIN_NAMES[f.terrain])}</span>
+        <span class="tm-fdig">${digs.map((x) =>
+          `<span class="tm-digcell" title="${tr(TERRAIN_NAMES[x.terr])}${colon()}⛏️${x.n}"><i class="tm-terr" style="background:${TERR_COLOR[x.terr]}"></i>${x.n}</span>`).join('')}<span class="tm-dignote">⛏️</span></span>
         <span class="tm-fdesc">${tr(f.desc)}${f.shAbility ? ` · ${t('tm.ui.needSH')}` : ''}</span>
       </button>`;
   }).join('');

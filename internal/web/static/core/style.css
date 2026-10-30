@@ -1269,6 +1269,43 @@ pre {
 .tm-pass { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .tm-bpick { border: 1px solid var(--border); border-radius: 8px; padding: 3px 9px; background: var(--bg); font-size: 12.5px; cursor: pointer; }
 .tm-bpick.tm-bsel { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
+
+/* —— 神秘大地 UX 对齐官方（2026-10-30）—— */
+/* 挖铲角标（棋盘空地） */
+.tm-dig { font-size: 11px; font-weight: 700; pointer-events: none; }
+.tm-dig1 { fill: #1b7d2f; }
+.tm-dig2 { fill: #a86a0e; }
+.tm-dig3 { fill: #b03030; }
+
+/* 派系头像方块：官方派系色底 + 图标 */
+.tm-fava { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; font-style: normal; font-size: 16px; flex: none; border: 1px solid color-mix(in srgb, var(--bg) 45%, transparent); }
+
+/* 玩家面板头部：派系名主显 + 座位名副显 */
+.tm-pfacname { font-size: 13.5px; }
+.tm-pseat { font-size: 11.5px; color: var(--muted); }
+
+/* 建筑计数行 */
+.tm-pbld { margin-top: 4px; font-size: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 地形轮图例 */
+.tm-wheel { display: flex; flex-direction: column; gap: 4px; }
+.tm-wcells { display: flex; gap: 4px; flex-wrap: wrap; }
+.tm-wcell { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; background: var(--bg); }
+.tm-wcell .tm-terr { width: 14px; height: 14px; }
+.tm-whome { border-color: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); font-weight: 700; }
+.tm-w1 { color: #2e8b3d; }
+.tm-w2 { color: #b07818; }
+.tm-w3 { color: #b03030; }
+.tm-wwork { font-size: 11.5px; color: var(--muted); }
+
+/* 选派系卡：派色描边 + 挖铲行 */
+.tm-fcard { border-color: color-mix(in srgb, var(--fc) 55%, var(--border)); }
+.tm-fcard:hover { border-color: var(--fc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--fc) 35%, transparent); }
+.tm-fdig { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.tm-digcell { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; border: 1px solid var(--border); border-radius: 5px; padding: 0 4px; background: var(--bg-soft); }
+.tm-digcell .tm-terr { width: 13px; height: 13px; }
+.tm-dignote { font-size: 11.5px; color: var(--muted); }
+
 @media (max-width: 900px) {
   .tm-main { flex-direction: column; }
   .tm-side { flex: 1 1 auto; width: 100%; }

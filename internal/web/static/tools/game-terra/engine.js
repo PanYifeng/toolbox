@@ -611,13 +611,15 @@ export function apply(state, action) {
   return s;
 }
 
-// applyFaction 选派系
+// applyFaction 选派系：棋子色切到官方派系色（官方建筑即按派系色着色）
 function applyFaction(s, a) {
   if (!FACTIONS_ALL.some((f) => f.id === a.faction) || s.takenFactions.includes(a.faction)) return;
   const p = s.players[s.phase.cur];
+  const f = factionById(a.faction);
   p.faction = a.faction;
+  p.color = f.color;
   s.takenFactions.push(a.faction);
-  log(s, p.seat, 'tm.log.faction', { n: p.name, f: factionOf(p).name });
+  log(s, p.seat, 'tm.log.faction', { n: p.name, f: f.name });
   if (s.takenFactions.length >= s.n) {
     s.phase = { kind: PH_PLACE, idx: 0 }; // 奖励板块在放置完毕时统一分配
   } else {
