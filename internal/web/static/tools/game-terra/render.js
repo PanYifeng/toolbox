@@ -1,17 +1,24 @@
 // 神秘大地渲染层：renderBoard(el, state, legal, pick) 全量重绘 + 事件委托。
-// SVG 六边形棋盘（地形底色 + 玩家色建筑 + 桥）+ 邪教轨/能量动作/板块区 + 阶段操作区。
+// SVG 六边形棋盘（地形底色 + 玩家色建筑 + 桥）+ 官方环形地形轮（高区分度配色）
+// + 邪教轨/能量动作/板块区 + 规划提示（下轮收入 + 终局 VP 投影）+ 阶段操作区。
 import { t, tr, getLang } from '/core/i18n.js';
 import { HEXES } from './map-data.js';
 import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
-  BUILDINGS, POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, CULT_TOP,
-  cultSpaceReward, SHIPPING_COST, WHEEL, wheelDist,
+  POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, CULT_TOP,
+  CULT_CROSS_REWARD, SHIPPING_COST, WHEEL, TOWN_TILES,
+  CONVERT_RATES, DIG_UPGRADE_COST, DIG_UPGRADE_VP, SPADE_COST, ROUNDS,
+  PRIEST_CULT_SPOTS,
 } from './tables.js';
-import { buildCost, tpVariant, BLD_NAME, CULT_NAME, currentPlayer, incomeOf } from './engine.js';
+import {
+  buildCost, spadesNeeded, incomeOf, projectedVp, currentPlayer,
+  BLD_NAME, CULT_NAME,
+} from './engine.js';
 
+// 地形配色：高区分度七色（色相间隔拉大 + 深浅交错，官方轮环序）
 const TERR_COLOR = {
-  plains: '#d8c98e', swamp: '#7d9268', lakes: '#7fb5dd', forest: '#4e8a5f',
-  mountain: '#a5988b', wasteland: '#b09b72', desert: '#e3cd97', river: '#8fc4e4',
+  plains: '#d9b382', swamp: '#454b54', lakes: '#4a90d9', forest: '#2e8b3d',
+  mountain: '#9aa0a6', wasteland: '#c0392b', desert: '#f2d13d', river: '#a8d4f0',
 };
 const CULT_ICON = { fire: '🔥', water: '💧', earth: '⛰️', air: '💨' };
 const SQ3 = Math.sqrt(3);
@@ -38,12 +45,12 @@ for (const h of HEXES) {
 const PAD = S + 8;
 const VB = `${minX - PAD} ${minY - PAD} ${maxX - minX + 2 * PAD} ${maxY - minY + 2 * PAD}`;
 
-// hexPoints 尖顶六边形顶点串
-function hexPoints(x, y) {
+// hexPoints 尖顶六边形顶点串（size 可缩放：棋盘 S / 地形轮小格）
+function hexPoints(x, y, size) {
   const pts = [];
   for (let k = 0; k < 6; k++) {
     const a = (30 + 60 * k) * Math.PI / 180;
-    pts.push(`${(x + S * Math.cos(a)).toFixed(1)},${(y + S * Math.sin(a)).toFixed(1)}`);
+    pts.push(`${(x + size * Math.cos(a)).toFixed(1)},${(y + size * Math.sin(a)).toFixed(1)}`);
   }
   return pts.join(' ');
 }
@@ -63,10 +70,14 @@ function incStr(g) {
 function colon() { return getLang() === 'zh' ? '：' : ': '; }
 function paren(x) { return getLang() === 'zh' ? `（${x}）` : ` (${x})`; }
 
-// digSpades 指定派系视角：挖到目标地形需几铲（巨人每铲 2 步减半）
-function digSpades(f, terr) {
-  const d = wheelDist(terr, f.terrain);
-  return f.special === 'digDouble' ? Math.ceil(d / 2) : d;
+// digSpadesFor 派系视角挖铲数（与引擎 spadesNeeded 同语义）：
+// 家园 0；巨人非家园一律 2（官方 map.pm 固定 color_difference=2）；其余取轮距
+function digSpadesFor(f, terr) {
+  if (terr === f.terrain) return 0;
+  if (f.special === 'giantDigDouble') return 2;
+  return WHEEL.indexOf(terr) >= 0 ? Math.min(
+    Math.abs(WHEEL.indexOf(terr) - WHEEL.indexOf(f.terrain)),
+    7 - Math.abs(WHEEL.indexOf(terr) - WHEEL.indexOf(f.terrain))) : 0;
 }
 
 // curFaction 当前行动玩家的派系（选派系阶段为 null）
@@ -81,7 +92,7 @@ function actBtn(action, label) {
 }
 
 export function renderBoard(el, s, legal, pick) {
-  const stamp = `${s.phase.kind}:${s.phase.cur || 0}:${s.phase.idx || 0}:${s.round}:${s.log.length}:${s.bridges.length}`;
+  const stamp = `${s.phase.kind}:${s.phase.cur || 0}:${s.round}:${s.log.length}:${s.bridges.length}:${s.pending.map((x) => x.kind).join()}`;
   if (ui.stamp !== stamp) ui = { stamp, upSel: null, passBonus: null };
   ctx = { el, s, legal, pick };
   const human = !s.players[currentPlayer(s)].isAI;
@@ -90,7 +101,7 @@ export function renderBoard(el, s, legal, pick) {
       ${renderStatus(s)}
       <div class="tm-main">
         <div class="tm-mapwrap">${renderMap(s, legal, human)}</div>
-        <div class="tm-side">${renderPlayers(s)}${renderWheel(s)}</div>
+        <div class="tm-side">${renderPlayers(s)}${renderWheel(s)}${renderPlan(s)}</div>
       </div>
       ${renderTable(s)}
       ${renderAction(s, legal, human)}
@@ -99,16 +110,28 @@ export function renderBoard(el, s, legal, pick) {
 }
 
 // —— 顶部状态条 ——
+
+// roundTileText 回合板块描述：邪教收入条件 + 本轮计分 VP
+function roundTileText(tile) {
+  const inc = `${CULT_ICON[tile.cult]}${t('tm.ui.perCult')}${tile.req}${colon()}${incStr(tile.income)}`;
+  let vp = '';
+  if (tile.vpMode === 'build') {
+    vp = Object.entries(tile.vp).map(([b, v]) => `${tr(BLD_NAME[b])}+${v}🏆`).join(' ');
+  } else if (tile.vp.spade) {
+    vp = `⛏️+${tile.vp.spade}🏆`;
+  } else if (tile.vp.town) {
+    vp = `🏘️+${tile.vp.town}🏆`;
+  }
+  return `${inc} · ${t('tm.ui.roundVp')}${colon()}${vp}`;
+}
+
 function renderStatus(s) {
   const tile = s.round >= 1 ? s.roundTiles[s.round - 1] : null;
   const order = s.round >= 1 ? s.turnOrder : s.players.map((p) => p.seat);
-  const tileTxt = tile
-    ? `${incStr(tile.income)} · ${tile.cultEnd === 'choice' ? t('tm.ui.anyTrack') : tr(CULT_NAME[tile.cultEnd])}`
-    : '—';
   return `
     <div class="tm-status">
       <span class="tm-round">${t('tm.ui.round')} <b>${Math.max(s.round, 0)}</b>/6</span>
-      <span>${t('tm.ui.roundTile')}${colon()}<b>${tileTxt}</b></span>
+      <span>${t('tm.ui.roundTile')}${colon()}<b>${tile ? roundTileText(tile) : '—'}</b></span>
       <span class="tm-order">${order.map((seat, i) => {
         const p = s.players[seat];
         return `<i class="tm-seatchip ${i === 0 ? 'tm-first' : ''}" style="--pc:${p.color}">${esc(p.name)}</i>`;
@@ -118,13 +141,14 @@ function renderStatus(s) {
 
 // —— SVG 棋盘 ——
 
-// clickableHexes 可点格 → 动作映射（建民居非代工优先）
+// clickableHexes 可点格 → 动作映射（建民居优先；SH 格目标/初始放置也可点）
 function clickableHexes(legal, human) {
   const m = new Map();
   if (!human) return m;
   for (const a of legal) {
-    if (a.kind === 'placeDwelling' || a.kind === 'witchDwelling') m.set(a.hex, a);
+    if (a.kind === 'placeDwelling') m.set(a.hex, a);
     else if (a.kind === 'build' && !m.has(a.hex)) m.set(a.hex, a);
+    else if (a.kind === 'shAction' && a.hex && !m.has(a.hex)) m.set(a.hex, a);
   }
   return m;
 }
@@ -133,7 +157,7 @@ function clickableHexes(legal, human) {
 function hexTitle(s, a) {
   const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
   if (a.kind === 'build') {
-    const c = buildCost(s, s.players[s.phase.cur], a.hex, false);
+    const c = buildCost(s, s.players[s.phase.cur], a.hex);
     return `${a.hex} · ${terr} · ${incStr(c)}`;
   }
   return `${a.hex} · ${terr}`;
@@ -142,22 +166,22 @@ function hexTitle(s, a) {
 function renderMap(s, legal, human) {
   const clicks = clickableHexes(legal, human);
   const f = curFaction(s);
+  const p = f ? s.players[currentPlayer(s)] : null;
   const hexes = HEXES.map((h) => {
     const c = POS[h.id];
     const st = s.hexes[h.id];
     const a = clicks.get(h.id);
     const dug = st.terrain !== h.terrain ? ' stroke="var(--fg)" stroke-width="1.5"' : '';
-    // 空陆地块的铲数角标：挖到此地形需几铲（家园地形 = 0 免挖）
+    // 空陆地块的铲数角标：当前玩家挖到该地形需几铲（家园/河流不标）
     let dig = '';
-    if (f && st.owner === null && st.terrain !== 'river' && st.terrain !== f.terrain) {
-      const n = digSpades(f, st.terrain);
-      const tone = n === 1 ? 'tm-dig1' : n === 2 ? 'tm-dig2' : 'tm-dig3';
-      dig = `<text x="${c.x - S + 11}" y="${c.y - S + 16}" class="tm-dig ${tone}">${n}</text>`;
+    if (p && f && st.owner === null && st.terrain !== 'river' && st.terrain !== f.terrain) {
+      const n = spadesNeeded(p, st.terrain);
+      dig = `<text x="${c.x - S + 11}" y="${c.y - S + 16}" class="tm-dig">${n}</text>`;
     }
     return `
       <g ${a ? `class="tm-hexbtn" data-hex="${h.id}">` : '>'}
-        <polygon points="${hexPoints(c.x, c.y)}" class="tm-hex" fill="${TERR_COLOR[st.terrain]}"${dug}></polygon>
-        ${a ? `<polygon points="${hexPoints(c.x, c.y)}" class="tm-ring"></polygon>
+        <polygon points="${hexPoints(c.x, c.y, S)}" class="tm-hex" fill="${TERR_COLOR[st.terrain]}"${dug}></polygon>
+        ${a ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="tm-ring"></polygon>
           <title>${hexTitle(s, a)}</title>` : ''}
         ${dig}
         ${st.owner !== null ? bldMark(s, st, c) : ''}
@@ -172,10 +196,10 @@ function renderMap(s, legal, human) {
   return `<svg viewBox="${VB}" class="tm-svg" role="img">${hexes}${bridges}</svg>`;
 }
 
-// bldMark 建筑标记：玩家色圆 + 类别图标（D 民居 🏠 / TP 贸易站 🏪 / TE 神庙 ⛪ / SA 圣域 ✨ / SH 要塞 🏰）
+// bldMark 建筑标记：玩家色圆 + 类别图标
 function bldMark(s, st, c) {
   const p = s.players[st.owner];
-  const lbl = st.bld === 'D' ? '🏠' : st.bld === 'TP' ? '🏪' : st.bld === 'TP2' ? '🏪' : st.bld === 'TE' ? '⛪' : st.bld === 'SA' ? '✨' : st.bld === 'SH' ? '🏰' : st.bld;
+  const lbl = st.bld === 'D' ? '🏠' : st.bld === 'TP' ? '🏪' : st.bld === 'TE' ? '⛪' : st.bld === 'SA' ? '✨' : st.bld === 'SH' ? '🏰' : st.bld;
   return `
     <circle cx="${c.x}" cy="${c.y}" r="13" fill="${p.color}" stroke="var(--bg)" stroke-width="1.5"></circle>
     <text x="${c.x}" y="${c.y + 4}" class="tm-bldlbl" text-anchor="middle">${lbl}</text>`;
@@ -188,23 +212,23 @@ function renderBowls(p) {
     <span class="tm-bowl">${p.power.i}</span>→<span class="tm-bowl">${p.power.ii}</span>→<span class="tm-bowl tm-bowl3">${p.power.iii}</span>⚡</div>`;
 }
 
-function favChip(f) {
-  return `<span class="tm-fav" title="${tr(CULT_NAME[f.track])} +${f.advance}">${CULT_ICON[f.track]}${incStr(f.income)}</span>`;
+// favChip 恩惠板块芯片：邪教推进 + 每轮收入
+function favChip(tile) {
+  const [track, steps] = Object.entries(tile.advance)[0];
+  return `<span class="tm-fav" title="${tr(CULT_NAME[track])} +${steps}">${CULT_ICON[track]}+${steps}${tile.income ? ` ${incStr(tile.income)}` : ''}</span>`;
 }
 
-// renderPlayers 玩家面板：布局对齐官方派系面板——
-// 头部（派色头像 + 派系名 + 座位名 + VP）→ 资源行 → 三碗能量 → 建筑计数 → 邪教 → 奖励/恩惠
+// renderPlayers 玩家面板：派色头像 + 派系名 + VP → 资源 → 三碗能量 → 建筑 → 邪教 → 板块
 function renderPlayers(s) {
   return `<div class="tm-players">${s.players.map((p) => {
     const f = factionById(p.faction);
     const isCur = p.seat === currentPlayer(s);
     const cult = CULT_TRACKS.map((k) =>
       `<span class="tm-cchip">${CULT_ICON[k]}${p.cult[k]}${p.priestsOnCult[k] ? `🔒${p.priestsOnCult[k]}` : ''}</span>`).join('');
-    // 建筑计数（TP2 计入交易站）
     const cnt = { D: 0, TP: 0, TE: 0, SH: 0, SA: 0 };
-    for (const b of Object.values(p.buildings)) cnt[b === 'TP2' ? 'TP' : b] += 1;
-    // 收入提示须待第 1 轮开始（incomeOf 读 roundTiles[round-1]，round=0 时未定义）
-    const income = s.round >= 1 ? incStr(incomeOf(s, p)) : '—';
+    for (const b of Object.values(p.buildings)) cnt[b] += 1;
+    const income = f && s.round >= 1 && s.round < ROUNDS
+      ? incStr(incomeOf(s, p, s.round + 1, true)) : '—';
     return `
       <div class="tm-player ${isCur ? 'tm-cur' : ''}" style="--pc:${p.color}">
         <div class="tm-phead">
@@ -213,40 +237,74 @@ function renderPlayers(s) {
           <span class="tm-vp">🏆${p.vp}</span>
         </div>
         ${f ? `<div class="tm-pfac"><i class="tm-terr" style="background:${TERR_COLOR[f.terrain]}"></i>
-          ${tr(TERRAIN_NAMES[f.terrain])} · ${tr(f.desc)}${f.shAbility ? ` · ${t('tm.ui.needSH')}` : ''}</div>` : ''}
+          ${tr(TERRAIN_NAMES[f.terrain])} · ${tr(f.desc)}${f.buildings.SH.shAction ? ` · ${t('tm.ui.needSH')}` : ''}</div>` : ''}
         <div class="tm-pres" title="${t('tm.ui.income')}${colon()}${income}">💰${p.coins} 👷${p.workers} 🙏${p.priests} ⛏️${p.spades} ⚓${p.shipping} 🏘️${p.towns.length}</div>
         ${renderBowls(p)}
-        <div class="tm-pbld" title="${t('tm.ui.bldIncome')}">🏠${cnt.D}/7 🏪${cnt.TP}/6 ⛪${cnt.TE}/3 🏰${cnt.SH}/1 ✨${cnt.SA}/1</div>
+        <div class="tm-pbld" title="${t('tm.ui.bldIncome')}">🏠${cnt.D}/8 🏪${cnt.TP}/4 ⛪${cnt.TE}/3 🏰${cnt.SH}/1 ✨${cnt.SA}/1</div>
         <div class="tm-pcult">${cult}</div>
-        ${p.bonus !== null ? `<div class="tm-pbonus">${incStr(BONUS_TILES[p.bonus].income)}</div>` : ''}
+        ${p.bonus !== null ? `<div class="tm-pbonus">${incStr(BONUS_TILES.find((b) => b.id === p.bonus).income)}</div>` : ''}
         ${p.favor.length ? `<div class="tm-pfavor">${p.favor.map((fid) => favChip(FAVOR_TILES.find((x) => x.id === fid))).join('')}</div>` : ''}
       </div>`;
   }).join('')}</div>`;
 }
 
-// renderWheel 地形轮图例（侧栏底部）：7 地形按官方轮盘环序排列，
-// 当前玩家家园高亮 ⌂，其余地形标注挖到需几铲（巨人已减半）
+// —— 官方环形地形轮（议题 1：与官方一致的圆形轮 + 高区分度配色）——
+// renderWheel 七地形按官方轮环序摆成一圈：家园 ⌂ 高亮，其余标挖到需几铲（巨人一律 2）
 function renderWheel(s) {
   const f = curFaction(s);
-  const cells = WHEEL.map((terr) => {
+  const p = f ? s.players[currentPlayer(s)] : null;
+  const R = 58;   // 环半径（SVG 单位）
+  const CS = 20;  // 环上小六边形边长
+  const cells = WHEEL.map((terr, i) => {
+    const ang = (90 - i * 360 / WHEEL.length) * Math.PI / 180; // 正上方起顺时针
+    const x = R * Math.cos(ang);
+    const y = -R * Math.sin(ang);
     const isHome = f && terr === f.terrain;
-    const n = f && !isHome ? digSpades(f, terr) : null;
-    const cls = isHome ? 'tm-whome' : n === 1 ? 'tm-w1' : n === 2 ? 'tm-w2' : n === 3 ? 'tm-w3' : '';
-    return `<span class="tm-wcell ${cls}" title="${tr(TERRAIN_NAMES[terr])}${n !== null ? `${colon()}⛏️${n}` : ''}">
-      <i class="tm-terr" style="background:${TERR_COLOR[terr]}"></i>${isHome ? '⌂' : n !== null ? `⛏️${n}` : ''}</span>`;
+    const n = p && f && !isHome ? spadesNeeded(p, terr) : null;
+    return `
+      <g class="tm-wcell ${isHome ? 'tm-whome' : ''}" transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
+        <polygon points="${hexPoints(0, 0, CS)}" fill="${TERR_COLOR[terr]}"></polygon>
+        <text class="tm-wlbl" y="5">${isHome ? '⌂' : n !== null ? `⛏${n}` : ''}</text>
+        <title>${tr(TERRAIN_NAMES[terr])}${n !== null ? `${colon()}⛏️${n}` : ''}</title>
+      </g>`;
   }).join('');
+  const spadeW = p ? SPADE_COST[p.digLevel || 0] : SPADE_COST[0];
   return `
     <div class="tm-wheel" title="${t('tm.ui.wheel')}">
       <span class="tm-label">${t('tm.ui.wheel')}</span>
-      <div class="tm-wcells">${cells}</div>
-      <span class="tm-wwork">${t('tm.ui.spadeRate')}</span>
+      <svg viewBox="-86 -86 172 172" class="tm-wsvg" role="img">
+        <circle cx="0" cy="0" r="${R + 22}" class="tm-wring"></circle>
+        ${cells}
+      </svg>
+      <span class="tm-wwork">⛏️×1 = ${spadeW}👷 → 🏠</span>
+    </div>`;
+}
+
+// —— 规划提示（议题 4：预期下轮收入 + 终局 VP 投影）——
+function renderPlan(s) {
+  if (s.phase.kind !== 'act' || s.round < 1) return '';
+  const seat = currentPlayer(s);
+  const p = s.players[seat];
+  if (!p.faction) return '';
+  const rows = [];
+  if (s.round < ROUNDS) {
+    rows.push(`<div class="tm-planrow"><span class="muted">${t('tm.ui.income')}</span> ${incStr(incomeOf(s, p, s.round + 1, true))}</div>`);
+  }
+  const proj = projectedVp(s, seat);
+  rows.push(`<div class="tm-planrow"><span class="muted">${t('tm.ui.planPassVp')}</span> 🏆+${proj.detail.pass}</div>`);
+  rows.push(`<div class="tm-planrow"><span class="muted">${t('tm.ui.planProj')}</span> 🏆${proj.total}
+    <span class="tm-plandetail">${t('tm.ui.planDetail')}${colon()}${t('tm.score.cult')}+${proj.detail.cult} · ${t('tm.score.network')}+${proj.detail.network} · ${t('tm.score.resources')}+${proj.detail.resources}</span></div>`);
+  return `
+    <div class="tm-plan" title="${t('tm.ui.planTip')}">
+      <span class="tm-label">${t('tm.ui.plan')}</span>
+      ${rows.join('')}
     </div>`;
 }
 
 // —— 中央表区：邪教轨 + 能量动作 + 奖励板块 ——
 
 function cellTitle(pos) {
-  return incStr(cultSpaceReward(pos));
+  return CULT_CROSS_REWARD[pos] ? `⚡+${CULT_CROSS_REWARD[pos]}` : '—';
 }
 
 function renderCultTracks(s) {
@@ -277,7 +335,7 @@ function renderBonusRow(s) {
     const holder = s.players.find((p) => p.bonus === b.id);
     const style = holder ? ` style="border-color:${holder.color}"` : '';
     return `<span class="tm-btile ${holder ? 'tm-btile-taken' : ''}"${style}>
-      ${incStr(b.income)}${holder ? ` · ${esc(holder.name)}` : ''}</span>`;
+      ${b.id} ${incStr(b.income)}${s.bonusCoins[b.id] ? ` +💰${s.bonusCoins[b.id]}` : ''}</span>`;
   }).join('');
   return `<div class="tm-btilerow"><span class="tm-label">${t('tm.ui.bonusTiles')}</span>${tiles}</div>`;
 }
@@ -295,31 +353,46 @@ function renderTable(s) {
 
 function renderAction(s, legal, human) {
   const ph = s.phase.kind;
-  const prompt = `<p class="tm-prompt">${t('tm.ui.prompt.' + ph)}</p>`;
+  const promptKey = ph === 'resolve'
+    ? `tm.ui.prompt.${s.pending[0] ? s.pending[0].kind : 'cultChoice'}`
+    : `tm.ui.prompt.${ph}`;
+  const prompt = `<p class="tm-prompt">${t(promptKey)}</p>`;
   if (!human) return `<div class="tm-action" data-bg-focus>${prompt}</div>`;
   let body = '';
   if (ph === 'chooseFaction') body = factionPanel(legal);
+  else if (ph === 'pickBonus') body = bonusPanel(legal);
   else if (ph === 'act') body = actPanel(s, legal);
-  else if (ph === 'resolve') body = resolvePanel(legal);
+  else if (ph === 'resolve') body = resolvePanel(s, legal);
   return `<div class="tm-action" data-bg-focus>${prompt}${body}</div>`;
 }
 
-// factionPanel 选派系卡：派色头像 + 派系名 + 家园地形 + 六地形挖铲行 + 专长
+// factionPanel 选派系卡：派色头像 + 家园地形 + 六地形挖铲行 + 专长
 function factionPanel(legal) {
   const cards = legal.filter((a) => a.kind === 'faction').map((a) => {
     const f = factionById(a.faction);
     const digs = WHEEL.filter((terr) => terr !== f.terrain)
-      .map((terr) => ({ terr, n: digSpades(f, terr) }));
+      .map((terr) => ({ terr, n: digSpadesFor(f, terr) }));
     return `
       <button class="tm-fcard" data-fac="${f.id}" style="--fc:${f.color}">
         <span class="tm-fname"><span class="tm-fava" style="background:${f.color}">${FACTION_ICON[f.id] || '🏳️'}</span>${tr(f.name)}</span>
         <span class="tm-fterr"><i class="tm-terr" style="background:${TERR_COLOR[f.terrain]}"></i>${tr(TERRAIN_NAMES[f.terrain])}</span>
         <span class="tm-fdig">${digs.map((x) =>
           `<span class="tm-digcell" title="${tr(TERRAIN_NAMES[x.terr])}${colon()}⛏️${x.n}"><i class="tm-terr" style="background:${TERR_COLOR[x.terr]}"></i>${x.n}</span>`).join('')}<span class="tm-dignote">⛏️</span></span>
-        <span class="tm-fdesc">${tr(f.desc)}${f.shAbility ? ` · ${t('tm.ui.needSH')}` : ''}</span>
+        <span class="tm-fdesc">${tr(f.desc)}${f.buildings.SH.shAction ? ` · ${t('tm.ui.needSH')}` : ''}</span>
       </button>`;
   }).join('');
   return `<div class="tm-fcards">${cards}</div>`;
+}
+
+// bonusPanel 开局奖励板块（数据表驱动，杜绝字符串下标）
+function bonusPanel(legal) {
+  const picks = legal.filter((a) => a.kind === 'pickBonus');
+  if (!picks.length) return '';
+  const btns = picks.map((a) => {
+    const b = BONUS_TILES.find((x) => x.id === a.bonus);
+    return actBtn(a, `${b.id} · ${incStr(b.income)}`);
+  }).join('');
+  return `<div class="tm-btns">${btns}</div>`;
 }
 
 // upgradePanel 升级：按（格,目标）分组；TE/SA 展开恩惠板块选择
@@ -335,15 +408,17 @@ function upgradePanel(s, legal) {
   let html = '';
   for (const [key, acts] of groups) {
     const [hex, to] = key.split('|');
-    const variant = to === 'TP' ? tpVariant(s, hex) : to;
-    const cost = incStr(BUILDINGS[variant].cost);
+    const p = s.players[s.phase.cur];
+    const f = factionById(p.faction);
+    const cost = incStr({ ...f.buildings[to].cost });
     const open = ui.upSel === key;
     html += `<button class="btn-soft tm-upbtn ${open ? 'tm-usel' : ''}" data-up="${key}">
       ${hex} → ${tr(BLD_NAME[to])}${paren(cost)}</button>`;
     const needFavor = to === 'TE' || to === 'SA';
     if (open && needFavor) {
       html += `<div class="tm-favors"><span class="muted">${t('tm.ui.favorHint')}</span>${acts.map((a) =>
-        `<button class="btn-soft" data-act='${JSON.stringify(a)}'>${favChip(FAVOR_TILES.find((x) => x.id === a.favor))}</button>`).join('')}</div>`;
+        `<button class="btn-soft" data-act='${JSON.stringify(a)}'>${a.favor.map((fid) =>
+          favChip(FAVOR_TILES.find((x) => x.id === fid))).join('+')}</button>`).join('')}</div>`;
     } else if (open) {
       html += `<div class="tm-btns">${actBtn(acts[0], `${t('tm.ui.upgrade')} ✅`)}</div>`;
     }
@@ -351,39 +426,116 @@ function upgradePanel(s, legal) {
   return `<span class="tm-label">${t('tm.ui.upgrade')}</span><div class="tm-btns">${html}</div>`;
 }
 
-// trackBtns 四轨迹按钮（发祭司 / 混沌仪式共用）
-function trackBtns(legal, kind) {
-  const acts = legal.filter((a) => a.kind === kind);
+// priestPanel 发祭司上轨（每轨空槽任选）
+function priestPanel(legal) {
+  const acts = legal.filter((a) => a.kind === 'priestSend');
   if (!acts.length) return '';
-  const key = kind === 'priestSend' ? 'tm.ui.priestSend' : 'tm.ui.chaosCult';
-  const btns = acts.map((a) =>
-    actBtn(a, `${CULT_ICON[a.track]} ${tr(CULT_NAME[a.track])}${kind === 'chaosCult' ? ' +2' : ''}`)).join('');
-  return `<span class="tm-label">${t(key)}</span><div class="tm-btns">${btns}</div>`;
+  const byTrack = new Map();
+  for (const a of acts) {
+    if (!byTrack.has(a.track)) byTrack.set(a.track, []);
+    byTrack.get(a.track).push(a);
+  }
+  const btns = [...byTrack.entries()].map(([track, list]) => {
+    // 每轨槽位推进量 PRIEST_CULT_SPOTS（3/2/2/2）——从 tables.js 导入后按轨取值
+    return actBtn(list[0], `${CULT_ICON[track]} ${tr(CULT_NAME[track])} 🔒+${PRIEST_CULT_SPOTS[CULT_TRACKS.indexOf(track)]}`);
+  }).join('');
+  return `<span class="tm-label">${t('tm.ui.priestSend')}</span><div class="tm-btns">${btns}</div>`;
 }
 
-// miscPanel 能量动作 / 燃烧 / 船运 / 桥
+// shPanel SH 特别行动：格目标类（女巫/游牧/蜂灵）点棋盘高亮格；四轨/桥对/即时类列按钮
+function shPanel(s, legal) {
+  const acts = legal.filter((a) => a.kind === 'shAction');
+  if (!acts.length) return '';
+  const f = curFaction(s);
+  const id = acts[0].id;
+  const head = `<span class="tm-label">${t('tm.ui.shAction')}${paren(tr(f.name))}</span>`;
+  if (id === 'ACTA') {
+    return `${head}<div class="tm-btns">${acts.map((a) =>
+      actBtn(a, `${CULT_ICON[a.track]} ${tr(CULT_NAME[a.track])} +2`)).join('')}</div>`;
+  }
+  if (id === 'ACTE') {
+    return `${head}<div class="tm-btns">${acts.map((a) => actBtn(a, `🌉${a.a}↔${a.b}`)).join('')}</div>`;
+  }
+  if (id === 'ACTW' || id === 'ACTN' || id === 'ACTS') {
+    // 目标格已在高亮棋盘上，点击即执行
+    return `${head}<div class="tm-btns"><span class="muted">${t('tm.ui.shPickHex')} · ${acts.length}</span></div>`;
+  }
+  // ACTG 巨人 +2 铲 / ACTC 混沌 +2 行动
+  return `${head}<div class="tm-btns">${acts.map((a) => actBtn(a, t(`tm.ui.sh.${id}`))).join('')}</div>`;
+}
+
+// tilePanel 板块免费行动（BON1 铲 / BON2、FAV6 邪教步）
+function tilePanel(s, legal) {
+  const acts = legal.filter((a) => a.kind === 'tileAction');
+  if (!acts.length) return '';
+  const btns = acts.map((a) => actBtn(a, `${a.id} · ${t(`tm.ui.tile.${a.id}`)}`)).join('');
+  return `<span class="tm-label">${t('tm.ui.tileAction')}</span><div class="tm-btns">${btns}</div>`;
+}
+
+// freePanel 免费子行动：转换 + 燃烧（不占行动）
+function convertLabel(s, a) {
+  const p = s.players[s.phase.cur];
+  const key = `${a.from}>${a.to}`;
+  const rates = {
+    'power>coins': `⚡${CONVERT_RATES.powerToCoin}→💰1`,
+    'power>workers': `⚡${CONVERT_RATES.powerToWorker}→👷1`,
+    'power>priests': `⚡${CONVERT_RATES.powerToPriest}→🙏1`,
+    'workers>coins': `👷${CONVERT_RATES.workerToCoin}→💰1`,
+    'priests>coins': `🙏${CONVERT_RATES.priestToCoin}→💰1`,
+    'priests>workers': `🙏${CONVERT_RATES.priestToWorker}→👷1`,
+    'workers>priestsW': `👷1→🙏1`,
+    'vp>coins': `🏆1→💰1`,
+  };
+  if (key === 'coins>vp') {
+    const rate = p.faction === 'alchemists' ? CONVERT_RATES.alchemistCoinsToVp : CONVERT_RATES.coinsToVp;
+    return `💰${rate}→🏆1`;
+  }
+  return rates[key] || key;
+}
+
+function freePanel(s, legal) {
+  const parts = [];
+  const converts = legal.filter((a) => a.kind === 'convert');
+  if (converts.length) {
+    const btns = converts.map((a) => actBtn(a, convertLabel(s, a))).join('');
+    parts.push(`<span class="tm-label">${t('tm.ui.convert')}</span><div class="tm-btns">${btns}</div>`);
+  }
+  const burns = legal.filter((a) => a.kind === 'burn');
+  if (burns.length) {
+    const btns = burns.map((a) => actBtn(a, `🔥×${a.pairs}${paren(`II${a.pairs * 2}→III${a.pairs}`)}`)).join('');
+    parts.push(`<span class="tm-label">${t('tm.ui.burn')}</span><div class="tm-btns">${btns}</div>`);
+  }
+  return parts.join('');
+}
+
+// miscPanel 能量动作 / 船运 / 铲子升级 / 暗灵铲 / 造桥
 function miscPanel(s, legal) {
   const parts = [];
   const powers = legal.filter((a) => a.kind === 'powerAction');
   if (powers.length) {
     const btns = powers.map((a) => {
       const pa = POWER_ACTIONS[a.slot];
-      return actBtn(a, `⚡${pa.power}→${incStr(pa.gain)}`);
+      const label = pa.id === 'ACT1'
+        ? `⚡${pa.power}→🌉${a.a}↔${a.b}`
+        : `⚡${pa.power}→${incStr(pa.gain)}`;
+      return actBtn(a, label);
     }).join('');
     parts.push(`<span class="tm-label">${t('tm.ui.powerSlots')}</span><div class="tm-btns">${btns}</div>`);
   }
-  const burns = legal.filter((a) => a.kind === 'burn');
-  if (burns.length) {
-    parts.push(`<span class="tm-label">${t('tm.ui.burn')}</span><div class="tm-btns">${
-      burns.map((a) => actBtn(a, `×${a.pairs}${paren(`II${a.pairs * 2}→III${a.pairs}`)}`)).join('')}</div>`);
-  }
+  const digs = legal.filter((a) => a.kind === 'darklingDig');
+  if (digs.length) parts.push(`<div class="tm-btns">${actBtn(digs[0], `🙏1→⛏️1 🏆+2`)}</div>`);
   if (legal.some((a) => a.kind === 'shipping')) {
     parts.push(`<div class="tm-btns">${actBtn({ kind: 'shipping' }, `${t('tm.ui.shipping')}${paren(incStr(SHIPPING_COST))}`)}</div>`);
+  }
+  if (legal.some((a) => a.kind === 'digUpgrade')) {
+    const f = curFaction(s);
+    const cost = incStr(f.digUpgradeCost || DIG_UPGRADE_COST);
+    parts.push(`<div class="tm-btns">${actBtn({ kind: 'digUpgrade' }, `${t('tm.ui.digUpgrade')}${paren(`${cost} 🏆+${DIG_UPGRADE_VP}`)}`)}</div>`);
   }
   const bridges = legal.filter((a) => a.kind === 'bridge');
   if (bridges.length) {
     parts.push(`<span class="tm-label">${t('tm.ui.bridge')}</span><div class="tm-btns">${
-      bridges.slice(0, 12).map((a) => actBtn(a, `🌉${a.a}↔${a.b}`)).join('')}</div>`);
+      bridges.map((a) => actBtn(a, `🌉${a.a}↔${a.b}`)).join('')}</div>`);
   }
   return parts.join('');
 }
@@ -395,38 +547,63 @@ function passPanel(s, legal) {
   if (ui.passBonus === null || !passes.some((a) => a.bonus === ui.passBonus)) {
     ui.passBonus = passes[0].bonus;
   }
-  const chips = passes.map((a) =>
-    `<button class="tm-bpick ${ui.passBonus === a.bonus ? 'tm-bsel' : ''}" data-pickb="${a.bonus}">${incStr(BONUS_TILES[a.bonus].income)}</button>`).join('');
+  const cur = s.players[s.phase.cur];
+  const chips = passes.map((a) => {
+    const b = BONUS_TILES.find((x) => x.id === a.bonus);
+    const mine = a.bonus !== null && a.bonus === cur.bonus;
+    return `<button class="tm-bpick ${ui.passBonus === a.bonus ? 'tm-bsel' : ''}" data-pickb="${a.bonus}">
+      ${b ? `${b.id} ${incStr(b.income)}` : t('tm.ui.passNone')}${a.bonus !== null && s.bonusCoins[a.bonus] ? ` +💰${s.bonusCoins[a.bonus]}` : ''}${mine ? ` · ${t('tm.ui.passKeep')}` : ''}</button>`;
+  }).join('');
   const go = passes.find((a) => a.bonus === ui.passBonus);
+  const passVp = projectedVp(s, s.phase.cur).detail.pass;
   return `
     <div class="tm-pass">
       <span class="muted">${t('tm.ui.passHint')}</span>
-      <div class="tm-btns">${chips}${actBtn(go, t('tm.ui.pass'))}</div>
+      <div class="tm-btns">${chips}${go ? actBtn(go, `${t('tm.ui.pass')}${passVp ? paren(`🏆+${passVp}`) : ''}`) : ''}</div>
     </div>`;
 }
 
 function actPanel(s, legal) {
-  const parts = [upgradePanel(s, legal), trackBtns(legal, 'priestSend'), trackBtns(legal, 'chaosCult'), miscPanel(s, legal)];
+  const parts = [
+    upgradePanel(s, legal),
+    priestPanel(legal),
+    shPanel(s, legal),
+    tilePanel(s, legal),
+    freePanel(s, legal),
+    miscPanel(s, legal),
+  ];
   const rows = parts.filter(Boolean).map((x) => `<div class="tm-row">${x}</div>`).join('');
   return `${rows}<div class="tm-row">${passPanel(s, legal)}</div>`;
 }
 
-function resolvePanel(legal) {
+function resolvePanel(s, legal) {
+  const item = s.pending[0];
+  if (item && item.kind === 'townTile') {
+    const btns = legal.filter((a) => a.kind === 'townTile').map((a) => {
+      const tw = TOWN_TILES[a.idx];
+      return actBtn(a, `${tw.id} · 🏆${tw.vp} · ${incStr(tw.gain)}`);
+    }).join('');
+    return `<div class="tm-btns">${btns}</div>`;
+  }
+  if (item && item.kind === 'favorChoice') {
+    const btns = legal.filter((a) => a.kind === 'favorChoice').map((a) =>
+      actBtn(a, favChip(FAVOR_TILES.find((x) => x.id === a.favor)))).join('');
+    return `<div class="tm-btns">${btns}</div>`;
+  }
   const cults = legal.filter((a) => a.kind === 'cultChoice');
   if (cults.length) {
     return `<div class="tm-btns">${cults.map((a) =>
-      actBtn(a, `${CULT_ICON[a.track]} ${tr(CULT_NAME[a.track])} +1`)).join('')}</div>`;
+      actBtn(a, `${CULT_ICON[a.track]} ${tr(CULT_NAME[a.track])} +${(item && item.amount) || 1}`)).join('')}</div>`;
   }
-  return legal.some((a) => a.kind === 'witchSkip')
-    ? `<div class="tm-btns">${actBtn({ kind: 'witchSkip' }, t('tm.ui.skip'))}</div>` : '';
+  return '';
 }
 
 // —— 事件绑定 ——
 
-// hexAction 地图点击 → 对应合法动作
+// hexAction 地图点击 → 对应合法动作（建民居优先于 SH 格动作）
 function hexAction(legal, hex) {
-  return legal.find((a) => (a.kind === 'placeDwelling' || a.kind === 'witchDwelling' || a.kind === 'build')
-    && a.hex === hex && !a.coinDig) || legal.find((a) => a.kind === 'build' && a.hex === hex);
+  return legal.find((a) => (a.kind === 'placeDwelling' || a.kind === 'build'
+    || (a.kind === 'shAction' && a.hex)) && a.hex === hex);
 }
 
 function bind(el, s, legal, pick, human) {
@@ -451,7 +628,7 @@ function bind(el, s, legal, pick, human) {
   });
   el.querySelectorAll('[data-pickb]').forEach(($b) => {
     $b.onclick = () => {
-      ui.passBonus = Number($b.dataset.pickb);
+      ui.passBonus = $b.dataset.pickb === 'null' ? null : $b.dataset.pickb;
       renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
     };
   });

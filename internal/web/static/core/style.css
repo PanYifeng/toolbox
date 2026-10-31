@@ -1287,16 +1287,20 @@ pre {
 /* 建筑计数行 */
 .tm-pbld { margin-top: 4px; font-size: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* 地形轮图例 */
-.tm-wheel { display: flex; flex-direction: column; gap: 4px; }
-.tm-wcells { display: flex; gap: 4px; flex-wrap: wrap; }
-.tm-wcell { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; background: var(--bg); }
-.tm-wcell .tm-terr { width: 14px; height: 14px; }
-.tm-whome { border-color: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); font-weight: 700; }
-.tm-w1 { color: #2e8b3d; }
-.tm-w2 { color: #b07818; }
-.tm-w3 { color: #b03030; }
+/* 地形轮：官方环形轮 */
+.tm-wheel { display: flex; flex-direction: column; gap: 4px; align-items: center; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 6px 8px; }
+.tm-wsvg { width: 172px; height: 172px; display: block; }
+.tm-wring { fill: none; stroke: var(--border); stroke-width: 2; stroke-dasharray: 4 4; }
+.tm-wcell { cursor: default; }
+.tm-wcell polygon { stroke: var(--bg); stroke-width: 1.5; }
+.tm-wcell.tm-whome polygon { stroke: var(--accent); stroke-width: 3; }
+.tm-wlbl { font-size: 11px; font-weight: 700; fill: #fff; text-anchor: middle; paint-order: stroke; stroke: rgba(0,0,0,0.45); stroke-width: 2.5px; pointer-events: none; }
 .tm-wwork { font-size: 11.5px; color: var(--muted); }
+
+/* 规划提示面板（下轮收入 + 终局投影） */
+.tm-plan { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; }
+.tm-planrow { font-size: 12.5px; display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
+.tm-plandetail { font-size: 11.5px; color: var(--muted); }
 
 /* 选派系卡：派色描边 + 挖铲行 */
 .tm-fcard { border-color: color-mix(in srgb, var(--fc) 55%, var(--border)); }
