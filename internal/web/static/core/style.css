@@ -1103,6 +1103,8 @@ pre {
 .pr-taker { font-size: 11px; font-style: normal; }
 .pr-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
 .pr-label { color: var(--muted); font-size: 12px; }
+/* 最后一轮徽标（终局已触发，本轮打完即结算） */
+.pr-final { color: var(--accent); font-size: 12px; font-weight: 700; }
 .pr-offers { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .pr-tile { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px dashed var(--border); border-radius: 6px; font-size: 16px; background: var(--bg); }
 .pr-tile.pr-click { cursor: pointer; border-style: solid; border-color: var(--accent); }
@@ -1162,7 +1164,7 @@ pre {
 .pg-citybtn { cursor: pointer; }
 .pg-citybtn:hover .pg-buildring { stroke-width: 3.5; }
 .pg-side { flex: 0 1 360px; display: flex; flex-direction: column; gap: 10px; min-width: 300px; }
-.pg-players { display: flex; flex-direction: column; gap: 8px; }
+.pg-players { display: flex; flex-direction: column; gap: 8px; max-height: 30vh; overflow-y: auto; padding-right: 2px; }
 .pg-player { border: 1px solid var(--border); border-left: 4px solid var(--pc); border-radius: 10px; padding: 7px 10px; background: var(--bg-soft); }
 .pg-player.pg-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .pg-phead { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
@@ -1394,6 +1396,10 @@ pre {
 .sl-chip-sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--bg)); }
 .sl-selclear { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 11px; cursor: pointer; line-height: 1; padding: 0; }
 .sl-selclear:hover { border-color: var(--accent); }
+/* 同色拿 2 快捷按钮行 */
+.sl-take2row { display: flex; gap: 5px; flex-wrap: wrap; width: 100%; }
+.sl-take2btn { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg); color: var(--fg); font-size: 11.5px; padding: 1px 8px; cursor: pointer; }
+.sl-take2btn:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .sl-hint { font-size: 12px; opacity: 0.7; }
 .sl-supply, .sl-nobles, .sl-market, .sl-pgems { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .sl-nobles { gap: 8px; }
@@ -1441,6 +1447,10 @@ pre {
 /* —— 卡坦岛（game-catan）—— */
 .ct-prompt { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ct-sub { color: var(--muted); font-size: 12.5px; }
+/* 骰面点阵：白底黑点小骰子 + 合计 */
+.ct-dice { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; }
+.ct-die { width: 20px; height: 20px; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
+.ct-pip { fill: #222; }
 .ct-wrap { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
 .ct-left { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .ct-players { flex: 0 1 320px; display: flex; flex-direction: column; gap: 8px; min-width: 280px; }

@@ -64,7 +64,7 @@ function renderSupply(s, legal, human) {
         <span class="pr-label">🚢</span><b>${s.colonistShip}</b>
         <span class="pr-label">${t('pr.ui.colonistsLeft')}</span><b>${s.colonistSupply}</b>
         <span class="pr-label">${t('pr.ui.vpLeft')}</span><b>${s.vpSupply}</b>
-        <span class="pr-label">${t('pr.ui.round')}</span><b>${s.round}</b>
+        <span class="pr-label">${t('pr.ui.round')}</span><b>${s.round}</b>${s.endTriggered ? ` <span class="pr-final">${t('pr.ui.finalRound')}</span>` : ''}
       </div>
     </div>`;
 }
@@ -190,25 +190,16 @@ function traderBtns(s, legal, p, ph) {
   return `<div class="pr-btns">${out}</div>`;
 }
 
-// captainPanel 装货目标（货船/码头 × 货物）每行一个数量下拉 + 按钮
+// captainPanel 装货目标（✅ 对照 engine：每对（船×货）只有一个合法数量=全量，无需下拉）
 function captainPanel(s, legal) {
-  const pairs = new Map();
-  for (const a of legal) {
-    if (a.kind !== 'ship' && a.kind !== 'wharf') continue;
-    const key = `${a.kind}:${a.kind === 'ship' ? a.ship : 'w'}:${a.good}`;
-    const cur = pairs.get(key) || { kind: a.kind, ship: a.ship, good: a.good, max: 0 };
-    cur.max = Math.max(cur.max, a.count);
-    pairs.set(key, cur);
-  }
+  const rows = legal.filter((a) => a.kind === 'ship' || a.kind === 'wharf');
   let out = '';
-  for (const pr of pairs.values()) {
-    const label = pr.kind === 'wharf' ? `⚓${t('pr.ui.wharf')}` : `🚢${(pr.ship + 1)}`;
-    const opts = Array.from({ length: pr.max }, (_, i) =>
-      `<option value="${i + 1}" ${i + 1 === pr.max ? 'selected' : ''}>${i + 1}</option>`).join('');
+  for (const a of rows) {
+    const label = a.kind === 'wharf' ? `⚓${t('pr.ui.wharf')}` : `🚢${(a.ship + 1)}`;
     out += `<div class="pr-cnt-row">
-      <span>${label} ${GOOD_ICON[pr.good]}</span>
-      <select data-cnt>${opts}</select>
-      <button class="btn-soft" data-cntbtn='${JSON.stringify({ kind: pr.kind, ship: pr.ship, good: pr.good })}'>${t('pr.ui.load')}</button>
+      <span>${label} ${GOOD_ICON[a.good]}</span>
+      <b>×${a.count}</b>
+      <button class="btn-soft" data-act='${JSON.stringify(a)}'>${t('pr.ui.load')}</button>
     </div>`;
   }
   const pass = legal.find((a) => a.kind === 'captainPass');
@@ -216,7 +207,7 @@ function captainPanel(s, legal) {
   return `<div class="pr-cap">${out || `<span class="muted">${t('pr.ui.noShippable')}</span>`}</div>`;
 }
 
-// discardPanel 每种货一个保留数量输入；确认前本地校验可行性
+// discardPanel 每种货一个保留数量输入；确认前本地校验合法性（仓库全保留/风 ros 1 桶语义）
 function discardPanel(s, p) {
   if (!ui.keep) ui.keep = defaultKeep(p);
   const rows = GOODS.filter((g) => p.goods[g] > 0).map((g) => `
@@ -229,19 +220,27 @@ function discardPanel(s, p) {
     <div class="pr-btns"><button class="btn-soft" data-act='{"kind":"discard"}' ${ok ? '' : 'disabled'}>${t('pr.ui.confirm')}</button></div>`;
 }
 
-// defaultKeep 默认保留方案：各 1 件，仓库加成给余量最大的货
+// defaultKeep 默认保留方案（✅ 对照 engine keepFeasible）：可全保留则全保留；
+// 否则按「余量×价值」选仓库锁定种类（小仓 1 种/大仓 2 种）全保留，另 1 种留 1 桶上风 ros。
 function defaultKeep(p) {
+  let slots = 0;
+  if (hasOccupied(p, 'small_warehouse')) slots += 1;
+  if (hasOccupied(p, 'large_warehouse')) slots += 2;
+  const kinds = GOODS.filter((g) => p.goods[g] > 0);
   const keep = {};
-  for (const g of GOODS) keep[g] = Math.min(p.goods[g], 1);
-  const extras = [];
-  if (hasOccupied(p, 'small_warehouse')) extras.push(1);
-  if (hasOccupied(p, 'large_warehouse')) extras.push(2);
-  const rest = GOODS.filter((g) => p.goods[g] > keep[g])
-    .sort((a, b) => p.goods[b] - p.goods[a] || GOOD_VALUE[b] - GOOD_VALUE[a]);
-  for (const g of rest) {
-    for (let i = 0; i < extras.length; i++) {
-      if (extras[i]) { keep[g] = Math.min(p.goods[g], keep[g] + extras[i]); extras[i] = 0; break; }
-    }
+  const allFit = kinds.length <= slots
+    || (kinds.length === slots + 1 && kinds.some((g) => p.goods[g] === 1));
+  if (allFit) {
+    for (const g of kinds) keep[g] = p.goods[g];
+    return keep;
+  }
+  const byValue = [...kinds].sort((a, b) => GOOD_VALUE[b] * p.goods[b] - GOOD_VALUE[a] * p.goods[a]);
+  const locked = byValue.slice(0, slots);
+  for (const g of kinds) keep[g] = locked.includes(g) ? p.goods[g] : 0;
+  const rest = kinds.filter((g) => !locked.includes(g));
+  if (rest.length) {
+    const windrose = [...rest].sort((a, b) => GOOD_VALUE[b] - GOOD_VALUE[a])[0];
+    keep[windrose] = 1;
   }
   return keep;
 }
@@ -267,14 +266,6 @@ function bind(el, s, legal, pick, human) {
   });
   el.querySelectorAll('[data-role="mayor-reset"]').forEach(($b) => {
     $b.onclick = () => { ui.mayorAssigns = []; renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick); };
-  });
-  el.querySelectorAll('[data-cntbtn]').forEach(($b) => {
-    $b.onclick = () => {
-      if (!human) return;
-      const a = JSON.parse($b.dataset.cntbtn);
-      a.count = Number($b.closest('.pr-cnt-row').querySelector('select').value);
-      pick(a);
-    };
   });
   el.querySelectorAll('[data-keep]').forEach(($inp) => {
     $inp.onchange = () => {

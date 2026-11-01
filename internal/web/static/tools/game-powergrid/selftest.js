@@ -31,11 +31,11 @@ eq(resPrice('coal', 0), 8, '煤剩 1 件 → 8');
 eq(resPrice('oil', 17), 3, '油开局 18 件 → 下一件 3');
 eq(resCostTotal('coal', 24, 3), 3, '满市场连买 3 煤 = 1+1+1（前 3 格都是 1 档）');
 
-// 收入表
+// 收入表（✅ 对照 engine.ts cityIncome）
 eq(incomeOf(0), 10, '0 城供电收入 10');
-eq(incomeOf(10), 82, '10 城收入 82');
-eq(incomeOf(20), 102, '20 城收入 102');
-eq(incomeOf(21), 104, '21 城收入 104');
+eq(incomeOf(10), 105, '10 城收入 105');
+eq(incomeOf(20), 150, '20 城收入 150');
+eq(incomeOf(21), 150, '21 城收入 150（20 城以上封顶）');
 
 // 牌堆：确定性 + 数量守恒
 {
@@ -45,9 +45,11 @@ eq(incomeOf(21), 104, '21 城收入 104');
   c = 0;
   const d2 = makeDeck(8, rng);
   eq(d1, d2, 'makeDeck 同随机序列确定性');
-  eq(d1.length, 26, '2 人局牌堆 = 33 池 - 8 移除 + 1 Step3 卡');
+  eq(d1.length, 27, '2 人局牌堆 = 33 池 - 8 移除 + 1(#13) + 1 Step3 卡');
   eq(d1.filter((x) => x === STEP3_CARD).length, 1, '牌堆恰含 1 张 Step3 卡');
   ok(d1.indexOf(STEP3_CARD) >= 3, 'Step3 卡不在顶 3 张');
+  ok(d1[0] === 13, '#13 恒为牌堆顶（下一张进市场的牌）');
+  ok(d1[d1.length - 1] === STEP3_CARD, 'Step3 卡恒为牌堆底');
 }
 
 // 地图：42 城、双向邻接、目标存在、每区 7 城、区域连通
@@ -99,15 +101,49 @@ eq(incomeOf(21), 104, '21 城收入 104');
   const s = mkGame(2, 3);
   s.regions = ['northwest', 'east', 'west'];
   const p = s.players[0];
-  p.plants = [{ ...PLANT_BY_ID[7] }, { ...PLANT_BY_ID[13] }]; // 煤2cap2 + 生态cap1
-  p.res.coal = 2;
+  p.plants = [{ ...PLANT_BY_ID[7] }, { ...PLANT_BY_ID[13] }]; // 油3cap2 + 生态cap1
+  p.res.oil = 3;
   p.cities = ['kiel', 'hamburg', 'berlin'];
   for (const c of p.cities) s.map[c].owners.push(0);
   s.phase = { kind: 'bureaucracy', queue: [0, 1], idx: 0, cur: 0 };
   const s2 = apply(s, { kind: 'power', plants: [7, 13] });
-  eq(s2.players[0].res.coal, 0, '发电消耗煤 2');
+  eq(s2.players[0].res.oil, 0, '发电消耗油 3');
   eq(s2.players[0].lastPowered, 3, 'cap 3 供 3 城');
   eq(s2.players[0].electro - p.electro, incomeOf(3), '收入按供电城数支付');
+}
+
+// 顺位平城数 tie-break：比「电厂编号最高者」而非电厂数（✅ engine.ts setPlayerOrder）
+{
+  const s = mkGame(3, 4);
+  s.regions = ['northwest', 'east', 'west'];
+  s.players[0].plants = [{ ...PLANT_BY_ID[31] }, { ...PLANT_BY_ID[20] }]; // 2 厂，最高 31
+  s.players[1].plants = [{ ...PLANT_BY_ID[26] }, { ...PLANT_BY_ID[33] }, { ...PLANT_BY_ID[39] }]; // 3 厂，最高 39
+  s.players[2].plants = [{ ...PLANT_BY_ID[42] }]; // 1 厂，最高 42
+  eq(turnOrderOf(s), [2, 1, 0], '同城数（0）按最高厂编号排：42 > 39 > 31');
+}
+
+// 轮末例行市场调整：step1/2 期货最高厂沉入牌堆底、自牌堆顶补牌（✅ engine.ts Bureaucracy 尾段）
+{
+  const s = mkGame(2, 5);
+  s.regions = ['northwest', 'east', 'west'];
+  s.step = 1;
+  s.plantMarket = { current: [4, 5, 6, 8], future: [9, 10, 25, 26] };
+  s.deck = [13, 15, 16, STEP3_CARD];
+  // 走引擎同款序列：移期货最高 → 沉底 → 顶补 → 重排
+  const mk = s.plantMarket;
+  const high = Math.max(...mk.future);
+  mk.future = mk.future.filter((x) => x !== high);
+  s.deck.push(high);
+  const card = s.deck.shift();
+  if (card !== STEP3_CARD) mk.future.push(card);
+  const visible = [...mk.current, ...mk.future].sort((a, b) => a - b);
+  mk.current = visible.slice(0, 4);
+  mk.future = visible.slice(4);
+  eq(high, 26, 'step1/2 轮末移期货最高厂');
+  eq(s.deck[0], 15, '原顶牌 #13 被抽走后露出下一张');
+  eq(s.deck[s.deck.length - 1], 26, '被移厂位于牌堆最底（Step3 卡在其上，因 push 先于原底卡的 Step3 卡判定后 shift 不影响底序');
+  eq(card, 13, '牌堆顶恒为 #13（下一张进市场的厂）');
+  eq(mk.current, [4, 5, 6, 8], '补牌后现货仍为可见最低 4 张');
 }
 
 // —— 随机对局：不变量 + 纯度 + 确定性 + 终局 ——

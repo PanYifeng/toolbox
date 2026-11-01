@@ -188,20 +188,34 @@ function botCaptain(s, legal) {
 
 // —— 弃货 ——
 
-// botDiscard 基础各留 1 件，仓库加成分配给「余量×价值」最高的货
+// botDiscard 弃货（✅ 对照 engine keepFeasible 语义）：
+// 可全保留时全保留（goodsAllFit）；否则按「余量×价值」选出仓库锁定种类（小仓 1 种/大仓 2 种），
+// 被锁种类全保留，恰留一种 1 件货上风 ros，其余清空。
 function botDiscard(s) {
   const p = s.players[s.phase.cur];
+  let slots = 0;
+  if (hasOccupied(p, 'small_warehouse')) slots += 1;
+  if (hasOccupied(p, 'large_warehouse')) slots += 2;
+  const kinds = GOODS.filter((g) => p.goods[g] > 0);
   const keep = {};
-  for (const g of GOODS) keep[g] = Math.min(p.goods[g], 1);
-  const extras = [];
-  if (hasOccupied(p, 'small_warehouse')) extras.push(1);
-  if (hasOccupied(p, 'large_warehouse')) extras.push(2);
-  const rest = GOODS.filter((g) => p.goods[g] > keep[g])
-    .sort((a, b) => GOOD_VALUE[b] * (p.goods[b] - keep[b]) - GOOD_VALUE[a] * (p.goods[a] - keep[a]));
-  for (const g of rest) {
-    for (let i = 0; i < extras.length; i++) {
-      if (extras[i]) { keep[g] = Math.min(p.goods[g], keep[g] + extras[i]); extras[i] = 0; break; }
-    }
+  const allFit = kinds.length <= slots
+    || (kinds.length === slots + 1 && kinds.some((g) => p.goods[g] === 1));
+  if (allFit) {
+    for (const g of kinds) keep[g] = p.goods[g];
+    return { kind: 'discard', keep };
+  }
+  // 须选 slots 种全保留 + 1 种留 1 件（或全保留种类中恰 1 件者作风 ros）
+  const byValue = [...kinds].sort((a, b) => GOOD_VALUE[b] * p.goods[b] - GOOD_VALUE[a] * p.goods[a]);
+  const locked = byValue.slice(0, slots);
+  for (const g of kinds) keep[g] = locked.includes(g) ? p.goods[g] : 0;
+  const rest = kinds.filter((g) => !locked.includes(g));
+  if (rest.length) {
+    // 余下种类中价值最高的留 1 件上风 ros（若某全保留种类恰 1 件也可作风 ros，优先显式指派简单方案）
+    const windrose = rest.sort((a, b) => GOOD_VALUE[b] - GOOD_VALUE[a])[0];
+    keep[windrose] = 1;
+  } else if (byValue.some((g) => p.goods[g] === 1)) {
+    // 全部种类被锁但仍有 slots+1 种（某种恰 1 件已可全保留）——不应发生，防御处理
+    for (const g of kinds) keep[g] = p.goods[g];
   }
   return { kind: 'discard', keep };
 }

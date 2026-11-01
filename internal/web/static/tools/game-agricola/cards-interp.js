@@ -68,6 +68,32 @@ export function bakeOptions(p) {
 // bakeBonus 每次烤面包额外食物
 export function bakeBonus(p) { return effSum(p, 'bakeBonus'); }
 
+// craftBuildings 手工作坊（木工坊/陶坊/编篮坊）：返回 [{res, food}]
+export function craftBuildings(p) {
+  const out = [];
+  for (const id of p.majors) {
+    const m = MAJOR_BY_ID[id];
+    if (m && m.craft) out.push({ res: m.craft, food: m.craft === 'reed' ? 3 : 2 });
+  }
+  return out;
+}
+
+// craftBonusVp 手工作坊终局加成（✅ 附录第 10 节：基础 2 分 + 资源档位加成）
+//   木工坊/陶坊：3-4 / 5-6 / 7+ → 1/2/3 分；编篮坊：2-3 / 4 / 5+ 芦苇 → 1/2/3 分
+function craftBonusVp(m, p) {
+  const n = p[m.craft] || 0;
+  if (m.craft === 'reed') {
+    if (n >= 5) return 3;
+    if (n >= 4) return 2;
+    if (n >= 2) return 1;
+  } else {
+    if (n >= 7) return 3;
+    if (n >= 5) return 2;
+    if (n >= 3) return 1;
+  }
+  return 0;
+}
+
 // discounts 费用减免聚合（各键取最大）
 export function discounts(p) {
   const d = {};
@@ -88,7 +114,8 @@ export function extraPlow(p) { return effSum(p, 'extraPlow'); }
 // harvestFood 每次收获额外食物
 export function harvestFood(p) { return effSum(p, 'harvestFood'); }
 
-// endCardVp 终局卡牌分：固定 vp + perCard×已打职业数 + double 资源加成（每 2 个该资源 +1，至多 4）
+// endCardVp 终局卡牌分：固定 vp + perCard×已打职业数 + 手工作坊资源加成
+//   ✅ 附录：手工作坊基础分走卡片 vp 字段（2 分），资源加成 = 1/2/3 分（craftBonusVp）
 export function endCardVp(p) {
   let vp = 0;
   const occCount = p.occPlayed.length;
@@ -96,7 +123,7 @@ export function endCardVp(p) {
     if (c.vp) vp += c.vp;
     if (c.eff && c.eff.vp) vp += c.eff.vp;
     if (c.eff && c.eff.perCard) vp += c.eff.perCard * occCount;
-    if (c.double) vp += Math.min(4, Math.floor((p[c.double] || 0) / 2));
+    if (c.craft) vp += craftBonusVp(c, p);
   }
   return vp;
 }

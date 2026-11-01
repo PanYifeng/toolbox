@@ -95,6 +95,7 @@ export function renderBoard(el, s, legal, pick) {
             ${s.supply.gems.map((n, i) => gemChip(i, n, false, humanMain, i, ui.sel.includes(i), 'gem')).join('')}
             ${gemChip(-1, s.supply.gold, false, false, -1, false)}
           </div>
+          ${humanMain ? take2RowHtml(s) : ''}
           ${ui.sel.length && humanMain ? '<button class="sl-selclear" data-selclear>✕</button>' : ''}
         </div>
         ${[0, 1, 2].map((tier) => marketRowHtml(s, tier, buySet, resSet, blindSet)).join('')}
@@ -112,6 +113,18 @@ function promptHtml(s, pendingDiscard, pendingNoble, humanMain) {
   const p = s.players[s.cur];
   const hint = humanMain ? ` <span class="sl-hint">💎 ${t('sl.ui.prompt.takeHint')}</span>` : '';
   return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t('sl.ui.prompt.act')}${hint}`;
+}
+
+// take2RowHtml 同色拿 2 快捷按钮行（供应 ≥4 时才有合法 take2；点即提交）
+function take2RowHtml(s) {
+  const acts = ctx.legal.filter((a) => a.kind === 'take2');
+  if (!acts.length) return '';
+  const btns = acts.map((a) => {
+    const c = GEM_COLOR[a.color];
+    const ring = a.color === 0 || a.color === 4;
+    return `<button class="sl-take2btn" data-take2="${a.color}">${dot(c, ring)}×2</button>`;
+  }).join('');
+  return `<div class="sl-take2row">${btns}</div>`;
 }
 
 // marketRowHtml 单阶牌市行：牌堆（盲留）+ 4 张明牌
@@ -186,6 +199,12 @@ function wireEvents(el, pick) {
         if (a3) { commit(a3); return; }
       }
       redraw();
+    };
+  });
+  el.querySelectorAll('[data-take2]').forEach(($b) => {
+    $b.onclick = () => {
+      const a = ctx.legal.find((x) => x.kind === 'take2' && x.color === Number($b.dataset.take2));
+      if (a) commit(a);
     };
   });
   el.querySelectorAll('[data-selclear]').forEach(($b) => {

@@ -1,15 +1,18 @@
 // 农场主引擎：14 轮 6 阶段工人放置 + 收获序列（田间收获→喂食→繁殖）。
 // 纯函数、JSON-safe、零 DOM/i18n 依赖（node 可直接 import 自测）。
 //
-// ⚠ 已知与官方规则的偏差（诚实声明，均待核对官方后修正）：
-//   1) 2-5 人共用 20 格行动板（官方 1-2 人板更小）
-//   2) 卡牌为记忆重建 + 自创平衡混合（cards-data.js / majors.js 顶部声明）
+// ⚠ 已知与官方规则的偏差（诚实声明）：
+//   1) 2-5 人共用 20 格行动板（官方 1-2 人板更小）——共享板近似，保留
+//   2) 卡牌为记忆重建 + 自创平衡混合（cards-data.js 顶部声明；E-deck 为后续独立事项）
 //   3) 子阶段支持「取消」——放工人后未做任何实质操作可撤回（官方放工人即承诺；
-//      已加房/已犁/已播/已烤/已购则不可取消，防循环刷烤面包）
-//   4) 翻新格允许只购大设施不翻新（官方要求翻新）
-//   5) 动物溢出自动按已购设备最优汇率烹煮，无设备则丢失（官方要求手动转化）
-//   6) 卡上栏位为单一共享池，只养一种畜（官方每张卡独立栏位）
-//   7) 大设施每局全局各 1 份（官方壁炉/灶台各 2 份）
+//      已加房/已犁/已播/已烤/已购则不可取消，防循环刷烤面包）——保留（热座 UX 让步）
+//   4) 动物溢出自动按已购设备最优汇率烹煮，无设备则丢失（官方要求手动转化）——保留
+//   5) 卡上栏位为单一共享池，只养一种畜（官方每张卡独立栏位）——保留
+// 已于 2026-11 对照官方 revised edition 规则书修正：
+//   开局先手 2 食/其余 3 食、马厩 2 木、牧场容量 2×格数×2^马厩（乘性翻倍）、
+//   职业费主 Lessons 首张免费后续 1 食/张、播种谷 3 菜 2、收获每田取 1 株、
+//   谷/菜可 1:1 直食、壁炉×2 + 灶台×2（含退壁炉升级）、烤炉建成立即烤、
+//   水井建成起 5 轮每轮 +1 食、翻新格先翻新才可购大设施、官方终局计分表全套。
 //
 // 阶段模型：{kind:'place'} 放工 → {kind:'sub'} 子阶段（pending 逐步展开）
 //         → {kind:'feed'} 收获喂食 → {kind:'over'} 终局计分。
@@ -17,9 +20,10 @@
 import {
   SPACES, SPACE_BY_ID, visibleSpaces, spaceUnlocked, playerOk, COST,
   HARVEST_ROUNDS, TOTAL_ROUNDS, FARM_SPACES, START_ROOMS,
-  SCORE_FIELDS, SCORE_PASTURES, SCORE_GRAIN, SCORE_VEG, SCORE_ANIMAL,
+  SCORE_FIELDS, SCORE_PASTURES, SCORE_GRAIN, SCORE_VEG,
+  SCORE_SHEEP, SCORE_BOAR, SCORE_CATTLE,
   SCORE_FAMILY, SCORE_ROOM_CLAY, SCORE_ROOM_STONE, SCORE_STABLE_FENCED,
-  SCORE_UNUSED, SCORE_BEGGAR, RES_INFO, ANIMAL_KEYS, MAT_NAMES, RENOV_CHAIN,
+  SCORE_STABLE_MAX, SCORE_UNUSED, SCORE_BEGGAR, RES_INFO, ANIMAL_KEYS, MAT_NAMES, RENOV_CHAIN,
   FAMILY_MAX,
 } from './actionboard-data.js';
 import { OCCUPATIONS, MINOR_IMPROVEMENTS, OCC_BY_ID, MINOR_BY_ID } from './cards-data.js';
@@ -200,17 +204,43 @@ export function canRenovate(p) {
   return !!info && canPay(p, info.cost);
 }
 
-// ownsMajor 大设施全局唯一性检查
+// ownsMajor 大设施全局唯一性检查（壁炉/灶台各有 2 份，按 copies 计）
 export function ownsMajor(s, id) { return s.players.some((p) => p.majors.includes(id)); }
 
-// affordMajors 可购大设施列表（全局未售 + 买得起）
-export function affordMajors(s, p) {
-  return MAJORS.filter((m) => !ownsMajor(s, m.id) && canPay(p, m.cost));
+// majorCopiesLeft 某 id 全局剩余份数（copies 缺省 1；已购 1 份后仍可购第 2 份）
+export function majorCopiesLeft(s, id) {
+  const m = MAJOR_BY_ID[id];
+  if (!m) return 0;
+  const owned = s.players.reduce((a, p) => a + p.majors.filter((x) => x === id).length, 0);
+  return (m.copies || 1) - owned;
 }
 
-// occCostOf 打出下一张职业的食物费（已打职业数，教师可减免至 0）
+// affordMajors 可购大设施列表（剩余份数 > 0 + 买得起；灶台可退壁炉换购）
+export function affordMajors(s, p) {
+  return MAJORS.filter((m) => {
+    if (majorCopiesLeft(s, m.id) <= 0) return false;
+    if (!canPay(p, m.cost)) {
+      // ✅ 官方：建灶台可退还已建壁炉抵价（退回的壁炉可再次被建）
+      if (m.upgradeOf !== 'fireplace') return false;
+      const fpOwned = p.majors.filter((x) => x === 'fireplace1' || x === 'fireplace2').length;
+      if (!fpOwned) return false;
+      const cheap = Math.min(...p.majors.filter((x) => x === 'fireplace1' || x === 'fireplace2')
+        .map((x) => MAJOR_BY_ID[x].cost.clay));
+      const rest = { ...m.cost };
+      // 官方：退壁炉抵其原价（2/3 黏土），灶台付差额
+      const diff = Math.max(0, (rest.clay || 0) - cheap);
+      if (p.clay < diff) return false;
+      rest.clay = diff;
+      if (!canPay(p, rest)) return false;
+    }
+    return true;
+  });
+}
+
+// occCostOf 打出下一张职业的食物费（✅ 官方主 Lessons：首张免费，此后 1 食/张；教师可减免至 0）
 export function occCostOf(p) {
-  return Math.max(0, p.occPlayed.length - (I.discounts(p).occFood || 0));
+  const base = p.occPlayed.length === 0 ? 0 : 1;
+  return Math.max(0, base - (I.discounts(p).occFood || 0));
 }
 
 // validRoomSpots 可建房间（空地 + 正交邻接既有房间）
@@ -241,11 +271,11 @@ function emptyFields(p) {
 
 // ==== 牲畜（栏位 = 牧场组容量 + 卡上共享池）====
 
-// groupCapacity 牧场组容量 = 2×(格数 + 组内马厩数)
+// groupCapacity 牧场组容量（✅ 官方 p8：每格 2 只 × 每个组内马厩容量翻倍 = 2×格数×2^马厩）
 export function groupCapacity(p, gid) {
   const idxs = p.groups[gid];
   const stables = idxs.filter((i) => p.farm[i].stable).length;
-  return 2 * (idxs.length + stables);
+  return 2 * idxs.length * (2 ** stables);
 }
 
 // totalAnimals 某畜种总拥有量（牧场 + 卡上）
@@ -362,13 +392,14 @@ export function initialState(setup) {
   setup.seats.forEach((seat, i) => {
     s.players.push({
       seat: i, name: seat.name, isAI: !!seat.isAI, color: seat.color,
-      food: 2, grain: 0, veg: 0, wood: 0, clay: 0, reed: 0, stone: 0,
+      // ✅ 官方 p4：先手 2 食，其余玩家 3 食
+      food: i === 0 ? 2 : 3, grain: 0, veg: 0, wood: 0, clay: 0, reed: 0, stone: 0,
       family: 2, workers: 2, placedWorkers: 0, newborn: 0, beggars: 0,
       handOcc: occDeck.slice(i * 7, (i + 1) * 7),
       handMinor: minorDeck.slice(i * 7, (i + 1) * 7),
       occPlayed: [], minorsPlayed: [], majors: [],
       farm: newFarm(), groups: {}, nextGid: 1, groupAnimals: {},
-      cardAnimal: null, isStart: i === 0,
+      cardAnimal: null, isStart: i === 0, wellRounds: 0,
     });
   });
   s.order = s.players.map((p) => p.seat);
@@ -394,6 +425,8 @@ function startRound(s) {
     p.placedWorkers = 0;
     p.newborn = 0;
     const inc = I.roundIncome(p);
+    // ✅ 水井：建成起 5 轮每轮 +1 食（官方 p10）
+    if (p.wellRounds > 0) { inc.food = (inc.food || 0) + 1; p.wellRounds--; }
     if (Object.keys(inc).length) {
       gainRes(s, p, inc);
       log(s, p.seat, 'ag.log.income', { list: gainList(inc) });
@@ -444,15 +477,15 @@ function nextRound(s) {
 
 // ==== 收获序列 ====
 
-// beginHarvest 田间收获（自动）→ 进入喂食队列
+// beginHarvest 田间收获（✅ 官方 p9：每田取 1 株入库存，不要求清空）→ 进入喂食队列
 function beginHarvest(s) {
   log(s, -1, 'ag.log.harvest', { r: s.round });
   for (const seat of s.order) {
     const p = s.players[seat];
     const gain = {};
     for (const f of p.farm) {
-      if (f.g) { gain.grain = (gain.grain || 0) + f.g; f.g = 0; }
-      if (f.v) { gain.veg = (gain.veg || 0) + f.v; f.v = 0; }
+      if (f.g) { gain.grain = (gain.grain || 0) + 1; f.g -= 1; }
+      if (f.v) { gain.veg = (gain.veg || 0) + 1; f.v -= 1; }
     }
     if (Object.keys(gain).length) {
       p.grain += gain.grain || 0;
@@ -461,6 +494,14 @@ function beginHarvest(s) {
     }
     const hf = I.harvestFood(p);
     if (hf) { p.food += hf; log(s, seat, 'ag.log.harvestFood', { n: hf }); }
+    // ✅ 官方 p10：手工作坊每次收获可转 1 木/黏土→2 食、1 芦苇→3 食（自动转，热座简化）
+    for (const { res, food } of I.craftBuildings(p)) {
+      if (p[res] > 0) {
+        p[res] -= 1;
+        p.food += food;
+        log(s, seat, 'ag.log.craftFood', { a: RES_INFO[res], m: food });
+      }
+    }
   }
   s.phase = { kind: 'feed' };
   s.feedQueue = s.order.slice(1);
@@ -550,7 +591,8 @@ function spaceOk(s, p, sp) {
     case 'minor': return p.handMinor.some((id) => minorPlayable(s, p, id));
     case 'growth': return freeRooms(p) > 0 && p.family < FAMILY_MAX;
     case 'growth2': return p.family < FAMILY_MAX;
-    case 'renov': return canRenovate(p) || affordMajors(s, p).length > 0;
+    // ✅ 官方：House Redevelopment 须翻新（可随后购大设施）——只可翻新者可用
+    case 'renov': return canRenovate(p);
     case 'fence': return p.wood >= minFenceCost(p);
     default: return true;
   }
@@ -566,7 +608,7 @@ function minorPlayable(s, p, id) {
   return p.handMinor.includes(id) && canPay(p, card.cost) && I.reqOk(p, card, s.round);
 }
 
-// feedActions 喂食阶段：烹食转换（缺口内）+ 确认
+// feedActions 喂食阶段：烹食转换 + 谷/菜 1:1 直食（✅ 官方 p9）+ 确认
 function feedActions(p) {
   const acts = [];
   const need = feedNeedOf(p);
@@ -577,6 +619,11 @@ function feedActions(p) {
       const stock = ANIMAL_KEYS.includes(k) ? totalAnimals(p, k) : p[k];
       const maxN = Math.min(stock, Math.ceil((need - p.food) / r));
       for (let n = 1; n <= maxN; n++) acts.push({ kind: 'feedCook', res: k, n });
+    }
+    // 谷/菜可 1:1 直食（官方：supply 中的谷物/蔬菜每个值 1 食）
+    for (const k of ['grain', 'veg']) {
+      const maxN = Math.min(p[k], need - p.food);
+      for (let n = 1; n <= maxN; n++) acts.push({ kind: 'feedCook', res: k, n, raw: true });
     }
   }
   acts.push({ kind: 'feedConfirm' });
@@ -590,7 +637,7 @@ function pendingClean(pd) {
     case 'plow': case 'plowsow': return !pd.plowed.length && !pd.sown.length && !pd.baked;
     case 'sow': return !pd.sown.length && !pd.baked;
     case 'fence': return !pd.sel.length;
-    case 'renov': return !pd.didRenov && !pd.major;
+    case 'renov': return !pd.didRenov && !pd.major && !pd.baked;
     default: return true; // occ / minor 无中间态
   }
 }
@@ -684,11 +731,15 @@ function pushSowBake(p, pd, acts) {
 }
 
 // fenceActions 围栏子阶段（toggle 空地，done 计价支付）
+// 防死锁不变量：加入格仅当加入后总费用仍可支付（费用随加格单调不降），
+// 故任何非空选区恒可支付、done 恒可选，随机对局不会在围栏子阶段卡死
 function fenceActions(p, pd, acts) {
   for (let idx = 0; idx < FARM_SPACES; idx++) {
-    if (p.farm[idx].t === 'empty') acts.push({ kind: 'subFenceSel', idx });
+    if (p.farm[idx].t !== 'empty') continue;
+    if (pd.sel.includes(idx)) { acts.push({ kind: 'subFenceSel', idx }); continue; }
+    if (fenceCostOf(p, [...pd.sel, idx]) <= p.wood) acts.push({ kind: 'subFenceSel', idx });
   }
-  if (pd.sel.length && fenceCostOf(p, pd.sel) <= p.wood) acts.push({ kind: 'subDone' });
+  if (pd.sel.length) acts.push({ kind: 'subDone' });
 }
 
 // sumCost 合并两份费用（同键相加）
@@ -698,14 +749,22 @@ function sumCost(a, b) {
   return out;
 }
 
-// renovActions 翻新/购大设施子阶段（翻新+大设施可同做，按合计费用校验）
+// renovActions 翻新/购大设施子阶段（✅ 官方：House Redevelopment 须先翻新才可购大设施）
 function renovActions(s, p, pd, acts) {
   const info = renovInfo(p);
   if (!pd.didRenov && !pd.major && info && canPay(p, info.cost)) acts.push({ kind: 'subRenovate' });
-  if (!pd.major) {
+  if (!pd.major && pd.didRenov) {
     for (const m of affordMajors(s, p)) {
-      const extra = pd.didRenov && info ? info.cost : {};
+      const extra = info ? info.cost : {};
       if (canPay(p, sumCost(m.cost, extra))) acts.push({ kind: 'subMajor', id: m.id });
+    }
+  }
+  // ✅ 官方：烤炉（bakeOnBuild）建成立即获得一次烤面包（只可烤 1 次，不占 sow 格烤面包步）
+  if (pd.major && !pd.baked) {
+    const m = MAJOR_BY_ID[pd.major];
+    if (m && m.cook && m.cook.grain && m.bakeOnBuild && p.grain >= 1) {
+      const maxN = Math.min(m.bakeOnBuild, p.grain);
+      for (let n = 1; n <= maxN; n++) acts.push({ kind: 'subBake', rate: m.cook.grain, max: m.bakeMax || 99, n });
     }
   }
   if (pd.didRenov || pd.major) acts.push({ kind: 'subDone' });
@@ -755,7 +814,7 @@ function makePending(sp, seat) {
     case 'sow': return { type: 'sow', ...base, plowed: [], sown: [], baked: false };
     case 'plowsow': return { type: 'plowsow', ...base, plowed: [], sown: [], baked: false };
     case 'fence': return { type: 'fence', ...base, sel: [] };
-    case 'renov': return { type: 'renov', ...base, didRenov: false, major: null };
+    case 'renov': return { type: 'renov', ...base, didRenov: false, major: null, baked: false };
     default: return { type: sp.kind, ...base };
   }
 }
@@ -864,10 +923,20 @@ function applyBakeStep(s, a) {
   requirePhase(s, 'sub');
   const pd = s.pending;
   const p = s.players[pd.seat];
-  if (!['sow', 'plowsow'].includes(pd.type)) throw new Error('not sow pending');
+  if (!['sow', 'plowsow', 'renov'].includes(pd.type)) throw new Error('not bake pending');
   if (pd.baked) throw new Error('already baked');
+  // renov 烤炉建成烤：n 已被选定时钳制在 bakeOnBuild 内，仅校验谷物充足
+  if (pd.type === 'renov') {
+    const m = MAJOR_BY_ID[pd.major];
+    if (!m || !m.bakeOnBuild || a.n < 1 || a.n > m.bakeOnBuild || a.n > p.grain) throw new Error('bad bake');
+    p.grain -= a.n;
+    const food = m.cook.grain * a.n + I.bakeBonus(p);
+    p.food += food;
+    pd.baked = true;
+    log(s, p.seat, 'ag.log.bake', { n: a.n, m: food });
+    return;
+  }
   const opt = I.bakeOptions(p).find((o) => o.rate === a.rate && o.max === a.max);
-  // 可烤量须扣除已登记播种的谷物（done 才落地扣，此处透支会让终值扣成负数）
   const sownGrain = pd.sown.filter((x) => x.crop === 'grain').length;
   if (!opt || a.n < 1 || a.n > opt.max || a.n > p.grain - sownGrain) throw new Error('bad bake');
   p.grain -= a.n;
@@ -900,10 +969,12 @@ function applyRenovStep(s, a) {
     if (pd.didRenov || pd.major || !info || !canPay(p, info.cost)) throw new Error('cannot renovate');
     pd.didRenov = true;
   } else {
+    // ✅ 官方附录：House Redevelopment 须先翻新才可购大设施
+    if (!pd.didRenov) throw new Error('must renovate before buying a major here');
     if (pd.major) throw new Error('major already picked');
     const m = MAJOR_BY_ID[a.id];
     if (!m || ownsMajor(s, m.id) || !canPay(p, m.cost)) throw new Error('cannot buy major');
-    if (pd.didRenov && info && !canPay(p, sumCost(m.cost, info.cost))) throw new Error('cannot afford renov + major');
+    if (info && !canPay(p, sumCost(m.cost, info.cost))) throw new Error('cannot afford renov + major');
     pd.major = a.id;
   }
 }
@@ -948,7 +1019,11 @@ function applyDone(s) {
     case 'plow': case 'plowsow': return donePlow(s, p, pd);
     case 'sow': return doneSow(s, p, pd);
     case 'fence': return doneFence(s, p, pd);
-    case 'renov': return doneRenov(s, p, pd);
+    case 'renov': {
+      // ✅ 官方：House Redevelopment 须先翻新才可购大设施
+      if (!pd.didRenov) throw new Error('must renovate on the renovation space');
+      return doneRenov(s, p, pd);
+    }
     default: throw new Error(`bad pending ${pd.type}`);
   }
 }
@@ -986,13 +1061,13 @@ function doneSow(s, p, pd) {
   advance(s);
 }
 
-// landSown 播种统一落地：谷 1→田 2，菜 1→田 1
+// landSown 播种统一落地（✅ 官方 p9：播 1 谷 → 田 3 谷；播 1 菜 → 田 2 菜）
 function landSown(s, p, pd) {
   if (!pd.sown.length) return;
   for (const { idx, crop } of pd.sown) {
     p[crop] -= 1;
-    if (crop === 'grain') p.farm[idx].g = 2;
-    else p.farm[idx].v = 1;
+    if (crop === 'grain') p.farm[idx].g = 3;
+    else p.farm[idx].v = 2;
   }
   log(s, p.seat, 'ag.log.sow', { n: pd.sown.length });
 }
@@ -1027,10 +1102,23 @@ function doneRenov(s, p, pd) {
   }
   if (pd.major) {
     const m = MAJOR_BY_ID[pd.major];
-    if (ownsMajor(s, m.id) || !canPay(p, m.cost)) throw new Error('cannot buy major');
-    pay(p, m.cost);
+    if (majorCopiesLeft(s, m.id) <= 0) throw new Error('major sold out');
+    let cost = { ...m.cost };
+    // ✅ 官方：灶台可退壁炉换购（付差价）
+    let tradedFireplace = null;
+    if (m.upgradeOf === 'fireplace' && !canPay(p, m.cost)) {
+      const owned = p.majors.filter((x) => x === 'fireplace1' || x === 'fireplace2');
+      if (!owned.length) throw new Error('cannot buy major');
+      tradedFireplace = owned.find((x) => (p.clay + MAJOR_BY_ID[x].cost.clay) >= (m.cost.clay || 0)) || owned[0];
+      cost.clay = Math.max(0, (m.cost.clay || 0) - MAJOR_BY_ID[tradedFireplace].cost.clay);
+    }
+    if (!canPay(p, cost)) throw new Error('cannot buy major');
+    pay(p, cost);
+    if (tradedFireplace) p.majors = p.majors.filter((x) => x !== tradedFireplace);
     p.majors.push(m.id);
     log(s, p.seat, 'ag.log.major', { card: m.name });
+    // ✅ 官方：水井建成起 5 轮每轮 +1 食；烤炉建成立即获得一次烤面包（此处登记，done 后由 sow/plowsow 之外的即时烤烘焙走 subBake 通道）
+    if (m.wellRounds) p.wellRounds = Math.min(m.wellRounds, TOTAL_ROUNDS - s.round);
   }
   advance(s);
 }
@@ -1047,18 +1135,19 @@ function applyCancel(s) {
   s.pending = null;
 }
 
-// applyFeedCook 喂食烹食转换
+// applyFeedCook 喂食烹食转换（raw = 谷/菜 1:1 直食）
 function applyFeedCook(s, a) {
   requirePhase(s, 'feed');
   const p = s.players[s.pending.seat];
-  const rate = I.cookRates(p)[a.res];
+  const rate = a.raw ? 1 : I.cookRates(p)[a.res];
   if (!rate || a.n < 1) throw new Error('bad feedCook');
   const stock = ANIMAL_KEYS.includes(a.res) ? totalAnimals(p, a.res) : p[a.res];
   if (stock < a.n) throw new Error('not enough to cook');
   if (ANIMAL_KEYS.includes(a.res)) removeAnimals(p, a.res, a.n);
   else p[a.res] -= a.n;
   p.food += rate * a.n;
-  log(s, p.seat, 'ag.log.cook', { a: RES_INFO[a.res], n: a.n, m: rate * a.n });
+  if (a.raw) log(s, p.seat, 'ag.log.eatRaw', { a: RES_INFO[a.res], n: a.n });
+  else log(s, p.seat, 'ag.log.cook', { a: RES_INFO[a.res], n: a.n, m: rate * a.n });
 }
 
 // ==== 终局计分 ====
@@ -1066,7 +1155,7 @@ function applyFeedCook(s, a) {
 // isGameOver 终局判定
 export function isGameOver(s) { return s.gameOver; }
 
-// score 终局计分（家族版口径）：田/牧场/谷/菜/畜/家庭/房/马厩/乞讨/空地/卡牌
+// score 终局计分（✅ 官方 p12 + 附录第 10 节口径）：田/牧场/谷/菜/畜/家庭/房/马厩/乞讨/空地/卡牌
 export function score(s) {
   return s.players.map((p) => {
     const fields = p.farm.filter((f) => f.t === 'field').length;
@@ -1075,20 +1164,22 @@ export function score(s) {
     const veg = p.veg + p.farm.reduce((a, f) => a + f.v, 0);
     const clayRooms = p.farm.filter((f) => f.t === 'room' && f.mat === 'clay').length;
     const stoneRooms = p.farm.filter((f) => f.t === 'room' && f.mat === 'stone').length;
-    let stableVp = 0;
+    // 牧场内马厩 1 分/个，封顶 4（官方：未建马厩不扣分）
+    let fencedStables = 0;
     for (const idxs of Object.values(p.groups)) {
-      stableVp += idxs.filter((i) => p.farm[i].stable).length * SCORE_STABLE_FENCED;
+      fencedStables += idxs.filter((i) => p.farm[i].stable).length;
     }
-    stableVp -= p.farm.filter((f) => f.stable && f.t !== 'pasture').length;
+    const stableVp = Math.min(fencedStables, SCORE_STABLE_MAX) * SCORE_STABLE_FENCED;
+    // 马厩所在空地视为已用（附录：空地若有马厩不算未用）
     const unused = p.farm.filter((f) => f.t === 'empty' && !f.stable).length;
     const rows = [
       ['ag.score.fields', tab(SCORE_FIELDS, fields)],
       ['ag.score.pastures', tab(SCORE_PASTURES, pastures)],
       ['ag.score.grain', tab(SCORE_GRAIN, grain)],
       ['ag.score.veg', tab(SCORE_VEG, veg)],
-      ['ag.score.sheep', tab(SCORE_ANIMAL, totalAnimals(p, 'sheep'))],
-      ['ag.score.boar', tab(SCORE_ANIMAL, totalAnimals(p, 'boar'))],
-      ['ag.score.cattle', tab(SCORE_ANIMAL, totalAnimals(p, 'cattle'))],
+      ['ag.score.sheep', tab(SCORE_SHEEP, totalAnimals(p, 'sheep'))],
+      ['ag.score.boar', tab(SCORE_BOAR, totalAnimals(p, 'boar'))],
+      ['ag.score.cattle', tab(SCORE_CATTLE, totalAnimals(p, 'cattle'))],
       ['ag.score.family', SCORE_FAMILY * p.family],
       ['ag.score.rooms', clayRooms * SCORE_ROOM_CLAY + stoneRooms * SCORE_ROOM_STONE],
       ['ag.score.stables', stableVp],

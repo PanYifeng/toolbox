@@ -39,12 +39,13 @@ export function regionAdjacency(cities) {
   return plain;
 }
 
-// turnOrderOf 顺位：城市多者在前，同数比电厂数，再同按座位
+// turnOrderOf 顺位：城市多者在前，同数比「电厂编号最高者」（✅ 对照 engine.ts setPlayerOrder）
 export function turnOrderOf(s) {
   return s.players.map((p) => p.seat)
     .sort((a, b) => {
       const A = s.players[a], B = s.players[b];
-      return B.cities.length - A.cities.length || B.plants.length - A.plants.length || a - b;
+      const maxPlant = (p) => (p.plants.length ? Math.max(...p.plants.map((x) => x.id)) : 0);
+      return B.cities.length - A.cities.length || maxPlant(B) - maxPlant(A) || a - b;
     });
 }
 
@@ -136,7 +137,6 @@ export function initialState(setup) {
     resMarket: { ...RES_INITIAL },
     // 梯外供应（ refill 来源）= 总量 - 初始市场
     resSupply: { coal: 0, oil: 6, garbage: 18, uranium: 10 },
-    builtAny: false,
     phase: { kind: 'chooseRegion', idx: 0, cur: 0 },
     gameOver: false,
     log: [], rng: rngState,
@@ -481,7 +481,8 @@ function shuffle(s, arr) {
   }
 }
 
-// applyDiscardPlant 弃到 3 厂后恢复拍卖上下文；超容量资源移出本局（? 待核对）
+// applyDiscardPlant 弃到 3 厂后恢复拍卖上下文；超容量资源移出本局
+// （✅ 对照 engine.ts：资源按剩余厂存储容量截断）
 function applyDiscardPlant(s, a, ph, p) {
   p.plants = p.plants.filter((x) => x.id !== a.plant);
   const removed = clampResources(p);
@@ -519,7 +520,7 @@ function applyPassOffer(s, ph, p) {
 function nextOfferer(s, ph) {
   const remaining = ph.order.filter((seat) => !ph.bought.includes(seat) && !ph.passedOffer.includes(seat));
   if (!remaining.length) {
-    if (!ph.bought.length) { // 整轮无人买厂：最低厂移出并补牌。? 待核对
+    if (!ph.bought.length) { // 整轮无人买厂：现货最低厂移出并补牌（✅ 对照 engine.ts all-pass 规则）
       const low = Math.min(...s.plantMarket.current);
       log(s, -1, 'pg.log.plantRemoved', { c: low });
       marketRemove(s, low);
@@ -555,7 +556,6 @@ function applyBuyRes(s, a, ph, p) {
 function startCities(s) {
   const queue = [...turnOrderOf(s)].reverse();
   s.phase = { kind: 'cities', queue, idx: 0, cur: queue[0] };
-  s.builtAny = false; // 本轮是否有人建城（轮末移厂判定用）
 }
 
 function applyBuild(s, a, ph, p) {
@@ -564,7 +564,6 @@ function applyBuild(s, a, ph, p) {
   p.electro -= cost;
   p.cities.push(a.city);
   s.map[a.city].owners.push(p.seat);
-  s.builtAny = true;
   log(s, p.seat, 'pg.log.build', { n: p.name, c: CITY_NAMES[a.city], m: cost });
   // step2 触发：任一玩家达到 step2 城数门槛立即切换（房价 15、同城可 2 家）
   if (s.step === 1 && p.cities.length >= SETUP[s.n].step2Cities) {
@@ -633,17 +632,26 @@ function refillResources(s) {
   }
 }
 
-// removePlantEndRound step1/2 有人建城 → 「现货」最高厂移出 + 补牌；
-// step3 有人建城 → 牌堆顶直接移出
+// removePlantEndRound 轮末例行调整（✅ 对照 engine.ts Bureaucracy 尾段，无条件执行）：
+// step1/2 期货最高厂移回牌堆底 + 补牌；step3 现货最低厂移出本局 + 补牌
 function removePlantEndRound(s) {
   if (s.step === 3) {
-    if (s.builtAny && s.deck.length) s.deck.shift();
+    if (!s.plantMarket.current.length) return;
+    const low = Math.min(...s.plantMarket.current);
+    log(s, -1, 'pg.log.plantRemoved', { c: low });
+    s.plantMarket.current = s.plantMarket.current.filter((x) => x !== low);
+    drawToMarket(s);
     return;
   }
-  if (!s.builtAny) return;
-  const high = Math.max(...s.plantMarket.current); // 官方：现货市场的最高厂移出
-  log(s, -1, 'pg.log.plantRemoved', { c: high });
-  marketRemove(s, high);
+  const mk = s.plantMarket;
+  if (mk.future.length) {
+    const high = Math.max(...mk.future); // 官方：期货最高厂移回牌堆底
+    log(s, -1, 'pg.log.plantBottom', { c: high });
+    mk.future = mk.future.filter((x) => x !== high);
+    s.deck.push(high);
+    drawToMarket(s);
+    rebalanceMarket(s);
+  }
 }
 
 // —— settle：本作所有阶段均有合法行动（含 pass），仅防御性保底 ——

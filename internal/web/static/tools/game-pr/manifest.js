@@ -20,11 +20,11 @@ export default {
 
 - **怎么开局**：配置 3-5 个座位（可切换人类/AI），开始后按横幅提示轮流行事
 - **选角顺序**：本作按「选择顺序」结算角色（⚠ 存在按固定角色行顺序的版本差异）
-- **船长阶段**：能装必装（至少装 1 件）；同种货一轮只能装一条船；装完可继续装其他货物或结束
-- **弃货**：船长阶段结束后每种货只能留 1 件（货仓可加成），超限需弃
-- **终局条件**：VP 筹码耗尽立即结束；移民不足或城市建满 12 格则本轮打完结束
+- **船长阶段**：能装必装且必须装「装得最多」的船并全量装满；同种货一轮只能装一条船；持有码头者可全自愿使用（装该种货的全部），弃权保留轮位
+- **弃货**：船长阶段结束后罗盘每种货保留 1 桶；小货仓整种保留 1 种、大货仓 2 种（可叠加 3 种），超出部分弃掉
+- **终局条件**：VP 筹码耗尽 / 移民供应不足 / 城市建满 12 格，均在触发后打完本轮才终局；VP 超出供应照常记分
 - **悔棋**：付费悔棋回退到最近一次人类待决策状态
-- **规则数据**：数值表来自对官方规则的记忆整理，存疑项已在代码中标注「待核对」`,
+- **规则数据**：✅ 已对照权威开源实现（dae-hany/PuertoRico_AI_Competition，注释含规则书页码引用）逐项核对，2026-11 核对通过`,
     en: `## Features
 
 A full-rules implementation of Puerto Rico (3-5 players): each round players take turns choosing roles; the chooser gets the privilege and everyone follows. Settler takes plantations, Builder constructs, Mayor distributes colonists, Craftsman produces, Trader sells, Captain ships for VP. All 23 buildings, cargo ships with same-good locking, the trading house, warehouses/wharf/harbor effects, and the five large buildings' endgame scoring are implemented.
@@ -39,11 +39,11 @@ A full-rules implementation of Puerto Rico (3-5 players): each round players tak
 
 - **Setup**: configure 3-5 seats (human or AI), then follow the banner prompts
 - **Role order**: roles resolve in the order they were chosen (⚠ some editions use a fixed role-row order)
-- **Captain phase**: you must ship at least one barrel if you can; each good type may only go on one ship per phase; after shipping you may continue or stop
-- **Discard**: after the captain phase you keep only 1 barrel per good type (warehouses add capacity)
-- **Game end**: VP chips running out ends the game immediately; colonist supply shortage or a full 12-slot city ends it after the current round
+- **Captain phase**: you must load if you can — on the ship that takes the most, filling it to the max; each good type may only go on one ship per phase; a Wharf owner ships voluntarily (ALL barrels of one kind, once per phase) and keeps their place after passing
+- **Discard**: after the captain phase the windrose keeps 1 barrel per good type; small warehouses keep ALL barrels of 1 kind, large warehouses of 2 (stackable to 3)
+- **Game end**: VP chips running out, colonist supply shortage, or a full 12-slot city all finish the current round before the game ends; VP beyond the supply is still awarded
 - **Undo**: paid undo rolls back to your latest decision point
-- **Rule data**: numeric tables are from memory of the official rules; uncertain items are flagged "to verify" in code`,
+- **Rule data**: ✅ verified against an authoritative open-source implementation (dae-hany/PuertoRico_AI_Competition, with rulebook page citations), Nov 2026`,
   },
   component: () => import('./component.js'),
 };

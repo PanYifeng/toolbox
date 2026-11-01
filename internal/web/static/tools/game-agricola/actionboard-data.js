@@ -1,6 +1,11 @@
-// 农场主行动板数据：常驻空间 + 阶段空间（第 1-6 阶段 = 轮次 1/5/8/10/12/14 起）。
-// ⚠ 记忆重建数据，标「待核对」处均为近似：官方 2 人板更小（本实现 2-5 人共用 20 格全开）；
-// 官方资源格是否累积与累积速率以实体板为准（本实现：木固定 3，黏土/芦苇/石头/食物/动物累积 +1/轮）。
+// 农场主行动板数据：常驻空间 + 阶段空间。
+// ✅ 2026-11 对照官方 revised edition 规则书（/tmp/ag_ref/ag_rules.txt）+ 附录行动格全表核对：
+//   阶段归属（附录第 6 节）：Major Improvement/Fencing/Grain Utilization/Sheep Market = Stage 1，
+//   Basic Wish for Children/House Redevelopment/Western Quarry = Stage 2，Vegetable Seeds/Pig Market = Stage 3，
+//   Cattle Market/Eastern Quarry = Stage 4，Urgent Wish for Children/Cultivation = Stage 5，
+//   Farm Redevelopment = Stage 6。
+//   阶段轮次带官方为「带内逐轮翻格」，本实现整阶段在带首全开（STAGE_ROUND 表，共享板近似）。
+//   Forest 固定 3 木（官方 +3 Wood 累积格定量补货）；laborer2/wood2 为多人追加格近似。
 
 // RES_KEYS 资源键（食物/谷物/蔬菜/木/黏土/芦苇/石 + 三牲畜）
 export const RES_KEYS = ['food', 'grain', 'veg', 'wood', 'clay', 'reed', 'stone', 'sheep', 'boar', 'cattle'];
@@ -97,31 +102,40 @@ export function visibleSpaces(round, playerCount = 2) {
   return SPACES.filter((sp) => spaceUnlocked(sp, round) && playerOk(sp, playerCount));
 }
 
-// —— 建造费用表（待核对：房 5 材料 + 2 芦苇；翻新 1 芦苇 + 1 新材料/房；马厩 1 木；围栏 1 木/段）——
+// —— 建造费用表（✅ 官方规则书 p7-8：房 5 材料 + 2 芦苇；翻新 1 芦苇 + 1×新材料/房；马厩 2 木/个；围栏 1 木/段）——
 export const COST = {
   roomWood: { wood: 5, reed: 2 },
   roomClay: { clay: 5, reed: 2 },
   roomStone: { stone: 5, reed: 2 },
   renov: { reed: 1 }, // + 1×新材料/房（wood→clay→stone 链）
-  stable: { wood: 1 },
+  stable: { wood: 2 },
   fence: { wood: 1 },
 };
 
-// —— 终局计分表（家族版口径，待核对）——
-// 表长 6/7：索引 = 拥有量（超出取末位）
-export const SCORE_FIELDS = [-1, 1, 1, 2, 3, 4];        // 田
-export const SCORE_PASTURES = [-1, 1, 1, 2, 3, 4];     // 牧场（独立围栏区数）
-export const SCORE_GRAIN = [-1, 1, 1, 2, 3, 4, 4];     // 谷物（收获后存量）
-export const SCORE_VEG = [-1, 1, 2, 3, 4, 4];          // 蔬菜
-export const SCORE_ANIMAL = [-1, 1, 2, 3, 4];          // 每种牲畜
+// —— 终局计分表（✅ 官方规则书 p12 计分板 + 附录第 10 节详述；各类别 4 分封顶，索引 = 拥有量，超出取末位）——
+// 田地（附录：0-1 块 −1 分，2 块 1 分，3 块 2 分，4 块 3 分，5+ 块 4 分）
+export const SCORE_FIELDS = [-1, -1, 1, 2, 3, 4];
+// 牧场：每块 1 分封顶 4 分；0 块 −1
+export const SCORE_PASTURES = [-1, 1, 2, 3, 4, 4];
+// 谷物（存量 + 田上，✅ 附录第 10 节：至少 1/4/6/8 谷 → 1/2/3/4 分）；0 谷 −1
+// 参考实现 score_mapping(value,[1,4,6,8],[-1,1,2,3,4])：1-3 谷 1 分、4-5 谷 2 分、6-7 谷 3 分、8+ 谷 4 分
+export const SCORE_GRAIN = [-1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4];
+// 蔬菜：每棵 1 分封顶 4 分；0 菜 −1
+export const SCORE_VEG = [-1, 1, 2, 3, 4, 4];
+// 牲畜分表（✅ 附录第 10 节：至少 1/4/6/8 羊、1/3/5/7 猪、1/2/4/6 牛 → 各档 1/2/3/4 分）；0 只 −1
+// 参考实现 score_mapping(value,[1,k1,k2,k3],[-1,1,2,3,4])：区间 [阈值_i, 阈值_{i+1}) 对应 i 分
+export const SCORE_SHEEP = [-1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4];
+export const SCORE_BOAR = [-1, 1, 1, 2, 2, 3, 3, 4, 4];  // 阈值 1/3/5/7
+export const SCORE_CATTLE = [-1, 1, 2, 2, 3, 3, 4, 4, 4]; // 阈值 1/2/4/6
 export const SCORE_FAMILY = 3;                         // 每家庭成员 3 分
 export const SCORE_ROOM_CLAY = 1;                      // 黏土房 1 分/间
 export const SCORE_ROOM_STONE = 2;                     // 石房 2 分/间
 export const SCORE_STABLE_FENCED = 1;                  // 牧场内马厩 1 分/个
-export const SCORE_UNUSED = -1;                        // 未用空地 -1/格
+export const SCORE_STABLE_MAX = 4;                     // 每人仅 4 马厩（附录：本类封顶 4 分）
+export const SCORE_UNUSED = -1;                        // 未用空地 -1/格（马厩所在空地视为已用）
 export const SCORE_BEGGAR = -3;                        // 乞讨卡 -3/张
 export const FARM_COLS = 5;                            // 农场 5×3 = 15 格
 export const FARM_ROWS = 3;
 export const FARM_SPACES = 15;
 export const START_ROOMS = [5, 6];                     // 初始 2 间木房（第 2 行前两格）
-export const FAMILY_MAX = 5;                            // 家庭成员上限 5（官方规则）
+export const FAMILY_MAX = 5;                           // 家庭成员上限 5（官方规则）

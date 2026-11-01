@@ -120,12 +120,16 @@ function subPanel(s, p, pd, legal, human) {
       const info = E.renovInfo(p);
       const renov = legal.find((a) => a.kind === 'subRenovate');
       const majors = legal.filter((a) => a.kind === 'subMajor');
+      const bakes = legal.filter((a) => a.kind === 'subBake');
+      const bakeBtns = bakes.map((a) =>
+        actBtn(a, `🌾${a.n}→🍞${a.rate * a.n + I.bakeBonus(p)}`)).join('');
       body = `
         <p class="muted">${t('ag.ui.renovHint')}</p>
         <div class="ag-btns">
           ${renov ? actBtn(renov, `${t('ag.ui.renovate')} ${tr(MAT_NAMES[info.target])}（${E.gainList(info.cost)}）`) : ''}
         </div>
-        ${majors.length ? `<div class="ag-mrow">${majors.map((a) => majorCardBtn(s, a)).join('')}</div>` : ''}`;
+        ${majors.length ? `<div class="ag-mrow">${majors.map((a) => majorCardBtn(s, a)).join('')}</div>` : ''}
+        ${bakes.length ? `<div class="ag-btns"><span class="ag-label">${t('ag.ui.bake')}</span>${bakeBtns}</div>` : ''}`;
       break;
     }
     case 'occ': case 'minor':
@@ -171,7 +175,7 @@ function feedPanel(s, p, legal) {
   }
   const cookBtns = [...groups.entries()].map(([res, acts]) => `
     <span class="ag-cookrow">${RES_INFO[res].emoji}${acts.map((a) =>
-      actBtn(a, `${a.n}→🍞${I.cookRates(p)[res] * a.n}`)).join('')}</span>`).join('');
+      actBtn(a, `${a.n}→🍞${(a.raw ? 1 : I.cookRates(p)[res]) * a.n}`)).join('')}</span>`).join('');
   return `
     <div class="ag-action" data-bg-focus>
       <p>${fmt(t('ag.ui.feedNeed'), { n: need, m: p.food })}${short ? ` <b class="ag-warn">${fmt(t('ag.ui.feedShort'), { n: short })}</b>` : ''}</p>

@@ -74,7 +74,7 @@ function toolbarHtml(s, legal, human) {
       ${isTile ? `
         <button class="btn-soft" data-act="rotL" ${human ? '' : 'disabled'}>↺</button>
         <button class="btn-soft" data-act="rotR" ${human ? '' : 'disabled'}>↻</button>` : ''}
-      <span class="ca-deck">${fmt(t('ca.ui.deck'), { n: s.deck.length })}</span>
+      <span class="ca-deck">${fmt(t('ca.ui.deck'), { n: s.deck.length })}${s.discarded ? fmt(t('ca.ui.discarded'), { n: s.discarded }) : ''}</span>
       ${!isTile && human && meeples.length
         ? `<button class="btn-soft" data-act="skip">${t('ca.ui.skipMeeple')}</button>` : ''}
     </div>`;

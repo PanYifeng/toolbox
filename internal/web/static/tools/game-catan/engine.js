@@ -119,6 +119,7 @@ export function initialState(setup) {
     longestRoad: { seat: null, len: 0 },
     largestArmy: { seat: null, size: 0 },
     phase: 'setup',
+    lastDice: null,               // 最近一次掷骰面 [d1, d2]（UI 骰面点阵渲染）
     setup: { order: [], idx: 0, round: 1, second: [] },
     cur: 0,
     turn: 0,
@@ -434,11 +435,12 @@ function applySetupRoad(s, a) {
 
 // —— 掷骰与生产 ——
 
-// applyRoll 掷两骰：7 走弃牌/强盗链，否则生产
+// applyRoll 掷两骰：7 走弃牌/强盗链，否则生产（记录 d1/d2 供骰面点阵渲染）
 function applyRoll(s) {
   const d1 = 1 + Math.floor(rnd(s) * 6);
   const d2 = 1 + Math.floor(rnd(s) * 6);
   const sum = d1 + d2;
+  s.lastDice = [d1, d2]; // 供 UI 渲染骰面点阵（state 字段，JSON-safe）
   log(s, s.cur, 'ct.log.roll', { n: s.players[s.cur].name, d: sum });
   if (sum === 7) { log(s, -1, 'ct.log.seven', {}); startDiscard(s); return; }
   produce(s, sum);

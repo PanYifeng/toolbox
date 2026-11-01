@@ -6,7 +6,8 @@
 
 import * as E from './engine.js';
 import * as I from './cards-interp.js';
-import { SPACES, visibleSpaces, SCORE_FIELDS, SCORE_GRAIN } from './actionboard-data.js';
+import { SPACES, visibleSpaces, SCORE_FIELDS, SCORE_GRAIN, COST } from './actionboard-data.js';
+import { MAJORS, MAJOR_BY_ID } from './majors.js';
 import { bot } from './bot.js';
 
 let pass = 0;
@@ -139,8 +140,13 @@ section('开局');
   const s = mkState(42, 3);
   ok(s.round === 1 && s.phase.kind === 'place', '开局应进入第 1 轮放工');
   ok(s.order[0] === 0 && s.order[1] === 1 && s.order[2] === 2, '开局顺位应为座位序');
+  // ✅ 官方 p4：先手 2 食，其余玩家 3 食
+  ok(s.players[0].food === 2, `先手开局应 2 食，实际 ${s.players[0].food}`);
+  for (let i = 1; i < s.players.length; i++) {
+    ok(s.players[i].food === 3, `${s.players[i].name} 非先手开局应 3 食，实际 ${s.players[i].food}`);
+  }
   for (const p of s.players) {
-    ok(p.food === 2 && p.family === 2, `${p.name} 开局应 2 食 2 人`);
+    ok(p.family === 2, `${p.name} 开局应 2 人`);
     ok(p.handOcc.length === 7 && p.handMinor.length === 7, `${p.name} 开局应 7+7 手牌`);
     ok(p.farm[5].t === 'room' && p.farm[6].t === 'room' && p.farm[5].mat === 'wood', '初始木房应在 5,6 格');
   }
@@ -180,6 +186,8 @@ section('建房');
   // 木匠减免：材料费 -1
   p0.occPlayed = ['carpenter'];
   ok(E.roomCostOf(p0).wood === 4 && E.roomCostOf(p0).reed === 2, '木匠应让房费变 4 木 2 芦苇');
+  // ✅ 官方 p8：马厩 2 木/个
+  ok(COST.stable.wood === 2, `马厩费应 2 木，实际 ${COST.stable.wood}`);
   // 非邻接不可建：直接对 P1 农场做手术放一间房（build 空间一轮一人，
   // P0 已占用，P1 无法经 legalActions 进入子阶段，故直查 validRoomSpots）
   const p1 = s.players[1];
@@ -223,12 +231,14 @@ section('播种与收获');
   s = place(s, 'sow');
   s = act(s, (a) => a.kind === 'subSow' && a.idx === 7 && a.crop === 'grain', 'subSow grain');
   s = E.apply(s, { kind: 'subDone' });
-  ok(s.players[0].farm[7].g === 2 && s.players[0].grain === 0, '播种后田应有 2 谷、供应 0 谷');
+  // ✅ 官方 p9：播 1 谷 → 田 3 谷
+  ok(s.players[0].farm[7].g === 3 && s.players[0].grain === 0, `播种后田应有 3 谷、供应 0 谷，实际 ${s.players[0].farm[7].g}/${s.players[0].grain}`);
   // 排干到轮 4 收获喂食
   s = drain(s, (x) => x.phase.kind === 'feed');
   ok(s.round === 4, `轮 4 结束应触发收获，实际轮 ${s.round}`);
-  ok(s.players[0].farm[7].g === 0, '收获后田应清空');
-  ok(s.players[0].grain === 2, `收获应得 2 谷，实际 ${s.players[0].grain}`);
+  // ✅ 官方 p9：每次收获每田取 1 株（不清空）
+  ok(s.players[0].farm[7].g === 2, `收获后田应剩 2 谷，实际 ${s.players[0].farm[7].g}`);
+  ok(s.players[0].grain === 1, `收获应得 1 谷，实际 ${s.players[0].grain}`);
   // 喂食：两家确认
   s = E.apply(s, { kind: 'feedConfirm' });
   s = E.apply(s, { kind: 'feedConfirm' });
@@ -264,9 +274,17 @@ section('围栏');
   ok(q0.wood === 0, '围单格应付 4 木');
   ok(q0.groups[1] && q0.groups[1].length === 1, '应形成 1 组牧场');
   ok(E.fenceCostOf(q0, [1]) === 3, `贴既有牧场扩 1 格应 3 木，实际 ${E.fenceCostOf(q0, [1])}`);
-  // 容量与马厩
+  // ✅ 官方 p8：牧场容量 = 2×格数，组内每个马厩容量翻倍（乘性）
+  ok(E.groupCapacity(q0, 1) === 2, `1 格牧场容量应 2，实际 ${E.groupCapacity(q0, 1)}`);
   q0.farm[0].stable = true;
-  ok(E.groupCapacity(q0, 1) === 4, `1 格+马厩容量应 4，实际 ${E.groupCapacity(q0, 1)}`);
+  ok(E.groupCapacity(q0, 1) === 4, `1 格+1 马厩容量应 4（2×1×2），实际 ${E.groupCapacity(q0, 1)}`);
+  q0.farm[0].stable = false;
+  const q1 = s.players[1];
+  q1.groups = { 1: [0, 1] };
+  q1.farm[0].t = 'pasture'; q1.farm[0].gid = 1;
+  q1.farm[1].t = 'pasture'; q1.farm[1].gid = 1;
+  q1.farm[0].stable = true; q1.farm[1].stable = true;
+  ok(E.groupCapacity(q1, 1) === 16, `2 格+2 马厩容量应 16（2×2×2²），实际 ${E.groupCapacity(q1, 1)}`);
 }
 
 // ==== 9. 牲畜栏位与溢出 ====
@@ -279,12 +297,20 @@ section('牲畜');
   p0.farm[1].t = 'pasture'; p0.farm[1].gid = 1;
   p0.groupAnimals = { 1: { type: 'sheep', n: 3 } };
   ok(E.totalAnimals(p0, 'sheep') === 3, '羊总数应为 3');
+  // ✅ 官方 p8：2 格牧场容量 = 2×2 = 4
   ok(E.spareFor(p0, 'sheep') === 1, `2 格牧场容量 4 余 1，实际 ${E.spareFor(p0, 'sheep')}`);
-  // 溢出烹煮：壁炉汇率羊 2
-  p0.majors = ['fireplace'];
+  // 溢出烹煮：✅ 壁炉汇率 羊2/猪2/牛3/菜2
+  p0.majors = ['fireplace1'];
   E.addAnimals(s, p0, 'sheep', 2);
   ok(p0.groupAnimals[1].n === 4, '先补满牧场容量 4');
   ok(p0.food === 4, `溢出 1 只按壁炉烹 2 食，实际 ${p0.food}`);
+  // 灶台烹猪 3 食
+  p0.majors = ['hearth1'];
+  E.addAnimals(s, p0, 'boar', 1);
+  ok(p0.food === 7, `灶台溢出 1 猪应烹 3 食（4+3），实际 ${p0.food}`);
+  p0.majors = ['fireplace1'];
+  E.addAnimals(s, p0, 'boar', 1);
+  ok(p0.food === 9, `壁炉溢出 1 猪应烹 2 食（7+2），实际 ${p0.food}`);
   // 无设备则丢失
   p0.majors = [];
   E.addAnimals(s, p0, 'boar', 2);
@@ -300,15 +326,16 @@ section('职业与烤炉');
 {
   let s = mkState(7, 2);
   const p0 = s.players[0];
+  // ✅ 官方 p10：主 Lessons 首张职业免费，此后每张 1 食（教师可减至 0）
   ok(E.occCostOf(p0) === 0, '首张职业应免费');
   p0.occPlayed = ['lumberjack', 'miner'];
-  ok(E.occCostOf(p0) === 2, '第 3 张职业应付 2 食');
+  ok(E.occCostOf(p0) === 1, '第 3 张职业应付 1 食');
   p0.occPlayed.push('teacher');
-  ok(E.occCostOf(p0) === 2, '教师应减 1 食（第 4 张 3−1=2）');
+  ok(E.occCostOf(p0) === 0, '教师应减 1 食（1−1=0）');
   // 烤炉选项与汇率
   p0.majors = ['clayOven'];
   ok(I.bakeOptions(p0).length === 1 && I.bakeOptions(p0)[0].rate === 5, '黏土烤炉应 1 谷→5 食');
-  p0.majors.push('fireplace');
+  p0.majors.push('fireplace1');
   ok(I.cookRates(p0).grain === 5, '烤面包汇率应取最大 5');
   ok(I.bakeOptions(p0).length === 2, '壁炉+烤炉应有两个烤面包选项');
   // 职业打出全流程
@@ -327,13 +354,51 @@ section('大设施');
 {
   let s = mkState(7, 2);
   s.round = 5;
-  s.players[0].clay = 3;
+  s.players[0].clay = 5;
   s.players[0].reed = 1;
   s = place(s, 'renov');
-  s = act(s, (a) => a.kind === 'subMajor' && a.id === 'fireplace', 'buy fireplace');
+  // ✅ 官方附录：House Redevelopment 须先翻新才可购大设施
+  ok(!E.legalActions(s).some((a) => a.kind === 'subMajor'), '未翻新前不可购大设施');
+  s = act(s, (a) => a.kind === 'subRenovate', 'subRenovate');
+  s = act(s, (a) => a.kind === 'subMajor' && a.id === 'fireplace2', 'buy fireplace2');
   s = E.apply(s, { kind: 'subDone' });
-  ok(s.players[0].majors.includes('fireplace') && s.players[0].clay === 0, '壁炉购入应付 3 黏土');
-  ok(!E.affordMajors(s, s.players[1]).some((m) => m.id === 'fireplace'), '大设施全局唯一，P1 不可再购壁炉');
+  const p0 = s.players[0];
+  ok(p0.majors.includes('fireplace2'), '翻新后应可购入 3 黏土壁炉');
+  ok(p0.clay === 0 && p0.reed === 0, `翻新+壁炉应付 2 黏土 1 芦苇 + 3 黏土，实际余 ${p0.clay}/${p0.reed}`);
+  ok(p0.farm[5].mat === 'clay', '翻新后应为黏土房');
+  // ✅ 官方：壁炉全局 2 份（fireplace1 副本），P1 仍可购 fireplace1
+  s.players[1].clay = 2;
+  ok(E.majorCopiesLeft(s, 'fireplace1') === 2, '壁炉应有 2 份在池');
+  ok(E.affordMajors(s, s.players[1]).some((m) => m.id === 'fireplace1'), 'P1 应仍可购壁炉');
+  // 唯一性：灶台/hearth 全局唯一
+  s.players[0].majors = ['hearth1', 'clayOven'];
+  ok(!E.affordMajors(s, s.players[1]).some((m) => m.id === 'hearth1'), '灶台全局唯一，P1 不可再购');
+  ok(!E.affordMajors(s, s.players[1]).some((m) => m.id === 'clayOven'), '黏土烤炉全局唯一');
+  // 灶台退壁炉换购（官方附录 p2：退壁炉抵原价、付差额；退回的壁炉可再被建）
+  const p1b = s.players[1];
+  s.players[0].majors = ['fireplace1'];
+  p1b.majors = ['fireplace2']; // 3 黏土壁炉
+  p1b.clay = 2;
+  ok(E.affordMajors(s, p1b).some((m) => m.id === 'hearth1'), '持壁炉付差价 1 黏土可购 4 黏土灶台');
+  ok(E.affordMajors(s, p1b).some((m) => m.id === 'hearth2'), '持壁炉付差价 2 黏土可购 5 黏土灶台');
+  p1b.clay = 1;
+  ok(E.affordMajors(s, p1b).some((m) => m.id === 'hearth1'), '差价 1 ≤ 1 黏土可购 4 黏土灶台');
+  ok(!E.affordMajors(s, p1b).some((m) => m.id === 'hearth2'), '差价 2 > 1 黏土不可购 5 黏土灶台');
+  // 无壁炉不可差价购灶台
+  p1b.majors = [];
+  p1b.clay = 2;
+  ok(!E.affordMajors(s, p1b).some((m) => m.id === 'hearth1'), '无壁炉不可购灶台');
+  // 水井：建成起 5 轮每轮 +1 食
+  let w = mkState(7, 2);
+  w.round = 5;
+  w.players[0].clay = 5; w.players[0].reed = 1;
+  w.players[0].stone = 3; w.players[0].wood = 1;
+  w = place(w, 'renov');
+  w = act(w, (a) => a.kind === 'subRenovate', 'well subRenovate');
+  w = act(w, (a) => a.kind === 'subMajor' && a.id === 'well', 'buy well');
+  w = E.apply(w, { kind: 'subDone' });
+  ok(w.players[0].wellRounds === 5, `轮 5 建水井应登记 5 轮收入，实际 ${w.players[0].wellRounds}`);
+  ok(w.players[0].stone === 0 && w.players[0].wood === 0, `水井应付 3 石 1 木，实际余 ${w.players[0].stone}/${w.players[0].wood}`);
 }
 
 // ==== 12. 计分表 ====
@@ -347,13 +412,41 @@ section('计分');
   p0.groups = { 1: [0] };
   p0.farm[0].t = 'pasture'; p0.farm[0].gid = 1;
   p0.groupAnimals = { 1: { type: 'sheep', n: 1 } };
+  p0.farm[0].stable = true;
   const rows = Object.fromEntries(E.score(s)[0].breakdown);
   ok(rows['ag.score.fields'] === SCORE_FIELDS[2], `2 田应得 ${SCORE_FIELDS[2]}，实际 ${rows['ag.score.fields']}`);
   ok(rows['ag.score.grain'] === SCORE_GRAIN[3], `3 谷应得 ${SCORE_GRAIN[3]}，实际 ${rows['ag.score.grain']}`);
   ok(rows['ag.score.veg'] === -1, '0 菜应 -1');
   ok(rows['ag.score.sheep'] === 1, '1 羊应得 1');
+  ok(rows['ag.score.boar'] === -1, '0 猪应 -1');
+  ok(rows['ag.score.cattle'] === -1, '0 牛应 -1');
   ok(rows['ag.score.pastures'] === 1, '1 牧场应得 1');
+  // ✅ 附录：牧场内马厩 1 分/个封顶 4；空地马厩不计分但视为已用
+  ok(rows['ag.score.stables'] === 1, `牧场内 1 马厩应得 1，实际 ${rows['ag.score.stables']}`);
+  p0.farm[0].stable = false;
+  p0.farm[7].stable = true; // 空地上马厩（田已计分占位，故改在空地另置）
+  p0.farm[7].t = 'empty';
+  const rows2 = Object.fromEntries(E.score(s)[0].breakdown);
+  ok(rows2['ag.score.stables'] === 0, `空地马厩不计分，实际 ${rows2['ag.score.stables']}`);
+  p0.farm[7].stable = false;
+  p0.farm[7].t = 'field';
+  // ✅ 附录：马厩所在空地视为已用，不再计入未用扣分
+  const unusedBefore = Object.fromEntries(E.score(s)[0].breakdown)['ag.score.unused'];
+  p0.farm[10].stable = true;
+  const rows3 = Object.fromEntries(E.score(s)[0].breakdown);
+  ok(rows3['ag.score.unused'] === unusedBefore + 1, `马厩空地应视为已用少扣 1，实际 ${rows3['ag.score.unused']} vs ${unusedBefore}`);
+  p0.farm[10].stable = false;
   ok(rows['ag.score.unused'] === -10, `10 空地应 -10，实际 ${rows['ag.score.unused']}`);
+  // 谷物分档：1/4/6/8 → 1/2/3/4
+  p0.grain = 0;
+  p0.farm[7].g = 1;
+  ok(Object.fromEntries(E.score(s)[0].breakdown)['ag.score.grain'] === 1, '1 谷应得 1');
+  p0.farm[7].g = 4;
+  ok(Object.fromEntries(E.score(s)[0].breakdown)['ag.score.grain'] === 2, '4 谷应得 2');
+  p0.farm[7].g = 6;
+  ok(Object.fromEntries(E.score(s)[0].breakdown)['ag.score.grain'] === 3, '6 谷应得 3');
+  p0.farm[7].g = 8;
+  ok(Object.fromEntries(E.score(s)[0].breakdown)['ag.score.grain'] === 4, '8 谷应得 4');
 }
 
 // ==== 13. 家庭成长 ====

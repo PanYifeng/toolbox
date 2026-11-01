@@ -55,6 +55,35 @@ function resChip(i, count, clickable) {
 let ui = { stamp: '', bank: { give: 0, get: 1 }, dom: { to: 1, giveRes: 0, giveN: 1, getRes: 1, getN: 1 } };
 let ctx = null; // {el, s, legal, pick}
 
+// DIE_PIP 骰面点阵坐标（3×3 网格，0-8 格位；各点数对应点亮格位）
+const DIE_PIP = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+};
+
+// dieSvg 单颗骰面点阵 SVG（数字直观可读，无需心算）
+function dieSvg(v) {
+  const pip = (g) => {
+    let out = '';
+    for (const c of DIE_PIP[v]) {
+      out += `<circle cx="${(2.6 + (c % 3) * 2.8).toFixed(1)}" cy="${(2.6 + Math.floor(c / 3) * 2.8).toFixed(1)}" r="1" class="ct-pip"/>`;
+    }
+    return out;
+  };
+  return `<svg class="ct-die" viewBox="0 0 10.4 10.4">${pip()}<title>${v}</title></svg>`;
+}
+
+// diceHtml 最近一次掷骰骰面（两颗点阵 + 合计）
+function diceHtml(s) {
+  if (!s.lastDice) return '';
+  const [a, b] = s.lastDice;
+  return `<span class="ct-dice">${dieSvg(a)}${dieSvg(b)}<b>= ${a + b}</b></span>`;
+}
+
 // renderBoard 全量重绘入口
 export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.turn}:${currentPlayer(s)}:${s.phase}:${s.pending ? s.pending.kind : ''}:${s.log.length}`;
@@ -78,7 +107,7 @@ function promptHtml(s, human) {
   const p = s.players[currentPlayer(s)];
   const key = s.pending ? `ct.ui.prompt.${s.pending.kind}` : `ct.ui.prompt.${s.phase}`;
   const rob = t('ct.ui.robberAt') + ' ' + esc(terrName(s, s.robber));
-  return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t(key)} <span class="ct-sub">${rob} · ${t('ct.ui.devDeck')} ${s.devDeck.length}</span>`;
+  return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t(key)} <span class="ct-sub">${rob} · ${t('ct.ui.devDeck')} ${s.devDeck.length}</span>${diceHtml(s)}`;
 }
 
 // terrName 格子地形名（含数字）

@@ -31,14 +31,25 @@ function checkInvariants(s, seed, tag) {
     cols += Object.values(ph.pending).reduce((a, b) => a + b, 0);
   }
   assert(cols + s.colonistSupply + s.colonistShip === SETUP[s.players.length].colonists, `colonist conservation broken: ${ctx}`);  // VP 守恒
+  // VP 守恒：供应可为负（耗尽后纸笔记录语义），总和恒等于初始
   const vpSum = s.players.reduce((a, p) => a + p.vp, 0);
   assert(vpSum + s.vpSupply === SETUP[s.players.length].vp, `VP conservation broken: ${ctx}`);
-  // 建筑守恒
-  let built = 0;
-  for (const p of s.players) built += p.city.filter((c) => c.id).length;
+  // 建筑守恒（大建筑占 2 格：按格数折算，第 2 格为同一建筑）
+  let builtSlots = 0;
+  const builtIds = new Set();
+  for (const p of s.players) for (const c of p.city) if (c.id) builtIds.add(c.id + '@' + p.seat);
+  for (const p of s.players) {
+    const seen = new Set();
+    for (const c of p.city) {
+      if (!c.id || seen.has(c.id)) continue;
+      seen.add(c.id);
+      builtSlots++;
+    }
+  }
   const stockSum = Object.values(s.buildingStock).reduce((a, b) => a + b, 0);
   const initStock = BUILDINGS.reduce((a, b) => a + b.stock, 0);
-  assert(built + stockSum === initStock, `building conservation broken: ${ctx}`);
+  assert(builtSlots + stockSum === initStock, `building conservation broken: ${ctx}`);
+  void builtIds;
   // 货船一致性：load===0 ⟺ good===null，且不超载
   for (const ship of s.ships) {
     assert((ship.load === 0) === (ship.good === null), `ship good/load mismatch: ${ctx}`);
@@ -104,41 +115,55 @@ console.log(`random games: ${games} done`);
 
 // —— ④ 规则定点测试 ——
 
-// 4a 船长同种货锁一船 + 能装必装
+// 4a 船长：同种货锁一船 + 能装必装 + 必须装「装得最多」的船且全量装满
 {
   const s = initialState({ seats: seats(3), seed: 7 });
   s.players[0].goods = { corn: 3, indigo: 0, sugar: 0, tobacco: 0, coffee: 0 };
-  s.phase = { kind: 'captain', chooser: 0, order: [0, 1, 2], idx: 0, passCount: 0, cur: 0,
-    loaded: {}, shipped: {}, wharfUsed: {}, privVP: false };
+  s.phase = { kind: 'captain', chooser: 0, order: [0, 1, 2], idx: 0, cur: 0,
+    loaded: {}, shipped: {}, wharfUsed: {}, done: [], declined: [], privVP: false };
   const legal = legalActions(s);
   assert(!legal.some((a) => a.kind === 'captainPass'), 'must-ship violated: pass allowed with shippable corn');
-  assert(legal.some((a) => a.kind === 'ship' && a.good === 'corn' && a.count === 3), 'full-count ship missing');
-  const s2 = apply(s, { kind: 'ship', ship: 0, good: 'corn', count: 2 });
+  // 船容量 [4,5,6] 全空：三船对 3 件玉米的可装量相同（都是 3）→ 三船都可作「装得最多」的船
+  assert(legal.filter((a) => a.kind === 'ship').length === 3, 'all equal-load ships selectable, got ' + legal.filter((a) => a.kind === 'ship').length);
+  assert(legal.every((a) => a.kind !== 'ship' || a.count === 3), 'ship load must be full count');
+  const s2 = apply(s, { kind: 'ship', ship: 0, good: 'corn', count: 3 });
   const l2 = legalActions(s2);
   assert(!l2.some((a) => a.kind === 'ship' && a.good === 'corn' && a.ship === 1), 'same good split across ships allowed');
-  assert(l2.some((a) => a.kind === 'ship' && a.good === 'corn' && a.ship === 0), 'more corn on same ship missing');
-  assert(s2.players[0].vp === 3, 'shipping VP wrong: 2 cargo + captain privilege 1, got ' + s2.players[0].vp);
-  console.log('captain lock/must-ship: ok');
+  assert(s2.players[0].vp === 4, 'shipping VP wrong: 3 cargo + captain privilege 1, got ' + s2.players[0].vp);
+  console.log('captain lock/must-ship/max-load: ok');
 }
 
-// 4b 保留上限：无仓每种 1 件，小仓 +1
+// 4b 保留上限（✅ 对照 dae-hany 仓库语义）：风 ros 每种 1 桶；小仓全保留 1 种、大仓 2 种
 {
-  const mk = (city) => ({ island: [], city, goods: { corn: 3, indigo: 0, sugar: 0, tobacco: 0, coffee: 0 }, san: 0 });
-  assert(!keepFeasible(mk([]), { corn: 2 }), 'keep 2 corn without warehouse should be infeasible');
-  assert(keepFeasible(mk([{ id: 'small_warehouse', occ: true }]), { corn: 2 }), 'small warehouse should allow 2 corn');
-  assert(!keepFeasible(mk([{ id: 'small_warehouse', occ: true }]), { corn: 3 }), 'small warehouse cannot hold 3 corn');
-  console.log('keep limits: ok');
+  const mk = (city, goods) => ({ island: [], city, goods, san: 0 });
+  const sw = [{ id: 'small_warehouse', occ: 1 }];
+  const lw = [{ id: 'large_warehouse', occ: 1 }];
+  const noGoods = { corn: 0, indigo: 0, sugar: 0, tobacco: 0, coffee: 0 };
+  // 无仓：3 种货不可全保留
+  assert(!keepFeasible(mk([], { ...noGoods, corn: 3, tobacco: 1, coffee: 1 }), { corn: 3, tobacco: 1, coffee: 1 }), '3 kinds without warehouse should not fit');
+  // 小仓：3 种货不可全保留（仓 1 种 + 风 ros 1 种）
+  assert(!keepFeasible(mk(sw, { ...noGoods, corn: 3, tobacco: 1, coffee: 1 }), { corn: 3, tobacco: 1, coffee: 1 }), '3 kinds with small warehouse should not all fit');
+  // 小仓：锁 1 种全保留 + 另 1 种留 1 桶 = 合法
+  assert(keepFeasible(mk(sw, { ...noGoods, corn: 3, tobacco: 1, coffee: 1 }), { corn: 3, tobacco: 1 }), 'small warehouse: 1 kind in full + windrose barrel');
+  // 小仓：单种 3 玉米全保留（该种锁入仓库）
+  assert(keepFeasible(mk(sw, { ...noGoods, corn: 3 }), { corn: 3 }), 'small warehouse keeps ALL barrels of its kind');
+  // 大仓：2 种全保留合法
+  assert(keepFeasible(mk(lw, { ...noGoods, corn: 3, tobacco: 2 }), { corn: 3, tobacco: 2 }), 'large warehouse keeps 2 kinds');
+  // 恰多 1 种且某堆仅 1 件 → 可全保留（该堆作风 ros）
+  assert(keepFeasible(mk(sw, { ...noGoods, corn: 3, tobacco: 1 }), { corn: 3, tobacco: 1 }), 'slots+1 kinds with a 1-barrel pile fits via windrose');
+  console.log('keep limits (warehouse kinds): ok');
 }
 
-// 4c 采石场折扣：生产建筑按已占采石场数减，紫建筑至多 -1
+// 4c 采石场折扣（✅ 对照 dae-hany）：折扣上限 = 建筑印刷 VP（所有建筑通用）
 {
-  const p = { island: [{ type: 'quarry', occ: true }, { type: 'quarry', occ: true }, { type: 'corn', occ: false }],
+  const p = { island: [{ type: 'quarry', occ: true }, { type: 'quarry', occ: true }, { type: 'quarry', occ: true }, { type: 'corn', occ: false }],
     city: [], goods: {}, san: 0 };
-  assert(buildCost(p, 'small_indigo', false) === 0, 'prod building quarry discount wrong');
-  assert(buildCost(p, 'coffee_roaster', false) === 4, 'coffee roaster cost wrong');
-  assert(buildCost(p, 'small_market', false) === 0, 'violet quarry discount should cap at 1');
-  assert(buildCost(p, 'small_market', true) === 0, 'builder privilege + quarry discount wrong');
-  console.log('quarry discount: ok');
+  assert(buildCost(p, 'small_indigo', false) === 0, 'small_indigo: 1-min(3,vp1)=0');
+  assert(buildCost(p, 'coffee_roaster', false) === 3, 'coffee_roaster: 6-min(3,vp3)=3, got ' + buildCost(p, 'coffee_roaster', false));
+  assert(buildCost(p, 'office', false) === 3, 'office: 5-min(3,vp2)=3, got ' + buildCost(p, 'office', false));
+  assert(buildCost(p, 'small_market', false) === 0, 'small_market: 1-min(3,vp1)=0');
+  assert(buildCost(p, 'guild_hall', false) === 7, 'guild_hall: 10-min(3,vp4)=7, got ' + buildCost(p, 'guild_hall', false));
+  console.log('quarry discount (vp cap): ok');
 }
 
 // 4d 交易所不可同种（无事务所）
@@ -164,17 +189,23 @@ console.log(`random games: ${games} done`);
   console.log('craftsman non-chooser: ok');
 }
 
-// 4f VP 耗尽立即终局
+// 4f VP 耗尽：继续全额记分（纸笔记录），本轮打完才终局（✅ 对照 dae-hany）
 {
   const s = initialState({ seats: seats(3), seed: 11 });
   s.vpSupply = 1;
   s.players[0].goods = { corn: 2, indigo: 0, sugar: 0, tobacco: 0, coffee: 0 };
-  s.phase = { kind: 'captain', chooser: 0, order: [0, 1, 2], idx: 0, passCount: 0, cur: 0,
-    loaded: {}, shipped: {}, wharfUsed: {}, privVP: false };
+  s.roles.find((r) => r.id === 'captain').taken = 0;
+  s.roles.find((r) => r.id === 'mayor').taken = 2;
+  // 船长之后还有市长阶段：VP 耗尽后游戏必须继续到本轮结束（市长有真实决策，settle 会停）
+  s.roleQueue = ['mayor'];
+  s.phase = { kind: 'captain', chooser: 0, order: [0, 1, 2], idx: 0, cur: 0,
+    loaded: {}, shipped: {}, wharfUsed: {}, done: [], declined: [], privVP: false };
   const s2 = apply(s, { kind: 'ship', ship: 0, good: 'corn', count: 2 });
-  assert(s2.gameOver === true, 'VP exhaustion should end game immediately');
-  assert(s2.vpSupply === 0 && s2.players[0].vp === 1, 'VP cap at supply: only 1 chip awarded');
-  console.log('VP exhaustion: ok');
+  assert(s2.endTriggered === true && s2.gameOver === false, 'VP exhaustion marks end but game continues to round end');
+  assert(s2.phase.kind === 'mayor', 'captain phase should hand over to mayor, got ' + s2.phase.kind);
+  // 货 2 件 + 船长特权 1 = 3 VP 全额发放，供应记为负（纸笔记录语义）
+  assert(s2.players[0].vp === 3 && s2.vpSupply === -2, 'VP beyond supply still awarded: got vp=' + s2.players[0].vp + ' supply=' + s2.vpSupply);
+  console.log('VP exhaustion (full award, round-end finish): ok');
 }
 
 // 4g 移民船补给不足触发终局

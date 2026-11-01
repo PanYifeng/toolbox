@@ -140,24 +140,30 @@ function unselectOrCancel(p, pd, legal) {
   return undo || legal.find((a) => a.kind === 'subCancel') || legal[0];
 }
 
-// renovStep 翻新/购大设施：没烹饪设备先壁炉/灶台，后期翻新；否则购任意可负担大设施
-// （place renov 合法 ⇔ 可翻新或可购，二者必有其一，保证进度防死循环）
+// COOK_IDS 全部烹饪类大设施 id（壁炉×2 + 灶台×2）
+const COOK_IDS = ['fireplace1', 'fireplace2', 'hearth1', 'hearth2'];
+
+// renovStep 翻新/购大设施（✅ 官方：须先翻新才可购大设施）：
+// 先翻新 → 无烹饪设备优先壁炉/灶台 → 否则任意可负担大设施 → done
 function renovStep(s, p, pd, legal) {
-  if (pd.didRenov || pd.major) return legal.find((a) => a.kind === 'subDone');
-  const hasCook = p.majors.some((id) => ['fireplace', 'hearth'].includes(id));
-  if (!hasCook) {
-    const buy = legal.find((a) => a.kind === 'subMajor' && (a.id === 'hearth' || a.id === 'fireplace'));
-    if (buy) return buy;
+  if (pd.didRenov || pd.major) {
+    // 烤炉建成即时烤：有 subBake 选项时烤（取最大 n）
+    const bakes = legal.filter((a) => a.kind === 'subBake');
+    if (bakes.length) return bakes[bakes.length - 1];
+    return legal.find((a) => a.kind === 'subDone');
   }
-  if (s.round >= 9 && legal.some((a) => a.kind === 'subRenovate')) {
+  // 官方规则要求先翻新才可购大设施
+  if (!pd.didRenov && legal.some((a) => a.kind === 'subRenovate')) {
     return legal.find((a) => a.kind === 'subRenovate');
+  }
+  const hasCook = p.majors.some((id) => COOK_IDS.includes(id));
+  if (!hasCook) {
+    const buy = legal.find((a) => a.kind === 'subMajor' && COOK_IDS.includes(a.id));
+    if (buy) return buy;
   }
   const anyMajor = legal.find((a) => a.kind === 'subMajor');
   if (anyMajor) return anyMajor;
-  if (legal.some((a) => a.kind === 'subRenovate')) {
-    return legal.find((a) => a.kind === 'subRenovate');
-  }
-  return legal.find((a) => a.kind === 'subCancel');
+  return legal.find((a) => a.kind === 'subCancel') || legal[0];
 }
 
 // cardStep 打牌：优先栏位/收入/加成类效果，其次任意可打，否则取消
@@ -217,7 +223,7 @@ function spaceScore(s, p, id) {
     case 'plow': return p.farm.filter((f) => f.t === 'field').length < 3 ? 3 : 1.2;
     case 'fence': return Object.keys(p.groups).length === 0 && p.wood >= 6 ? 4.5 : 0.8;
     case 'renov': {
-      const wantCook = !p.majors.some((m) => ['fireplace', 'hearth'].includes(m));
+      const wantCook = !p.majors.some((m) => COOK_IDS.includes(m));
       if (wantCook && E.affordMajors(s, p).length) return 5;
       return E.canRenovate(p) && s.round >= 10 ? 5 : 0.5;
     }
