@@ -9,7 +9,7 @@
 // 有人 ≥15 分后各补一回合（机会均等），VP 最高者胜，平分看购卡数少者。
 
 import {
-  GEMS, CARDS, NOBLES, GEMS_BY_PLAYERS, GOLD_SUPPLY, NOBLES_IN_PLAY,
+  GEMS, CARDS, NOBLES, GEMS_BY_PLAYERS, GOLD_SUPPLY, NOBLES_BY_PLAYERS,
   MARKET_SLOTS, RESERVE_CAP, GEM_CAP, VP_TO_END,
 } from './data-cards.js';
 
@@ -111,7 +111,7 @@ function takeFromMarket(s, tier, slot) {
 
 // —— initialState / 查询 ——
 
-// initialState 开局：按人数配宝石、洗三阶牌堆各翻 4 张、翻 4 位贵族
+// initialState 开局：按人数配宝石、洗三阶牌堆各翻 4 张、贵族按人数翻 n+1 位
 export function initialState(setup) {
   const seats = setup.seats;
   const n = seats.length;
@@ -142,7 +142,8 @@ export function initialState(setup) {
       s.market[t].push(s.decks[t].length > 0 ? s.decks[t].shift() : null);
     }
   }
-  s.nobles = shuffled(s, NOBLES.map((_, i) => i)).slice(0, NOBLES_IN_PLAY);
+  // 贵族数按人数取 n+1（官方 2/3/4 人 = 3/4/5 位）
+  s.nobles = shuffled(s, NOBLES.map((_, i) => i)).slice(0, NOBLES_BY_PLAYERS[n] ?? 4);
   log(s, -1, 'sl.log.start', { n });
   return s;
 }

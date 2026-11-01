@@ -596,12 +596,14 @@ function addIncome(g, inc, mul) {
 // —— 回合流转 ——
 
 // startRound 开轮（commands.pm command_start）：全员收入（用上轮板块）、
-// 重置轮内状态、能量行动槽刷新、按起始玩家定顺位、未领奖励板块每轮 +1 币
+// 重置轮内状态、能量行动槽刷新、按起始玩家定顺位、未领奖励板块每轮 +1 币。
+// 第 1 轮收入（income.pm faction_income 于 setup 时即发）：奖励板块收入照发
+// —— 此刻 passed 全为 false，须 assumePassed=true 才含板块收入（官方第 1 轮照发）
 function startRound(s, r) {
   s.round = r;
   s.passOrder = [];
   for (const p of s.players) {
-    grant(s, p, incomeOf(s, p, r));
+    grant(s, p, incomeOf(s, p, r, r === 1));
     p.passed = false;
     p.teleportUsed = false;
     p.bonusActions = 0;
@@ -1335,7 +1337,18 @@ function applyBuild(s, p, a) {
   const fromStore = Math.min(p.spades, need);
   p.spades -= fromStore;
   const dug = need - fromStore;
-  if (dug > 0) addSpades(s, p, dug); // 新挖铲按获得计分（SCORE1/半身人/炼金）
+  if (dug > 0) {
+    // 新挖铲逐个触发计分（SCORE1/半身人/炼金），再当场消费 —— 官方
+    // transform+build 为一次行动，新挖铲不回存货（resources.pm transform_and_build）
+    for (let k = 0; k < dug; k++) {
+      p.spades += 1;
+      scoreTileGain(s, p, 'spade', 1);
+      const sp = factionOf(p).special;
+      if (sp === 'halflingSpadeVp') p.vp += 1;
+      if (sp === 'alchemistSpadePw' && hasSH(p)) gainPower(p, 2);
+    }
+    p.spades -= dug;
+  }
   s.hexes[a.hex].terrain = homeTerrain(p);
   s.hexes[a.hex].owner = p.seat;
   s.hexes[a.hex].bld = 'D';

@@ -439,7 +439,8 @@ export function mountOnlineRoom(el, game, code) {
     mode = 'over';
     const results = game.score(state)
       .map((r) => ({ ...r, name: state.players[r.seat].name, isAI: state.players[r.seat].isAI, color: state.players[r.seat].color }))
-      .sort((a, b) => b.total - a.total || a.seat - b.seat);
+      // VP 同分时用游戏自带 tieBreak（与热座一致），无则退化为座位序
+      .sort((a, b) => b.total - a.total || (game.tieBreak ? game.tieBreak(a.seat, b.seat, state) : a.seat - b.seat));
     if (es) es.close();
     if (pollTimer) clearInterval(pollTimer);
     $root.innerHTML = `

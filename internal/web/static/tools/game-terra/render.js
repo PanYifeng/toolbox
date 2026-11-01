@@ -524,13 +524,33 @@ function miscPanel(s, legal) {
   }
   const digs = legal.filter((a) => a.kind === 'darklingDig');
   if (digs.length) parts.push(`<div class="tm-btns">${actBtn(digs[0], `🙏1→⛏️1 🏆+2`)}</div>`);
-  if (legal.some((a) => a.kind === 'shipping')) {
-    parts.push(`<div class="tm-btns">${actBtn({ kind: 'shipping' }, `${t('tm.ui.shipping')}${paren(incStr(SHIPPING_COST))}`)}</div>`);
+  // 船运 / 铲子升级常驻显示：不可用时置灰并标注原因，避免玩家以为功能缺失
+  const f = curFaction(s);
+  if (f && f.ship) {
+    const shipAct = legal.find((a) => a.kind === 'shipping');
+    const me = s.players[s.phase.cur];
+    let why = null;
+    if (!shipAct) {
+      if (me.shipping >= f.ship.max) why = t('tm.ui.shipMax');
+      else why = t('tm.ui.cantAfford');
+    }
+    parts.push(`<div class="tm-btns">${shipAct
+      ? actBtn(shipAct, `${t('tm.ui.shipping')}${paren(incStr(SHIPPING_COST))} → ⚓${me.shipping + 1}`)
+      : `<button class="btn-soft" disabled title="${why}">${t('tm.ui.shipping')} · ${why}</button>`}</div>`);
   }
-  if (legal.some((a) => a.kind === 'digUpgrade')) {
-    const f = curFaction(s);
+  if (f && !f.noDigUpgrade) {
+    const digAct = legal.find((a) => a.kind === 'digUpgrade');
+    const me = s.players[s.phase.cur];
+    const maxUp = f.digLevels !== undefined ? f.digLevels : 2;
     const cost = incStr(f.digUpgradeCost || DIG_UPGRADE_COST);
-    parts.push(`<div class="tm-btns">${actBtn({ kind: 'digUpgrade' }, `${t('tm.ui.digUpgrade')}${paren(`${cost} 🏆+${DIG_UPGRADE_VP}`)}`)}</div>`);
+    let why = null;
+    if (!digAct) {
+      if ((me.digLevel || 0) >= maxUp) why = t('tm.ui.digMax');
+      else why = t('tm.ui.cantAfford');
+    }
+    parts.push(`<div class="tm-btns">${digAct
+      ? actBtn(digAct, `${t('tm.ui.digUpgrade')}${paren(`${cost} 🏆+${DIG_UPGRADE_VP}`)} → ⛏️${(me.digLevel || 0) + 1}`)
+      : `<button class="btn-soft" disabled title="${why}">${t('tm.ui.digUpgrade')} · ${why}</button>`}</div>`);
   }
   const bridges = legal.filter((a) => a.kind === 'bridge');
   if (bridges.length) {

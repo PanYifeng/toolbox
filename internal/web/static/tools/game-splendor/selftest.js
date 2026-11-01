@@ -6,7 +6,7 @@
 // 弃宝石微阶段、贵族自动/择一来访、15 分终局机会均等）、AI 全局对局。
 
 import * as E from './engine.js';
-import { CARDS, NOBLES, GEMS_BY_PLAYERS, MARKET_SLOTS, RESERVE_CAP } from './data-cards.js';
+import { CARDS, NOBLES, GEMS_BY_PLAYERS, MARKET_SLOTS, RESERVE_CAP, NOBLES_BY_PLAYERS } from './data-cards.js';
 import { bot } from './bot.js';
 
 let pass = 0;
@@ -78,6 +78,13 @@ ok(NOBLES.length === 10, `应 10 位贵族，实际 ${NOBLES.length}`);
 const n44 = NOBLES.filter((n) => n.reduce((a, b) => a + b, 0) === 8).length;
 const n333 = NOBLES.filter((n) => n.reduce((a, b) => a + b, 0) === 9).length;
 ok(n44 === 5 && n333 === 5, `贵族应 5×(4+4) + 5×(3+3+3)，实际 ${n44}/${n333}`);
+{
+  // 各人数开局贵族数 = n+1（官方 2/3/4 人 = 3/4/5 位）
+  for (const n of [2, 3, 4]) {
+    const s = E.initialState({ seats: mkSeats(n), seed: 7 });
+    ok(s.nobles.length === NOBLES_BY_PLAYERS[n], `${n} 人局开局应翻 ${NOBLES_BY_PLAYERS[n]} 位贵族，实际 ${s.nobles.length}`);
+  }
+}
 
 // ==== 2. 确定性与纯度 ====
 section('确定性与纯度');
@@ -116,7 +123,8 @@ function checkInvariants(s, tag) {
   }
   ok(cards === 90, `${tag}: 卡牌总量应守恒 90，实际 ${cards}`);
   const nobleSum = s.nobles.length + s.players.reduce((a, p) => a + p.nobles.length, 0);
-  ok(nobleSum === 4, `${tag}: 贵族应守恒 4，实际 ${nobleSum}`);
+  const nobleWant = NOBLES_BY_PLAYERS[s.n] ?? 4;
+  ok(nobleSum === nobleWant, `${tag}: 贵族应守恒 ${nobleWant}（n+1），实际 ${nobleSum}`);
   for (const p of s.players) {
     ok(p.reserved.length <= RESERVE_CAP, `${tag}: ${p.name} 预留超上限`);
     if (!s.pending) ok(p.gold + p.gems.reduce((a, b) => a + b, 0) <= 10, `${tag}: ${p.name} 手牌超 10`);

@@ -18,7 +18,7 @@ export default {
 
 ## 常见问题
 
-- **怎么开局**：配置 2-4 个座位（可切换人类/AI），每阶翻 4 张明牌、场上有 4 位贵族，按人数配宝石（2 人 4 颗/3 人 5 颗/4 人 7 颗，金恒 5）
+- **怎么开局**：配置 2-4 个座位（可切换人类/AI），每阶翻 4 张明牌、贵族按人数翻 n+1 位（2 人 3 位/3 人 4 位/4 人 5 位），按人数配宝石（2 人 4 颗/3 人 5 颗/4 人 7 颗，金恒 5）
 - **买卡支付**：先扣本色宝石，缺口用金补；已购卡的产出色计入永久折扣（成本直接减）
 - **预留**：手上至多 3 张；预留立即得 1 金（金色无法用拿宝石动作获得，只能预留获得）
 - **10 颗上限**：手牌宝石（含金）超过 10 颗须弃至 10（界面点击要弃的宝石）
@@ -38,7 +38,7 @@ A Splendor rules implementation (2-4 players): each turn pick one of three actio
 
 ## FAQ
 
-- **Setup**: configure 2-4 seats (human or AI); 4 face-up cards per tier, 4 nobles in play, gems scaled by player count (4/5/7 per colour for 2/3/4 players, 5 gold)
+- **Setup**: configure 2-4 seats (human or AI); 4 face-up cards per tier, nobles in play scale with player count (n+1: 3/4/5 for 2/3/4 players), gems scaled by player count (4/5/7 per colour for 2/3/4 players, 5 gold)
 - **Paying for cards**: own-colour gems first, gold covers the shortfall; purchased cards count as permanent discounts on their colour
 - **Reserving**: max 3 in hand; reserving immediately grants 1 gold (gold can only be obtained by reserving)
 - **10-gem cap**: if your gems (incl. gold) exceed 10, discard down to 10 by clicking them

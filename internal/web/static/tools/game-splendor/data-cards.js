@@ -118,7 +118,8 @@ export const NOBLES = [
 // 各人数每种宝石供应量（金色恒 5）
 export const GEMS_BY_PLAYERS = { 2: 4, 3: 5, 4: 7 };
 export const GOLD_SUPPLY = 5;
-export const NOBLES_IN_PLAY = 4;
+// 各人数场上贵族数（官方：人数 + 1：2 人 3 位、3 人 4 位、4 人 5 位）
+export const NOBLES_BY_PLAYERS = { 2: 3, 3: 4, 4: 5 };
 export const MARKET_SLOTS = 4;      // 每阶明牌数
 export const RESERVE_CAP = 3;       // 手上预留上限
 export const GEM_CAP = 10;          // 手上宝石上限（含金）

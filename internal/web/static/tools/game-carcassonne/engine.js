@@ -214,9 +214,11 @@ function returnMeeples(s, members) {
 function settleComp(s, comp, kind) {
   const ws = winners(compMeeples(comp.members));
   if (!ws.length) return false;
+  // 计分按成员段计数（H/I 环形城市单块两段各计 2 分），瓦片数仅用于日志展示
+  const segs = comp.members.length;
   const tiles = new Set(comp.members.map((m) => kkey(m.x, m.y))).size;
   const pennants = comp.members.reduce((a, m) => a + (m.feat.p || 0), 0);
-  const pts = kind === 'C' ? tiles * 2 + pennants * 2 : tiles;
+  const pts = kind === 'C' ? segs * 2 + pennants * 2 : segs;
   const key = kind === 'C' ? 'ca.log.cityDone' : 'ca.log.roadDone';
   const cat = kind === 'C' ? 'city' : 'road';
   for (const w of ws) {
@@ -473,9 +475,11 @@ function finalize(s) {
     done.add(sig);
     const ws = winners(compMeeples(comp.members));
     if (!ws.length) continue;
+    // 终局未完成城市按段计 1 分/段（H/I 环形单块两段各计 1），瓦片数仅用于日志展示
+    const segs = comp.members.length;
     const tiles = new Set(comp.members.map((m) => kkey(m.x, m.y))).size;
     const pennants = comp.members.reduce((a2, m) => a2 + (m.feat.p || 0), 0);
-    const pts = feat.k === 'C' ? tiles + pennants : tiles;
+    const pts = feat.k === 'C' ? segs + pennants : segs;
     const key = feat.k === 'C' ? 'ca.log.cityEnd' : 'ca.log.roadEnd';
     const cat = feat.k === 'C' ? 'city' : 'road';
     for (const w of ws) {

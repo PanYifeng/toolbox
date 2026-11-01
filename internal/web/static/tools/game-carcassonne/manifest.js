@@ -10,7 +10,7 @@ export default {
 
 《卡卡颂》基础版规则复刻（2-5 人）：起始块（城市一头 + 横穿道路）居中，每回合从 71 块牌堆抽 1 块，旋转后放进与既有块边地形匹配的空格（城市对城市、道路对道路、草地对草地）；抽出的块无处可放则弃掉重抽（官方规则）。放块后可派 1 个随从（共 7 个）驻守该块上的一个地形区：城市、道路、草地（农夫）或修道院——前提是该连通区上尚无随从。
 
-完成即结算：城市被围死（所有城市边封闭）得 2 分/块 + 2 分/纹章，道路两端到头得 1 分/块，修道院被 3×3 围满得 9 分；同一区多个随从按人数多数方得分，并列多方均得全额，结算后随从归还。放在落块瞬间即已完成的特征上的随从立即结算归还（官方裁决）。牌堆放尽进入终局：未完成城市 1 分/块 + 1 分/纹章、未完成道路 1 分/块、修道院按 3×3 已占格数、农夫按每块农田相邻的完成城市数 × 3 分（多数方得）。
+完成即结算：城市被围死（所有城市边封闭）得 2 分/段 + 2 分/纹章（H/I 环形城市单块含两段各计分），道路两端到头得 1 分/段，修道院被 3×3 围满得 9 分；同一区多个随从按人数多数方得分，并列多方均得全额，结算后随从归还。放在落块瞬间即已完成的特征上的随从立即结算归还（官方裁决）。牌堆放尽进入终局：未完成城市 1 分/段 + 1 分/纹章、未完成道路 1 分/段、修道院按 3×3 已占格数、农夫按每块农田相邻的完成城市数 × 3 分（多数方得）。
 
 ## 使用场景
 
@@ -33,7 +33,7 @@ export default {
 
 A Carcassonne base-game rules implementation (2-5 players): the start tile (one city edge + a crossing road) sits in the middle; each turn draw from the 71-tile deck and place it rotated into any empty cell whose touching edges match (city to city, road to road, grass to grass); a drawn tile with no legal spot is discarded and redrawn (official rule). After placing you may deploy one of your 7 followers onto a feature of that tile — city, road, field (farmer) or monastery — provided no follower sits on that connected feature yet.
 
-Completed features score immediately: a walled-in city earns 2 points per tile + 2 per pennant, a road with both ends terminated earns 1 per tile, a monastery surrounded by its 3×3 neighbourhood earns 9; when several followers share a feature the majority side scores, ties all score full points, and followers return after scoring. A follower placed on a feature that was already completed by the tile placement scores and returns immediately (official ruling). When the deck runs out the game ends: incomplete cities 1 per tile + 1 per pennant, incomplete roads 1 per tile, monasteries 1 per occupied cell in the 3×3, and farmers 3 points per completed city adjacent to their field (majority side).
+Completed features score immediately: a walled-in city earns 2 points per segment + 2 per pennant (an H/I wraparound tile contributes two segments), a road with both ends terminated earns 1 per segment, a monastery surrounded by its 3×3 neighbourhood earns 9; when several followers share a feature the majority side scores, ties all score full points, and followers return after scoring. A follower placed on a feature that was already completed by the tile placement scores and returns immediately (official ruling). When the deck runs out the game ends: incomplete cities 1 per segment + 1 per pennant, incomplete roads 1 per segment, monasteries 1 per occupied cell in the 3×3, and farmers 3 points per completed city adjacent to their field (majority side).
 
 ## Use cases
 

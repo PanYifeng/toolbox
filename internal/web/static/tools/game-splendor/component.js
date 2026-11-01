@@ -17,6 +17,8 @@ const game = {
   currentPlayer: engine.currentPlayer,
   isGameOver: engine.isGameOver,
   score: engine.score,
+  // 官方平分判定：购卡数少者胜（compare 协议：负 = a 排前）
+  tieBreak: (a, b, s) => s.players[a].bought - s.players[b].bought,
   bot,
   renderBoard,
 };

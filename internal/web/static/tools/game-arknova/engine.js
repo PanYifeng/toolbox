@@ -232,7 +232,16 @@ function breakEvent(s) {
     const inc = RULES.breakIncome + p.kiosk * 2 + p.rest * 4 + eff.income;
     p.money += inc;
     log(s, p.seat, 'an.log.income', { n: inc });
-    for (const c of p.cards) if (c.broken) { c.broken = false; c.str = 1; }
+    for (const c of p.cards) {
+      if (!c.broken) continue;
+      // 官方：break 卡归还到最低的空档位（每张一个档，与其他在岗卡档位互不重叠）
+      // 注意先取档再置 broken=false，否则自己 break 前的旧 str 会占住一个档
+      const slot = lowestFreeSlot(p);
+      c.broken = false;
+      c.str = slot;
+      c.justReturned = true; // 本轮行动收尾不再 +1（break 时已归位）
+      log(s, p.seat, 'an.log.cardReturn', { card: CAT_NAME[c.cat] });
+    }
     if (p.hand.length > RULES.handMax) s.discardQueue.push(p.seat);
   }
   s.deck = shuffled(s, [...s.deck, ...Array(s.breakX).fill('X')]);
@@ -672,12 +681,20 @@ function applyUseBreak(s, a) {
   }
 }
 
-// shiftCards 档位迁移：used 卡降 1 档，其余在岗卡 +1 档（超 5 进 break 区）
+// lowestFreeSlot 在岗卡未占用的最低档位（break 归还逐张填空，官方语义）
+function lowestFreeSlot(p) {
+  const used = new Set(p.cards.filter((x) => !x.broken).map((x) => x.str));
+  for (let slot = 1; slot <= 5; slot++) if (!used.has(slot)) return slot;
+  return 1;
+}
+
+// shiftCards 档位迁移：used 卡降 1 档，其余在岗卡 +1 档（超 5 进 break 区）；
+// breakEvent 刚归还的卡本轮不再迁移（官方：break 时已归位）
 function shiftCards(s, p, used) {
   const aloneBefore = p.cards.filter((x) => !x.broken).length === (used ? 1 : 0);
   if (used) used.str = 1;
   for (const c of p.cards) {
-    if (c === used || c.broken) continue;
+    if (c === used || c.broken || c.justReturned) continue;
     c.str += 1;
     if (c.str > 5) {
       c.broken = true;
@@ -685,6 +702,7 @@ function shiftCards(s, p, used) {
       log(s, p.seat, 'an.log.cardBreak', { card: CAT_NAME[c.cat] });
     }
   }
+  for (const c of p.cards) delete c.justReturned;
   // 用掉最后一张在岗卡：break 区全部归还填低档（2-5）
   if (used && aloneBefore && p.cards.some((x) => x.broken)) {
     let slot = 2;

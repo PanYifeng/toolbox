@@ -500,6 +500,22 @@ function findFreeChain(s, v, len) {
       ok(st.longestRoad.seat === 0, 'P1 路被截断后最长路应回到 P0');
     }
   }
+  // 官方：无人持有时并列最高不授奖——清空最长路，P0/P1 同长 5 段，触发重判不应授任何人
+  {
+    const t = postSetup(3, 11);
+    forceMain(t, 0);
+    give(t.players[0], [99, 99, 99, 99, 99]);
+    give(t.players[1], [99, 99, 99, 99, 99]);
+    t.longestRoad = { seat: null, len: 0 };
+    const c0 = findFreeChain(t, t.players[0].settlements[0], 5);
+    const c1 = findFreeChain(t, t.players[1].settlements[0], 5);
+    for (const e of c0) putRoad(t, 0, e);
+    for (const e of c1) putRoad(t, 1, e);
+    ok(E.longestRoadFor(t, 0) >= 5 && E.longestRoadFor(t, 1) >= 5, '两玩家都应各有 ≥5 段路');
+    const extra3 = E.legalActions(t).find((a) => a.kind === 'road');
+    const t2 = E.apply(t, extra3);
+    ok(t2.longestRoad.seat === null, `并列最高且原无持有者应无人得奖（实际 seat ${t2.longestRoad.seat}）`);
+  }
 }
 
 // ==== 12. 最大军队 ====

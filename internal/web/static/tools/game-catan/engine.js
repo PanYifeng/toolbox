@@ -815,6 +815,11 @@ function updateLongestRoad(s) {
   }
   const top = lengths.map((l, i) => ({ l, i })).filter((x) => x.l === maxLen);
   if (holder === null || lengths[holder] < maxLen) {
+    // 官方：无人持有时并列最高不授奖（须以更长道路独占夺取）；有人持有时同长由原持有者保留
+    if (holder === null && top.length > 1) {
+      s.longestRoad = { seat: null, len: maxLen };
+      return;
+    }
     const next = top.find((x) => x.i === s.cur) || top[0];
     if (holder !== null) {
       log(s, next.i, 'ct.log.roadSteal', {

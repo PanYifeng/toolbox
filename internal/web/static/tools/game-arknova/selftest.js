@@ -305,6 +305,8 @@ section('B8. 打烊：收入 / break 卡归还 / 手牌上限 8 / X 洗回');
   ok(p0.money === m0 + 3 + 2 * 2 + 1 * 4, `income ${p0.money} != ${m0 + 11}`);
   ok(next.players[1].money === m1 + 3, `p1 income ${next.players[1].money}`);
   ok(p0.cards[2].broken === false, 'break cards should return at X break');
+  // 官方：归还卡填最低空档位。break 时在岗 1,2,1,5 → 归还到 3；行动收尾迁移跳过刚归还卡
+  ok(p0.cards[2].str === 3, `returned card should take lowest free slot 3, got ${p0.cards[2].str}`);
   // P1 手牌 9 张 → 弃牌队列
   ok(next.discardQueue.includes(1) || next.phase === 'discard', 'discard queue for p1');
   ok(next.breakX === 0, 'breakX reset');
