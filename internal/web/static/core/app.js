@@ -409,7 +409,13 @@ function renderTool() {
   }
   const view = app.querySelector('#view');
   const guideMd = tr(m.guide);
-  const guideHtml = guideMd ? `<div class="tool-guide">${renderMarkdown(guideMd)}</div>` : '';
+  // 游戏类说明折叠：说明区动辄 600-700px，展开时会把棋盘顶到折叠线下，
+  // 玩家打开页面看不到棋面会误以为不能操作（神秘大地开局实录）。
+  const isGame = String(m.id || '').startsWith('game_');
+  const guideHtml = !guideMd ? '' : isGame
+    ? `<details class="tool-guide-fold"><summary>📖 ${t('bg.rules')}</summary>
+        <div class="tool-guide">${renderMarkdown(guideMd)}</div></details>`
+    : `<div class="tool-guide">${renderMarkdown(guideMd)}</div>`;
   view.innerHTML = `
     <div class="tool">
       <a class="back" href="/">&larr; ${t('app.back')}</a>

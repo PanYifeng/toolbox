@@ -20,7 +20,7 @@ export default {
 
 - **怎么开局**：配置 2-5 个座位（可切换人类/AI），依次选派系，蛇形各放 2 座初始民居（游牧民 3 座），再逆序各选 1 张奖励板块
 - **派系**：14 个派系各带专长（巨人非家园一律 2 铲、暗灵 1 祭司=1 铲+2VP、苦行僧/矮人无船运、女巫要塞后每轮免费森林民居等），全部数值已按官方 jsnell/terra-mystica 源码逐文件核对
-- **行动**：主行动一次（建造/升级/发祭司/能量动作槽/要塞行动/船运/铲子升级/造桥/过牌），免费子行动任意次（资源转换 ⚡→💰👷🙏、燃烧 II×2→III、板块免费行动 BON1/BON2/FAV6）
+- **行动**：每回合 1 个主行动（建造/升级/发祭司/能量动作槽/要塞行动/板块行动 BON1·BON2·FAV6/船运/铲子升级/造桥/过牌），另可任意次免费子行动（资源转换 ⚡→💰👷🙏、燃烧 II×2→III）——免费子行动不占主行动，板块行动占主行动（每张板块每轮限 1 次）
 - **回合计分**：每轮板块给两种奖励——邪教轨每满 N 格得一份收入 + 本轮建造/铲/建镇按板块给 VP；侧栏「规划提示」实时预估下轮收入、过牌分与终局投影
 - **能量**：三只碗 I/II/III——获得能量从 I 挪到 II（I 空则 II→III）；支付从 III 挪回 I；燃烧是独立动作（II 每 2 枚换 III 1 枚）
 - **邪教轨**：跨第 2/4/6 格立即得魔（+1/+2/+2），第 10 格需花钥匙（建镇板块附赠）+3 魔；发祭司锁死到终局，每轨名次分 8/4/2（并列均摊）
@@ -43,7 +43,7 @@ A Terra Mystica rules implementation (2-5 players): six rounds of turn actions �
 
 - **Setup**: configure 2-5 seats (human or AI), pick factions in turn, place 2 starting dwellings each in snake order (Nomads get 3), then pick bonus tiles in reverse order
 - **Factions**: 14 factions each with an ability (Giants always dig 2 spades, Darklings turn 1 priest into a spade +2 VP, Fakirs/Dwarves have no shipping, Witches get a free forest dwelling each round after their stronghold, etc.); all values verified file-by-file against the official jsnell/terra-mystica source
-- **Actions**: one main action per turn (build/upgrade/send priest/power action/stronghold action/shipping/dig upgrade/bridge/pass) plus unlimited free sub-actions (conversions ⚡→💰👷🙏, burning II×2→III, tile actions BON1/BON2/FAV6)
+- **Actions**: one main action per turn (build/upgrade/send priest/power action/stronghold action/tile action BON1·BON2·FAV6/shipping/dig upgrade/bridge/pass) plus unlimited free sub-actions (conversions ⚡→💰👷🙏, burning II×2→III) — free sub-actions don't use the action, tile actions do (each tile once per round)
 - **Round scoring**: each round tile gives two rewards — income per N cult steps plus VP for buildings/spades/towns made this round; the "Planning" panel projects your next income, pass VP and endgame score live
 - **Power**: three bowls I/II/III — gaining moves a token I→II (II→III when I is empty); paying moves III→I; burning is a standalone action (2×II → 1×III)
 - **Cult tracks**: crossing spaces 2/4/6 grants power immediately (+1/+2/+2); space 10 needs a key (from town tiles) for +3 power; sent priests lock in until the endgame, each track pays 8/4/2 by rank (ties share)

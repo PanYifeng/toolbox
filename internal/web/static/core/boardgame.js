@@ -379,12 +379,17 @@ export function mountBoardGame(el, game) {
   }
 }
 
-// wireRulesBtn 对局栏「玩法」按钮：滚回页面顶部的工具说明区（无说明区则隐藏）
+// wireRulesBtn 对局栏「玩法」按钮：滚回页面工具说明区（无说明区则隐藏）。
+// 游戏页说明区放在 <details> 折叠里，点按钮时先展开再滚过去。
 export function wireRulesBtn($btn) {
   if (!$btn) return;
   const guide = document.querySelector('.tool-guide');
   if (!guide) { $btn.style.display = 'none'; return; }
-  $btn.onclick = () => guide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $btn.onclick = () => {
+    const fold = guide.closest('details');
+    if (fold) fold.open = true;
+    guide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 }
 
 // esc 转义玩家输入，防注入

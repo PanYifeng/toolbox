@@ -1737,7 +1737,7 @@ export function score(s) {
 
 // —— 供渲染/自测导出的内部工具 ——
 export {
-  buildRangeSet, reachInfo, townEdges, spadesNeeded, buildCost,
+  buildRangeSet, reachInfo, townEdges, spadesNeeded, buildCost, upgradeCostOf,
   incomeOf, finalScoring, largestNetwork, passVpOf,
   detectTownsFrom, checkTowns, advanceCult, freeFavorTiles, rankScoring,
 };

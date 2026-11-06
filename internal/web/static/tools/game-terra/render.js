@@ -6,12 +6,12 @@ import { HEXES } from './map-data.js';
 import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
   POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, CULT_TOP,
-  CULT_CROSS_REWARD, SHIPPING_COST, WHEEL, TOWN_TILES,
+  CULT_CROSS_REWARD, SHIPPING_COST, WHEEL, TOWN_TILES, BLD_CAP,
   CONVERT_RATES, DIG_UPGRADE_COST, DIG_UPGRADE_VP, SPADE_COST, ROUNDS,
   PRIEST_CULT_SPOTS,
 } from './tables.js';
 import {
-  buildCost, spadesNeeded, incomeOf, projectedVp, currentPlayer,
+  buildCost, buildRangeSet, upgradeCostOf, spadesNeeded, incomeOf, projectedVp, currentPlayer,
   BLD_NAME, CULT_NAME,
 } from './engine.js';
 
@@ -100,11 +100,13 @@ export function renderBoard(el, s, legal, pick) {
     <div class="tm-board">
       ${renderStatus(s)}
       <div class="tm-main">
-        <div class="tm-mapwrap">${renderMap(s, legal, human)}</div>
+        <div class="tm-col">
+          ${renderAction(s, legal, human)}
+          <div class="tm-mapwrap">${renderMap(s, legal, human)}</div>
+        </div>
         <div class="tm-side">${renderPlayers(s)}${renderWheel(s)}${renderPlan(s)}</div>
       </div>
       ${renderTable(s)}
-      ${renderAction(s, legal, human)}
     </div>`;
   bind(el, s, legal, pick, human);
 }
@@ -357,9 +359,11 @@ function renderAction(s, legal, human) {
     ? `tm.ui.prompt.${s.pending[0] ? s.pending[0].kind : 'cultChoice'}`
     : `tm.ui.prompt.${ph}`;
   const prompt = `<p class="tm-prompt">${t(promptKey)}</p>`;
-  if (!human) return `<div class="tm-action" data-bg-focus>${prompt}</div>`;
+  // AI 行动时操作区置灰提示，同时保持棋盘与操作区同屏布局一致（不跳位）
+  if (!human) return `<div class="tm-action tm-action-ai" data-bg-focus>${prompt}</div>`;
   let body = '';
   if (ph === 'chooseFaction') body = factionPanel(legal);
+  else if (ph === 'placeDwelling') body = placePanel(s, legal);
   else if (ph === 'pickBonus') body = bonusPanel(legal);
   else if (ph === 'act') body = actPanel(s, legal);
   else if (ph === 'resolve') body = resolvePanel(s, legal);
@@ -382,6 +386,17 @@ function factionPanel(legal) {
       </button>`;
   }).join('');
   return `<div class="tm-fcards">${cards}</div>`;
+}
+
+// placePanel 初始民居放置：把家园地形每个空格列成按钮（棋盘也能点，但操作区必须有按钮）
+function placePanel(s, legal) {
+  const places = legal.filter((a) => a.kind === 'placeDwelling');
+  if (!places.length) return '';
+  const btns = places.map((a) => {
+    const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
+    return actBtn(a, `🏠 ${a.hex} · ${terr}`);
+  }).join('');
+  return `<span class="tm-label">${t('tm.ui.placeDwelling')}</span><div class="tm-btns">${btns}</div>`;
 }
 
 // bonusPanel 开局奖励板块（数据表驱动，杜绝字符串下标）
@@ -409,8 +424,8 @@ function upgradePanel(s, legal) {
   for (const [key, acts] of groups) {
     const [hex, to] = key.split('|');
     const p = s.players[s.phase.cur];
-    const f = factionById(p.faction);
-    const cost = incStr({ ...f.buildings[to].cost });
+    // 费用必须走引擎的 upgradeCostOf：TP 无他派系邻接时额外加收一次 TP 费
+    const cost = incStr(upgradeCostOf(s, p, to, hex));
     const open = ui.upSel === key;
     html += `<button class="btn-soft tm-upbtn ${open ? 'tm-usel' : ''}" data-up="${key}">
       ${hex} → ${tr(BLD_NAME[to])}${paren(cost)}</button>`;
@@ -436,8 +451,8 @@ function priestPanel(legal) {
     byTrack.get(a.track).push(a);
   }
   const btns = [...byTrack.entries()].map(([track, list]) => {
-    // 每轨槽位推进量 PRIEST_CULT_SPOTS（3/2/2/2）——从 tables.js 导入后按轨取值
-    return actBtn(list[0], `${CULT_ICON[track]} ${tr(CULT_NAME[track])} 🔒+${PRIEST_CULT_SPOTS[CULT_TRACKS.indexOf(track)]}`);
+    // 标签必须用实际提交的槽位推进量（list[0].spot），不能用轨道下标——两者语义不同
+    return actBtn(list[0], `${CULT_ICON[track]} ${tr(CULT_NAME[track])} 🔒+${PRIEST_CULT_SPOTS[list[0].spot]}`);
   }).join('');
   return `<span class="tm-label">${t('tm.ui.priestSend')}</span><div class="tm-btns">${btns}</div>`;
 }
@@ -457,14 +472,19 @@ function shPanel(s, legal) {
     return `${head}<div class="tm-btns">${acts.map((a) => actBtn(a, `🌉${a.a}↔${a.b}`)).join('')}</div>`;
   }
   if (id === 'ACTW' || id === 'ACTN' || id === 'ACTS') {
-    // 目标格已在高亮棋盘上，点击即执行
-    return `${head}<div class="tm-btns"><span class="muted">${t('tm.ui.shPickHex')} · ${acts.length}</span></div>`;
+    // 目标格既有高亮棋盘可点，也在这里列成按钮（否则玩家在操作区看不到可执行项）
+    return `${head}<div class="tm-btns">${acts.map((a) => {
+      if (id === 'ACTS') return actBtn(a, `🏠→🏪 ${a.hex}`);
+      const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
+      return actBtn(a, `🏠 ${a.hex} · ${terr}`);
+    }).join('')}</div>`;
   }
   // ACTG 巨人 +2 铲 / ACTC 混沌 +2 行动
   return `${head}<div class="tm-btns">${acts.map((a) => actBtn(a, t(`tm.ui.sh.${id}`))).join('')}</div>`;
 }
 
-// tilePanel 板块免费行动（BON1 铲 / BON2、FAV6 邪教步）
+// tilePanel 板块行动（BON1 铲 / BON2、FAV6 邪教步）——占主行动，每张板块每轮 1 次
+// （jsnell command_action → require_subaction：板块行动同样消耗 allowed_actions）
 function tilePanel(s, legal) {
   const acts = legal.filter((a) => a.kind === 'tileAction');
   if (!acts.length) return '';
@@ -502,7 +522,11 @@ function freePanel(s, legal) {
   }
   const burns = legal.filter((a) => a.kind === 'burn');
   if (burns.length) {
-    const btns = burns.map((a) => actBtn(a, `🔥×${a.pairs}${paren(`II${a.pairs * 2}→III${a.pairs}`)}`)).join('');
+    // 燃烧是免费子行动、可重复：只给「1 组」和「全部」两个按钮，避免列出 ×1..×6 撑高操作区
+    const maxPairs = burns[burns.length - 1].pairs;
+    const one = burns.find((a) => a.pairs === 1) || burns[0];
+    let btns = actBtn(one, `🔥 II2→III1`);
+    if (maxPairs > 1) btns += actBtn({ kind: 'burn', pairs: maxPairs }, `🔥×${maxPairs}${paren(`II${maxPairs * 2}→III${maxPairs}`)}`);
     parts.push(`<span class="tm-label">${t('tm.ui.burn')}</span><div class="tm-btns">${btns}</div>`);
   }
   return parts.join('');
@@ -583,8 +607,33 @@ function passPanel(s, legal) {
     </div>`;
 }
 
+// buildPanel 建民居：把每个合法格列成按钮（格号 · 地形 · 完整费用），点按钮即建造。
+// 棋盘高亮格也能点，但操作区必须有按钮——否则玩家只看按钮区会以为不能建造。
+function buildPanel(s, legal) {
+  const p = s.players[s.phase.cur];
+  const builds = legal.filter((a) => a.kind === 'build');
+  if (builds.length) {
+    const btns = builds.map((a) => {
+      const c = buildCost(s, p, a.hex);
+      const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
+      const tp = c.teleport ? ` 🌀${t('tm.ui.teleport')}` : '';
+      return actBtn(a, `🏠 ${a.hex} · ${terr}${tp}${paren(incStr(c))}`);
+    }).join('');
+    return `<span class="tm-label">${t('tm.ui.build')}</span><div class="tm-btns">${btns}</div>`;
+  }
+  // 无合法建造时给出原因（上限 / 范围无空位 / 资源不足），避免玩家以为按钮缺失
+  const dwellings = Object.values(p.buildings).filter((b) => b === 'D').length;
+  let why;
+  if (dwellings >= BLD_CAP.D) why = t('tm.ui.buildCap');
+  else if (buildRangeSet(s, p).size === 0) why = t('tm.ui.buildNoRange');
+  else why = t('tm.ui.cantAfford');
+  return `<span class="tm-label">${t('tm.ui.build')}</span><div class="tm-btns">
+    <button class="btn-soft" disabled title="${why}">🏠 ${tr(BLD_NAME.D)} · ${why}</button></div>`;
+}
+
 function actPanel(s, legal) {
   const parts = [
+    buildPanel(s, legal),
     upgradePanel(s, legal),
     priestPanel(legal),
     shPanel(s, legal),
