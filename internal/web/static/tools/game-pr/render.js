@@ -117,7 +117,7 @@ function renderAction(s, legal, human) {
   const prompt = `<p class="pr-prompt">${t('pr.ui.prompt.' + ph.kind)}</p>`;
   if (!human) return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
   switch (ph.kind) {
-    case 'pickRole': return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
+    case 'pickRole': return `<div class="pr-action" data-bg-focus>${prompt}${roleBtns(s, legal)}</div>`;
     case 'settler': return `<div class="pr-action" data-bg-focus>${prompt}${settlerBtns(s, legal)}</div>`;
     case 'builder': return `<div class="pr-action" data-bg-focus>${prompt}${builderPanel(s, legal, p, ph)}</div>`;
     case 'mayor': return `<div class="pr-action" data-bg-focus>${prompt}${mayorPanel(s, legal, p, ph)}</div>`;
@@ -131,6 +131,17 @@ function renderAction(s, legal, human) {
 
 function actBtn(action, label, cls) {
   return `<button class="btn-soft ${cls || ''}" data-act='${JSON.stringify(action)}'>${label}</button>`;
+}
+
+// roleBtns 角色选择：每张可选角色一个按钮（中央角色牌行也能点，但操作区必须有按钮，
+// 否则人工操作区的动作按钮为空，只能靠点远处的角色牌，容易被当成「不能操作」）
+function roleBtns(s, legal) {
+  const out = legal.filter((a) => a.kind === 'pickRole').map((a) => {
+    const r = s.roles.find((x) => x.id === a.role);
+    const bonus = r && r.bonus ? ` 💰${r.bonus}` : '';
+    return actBtn(a, `${ROLE_ICON[a.role]} ${tr(ROLE_NAMES[a.role])}${bonus}`);
+  }).join('');
+  return `<div class="pr-btns">${out}</div>`;
 }
 
 function settlerBtns(s, legal) {
