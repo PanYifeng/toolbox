@@ -464,23 +464,27 @@ function legalSponsor(s) {
   return out;
 }
 
+// BUILD_SPECS 建造项目表（费用/最低档位/是否仍可建），渲染层复用同一份口径算缺口
+export const BUILD_SPECS = [
+  { what: 'std5', minStr: 4, cost: 10, open: (p) => !p.enc.std5.on },
+  { what: 'std3', minStr: 2, cost: 6, open: (p) => !p.enc.std3.on },
+  { what: 'std2', minStr: 1, cost: 4, open: (p) => !p.enc.std2.on },
+  { what: 'pz', minStr: 2, cost: 8, open: (p) => !p.enc.pz.on },
+  { what: 'rh0', minStr: 3, cost: 12, open: (p) => !p.enc.rh0.on },
+  { what: 'rh1', minStr: 3, cost: 12, open: (p) => !p.enc.rh1.on },
+  { what: 'av', minStr: 4, cost: 12, open: (p) => !p.enc.av.on },
+  { what: 'kiosk', minStr: 2, cost: 5, open: (p) => p.kiosk < BOARD.shops[0].cap },
+  { what: 'rest', minStr: 3, cost: 10, open: (p) => p.rest < BOARD.shops[1].cap },
+];
+
 // legalBuild 建造选项（str = 使用中建造卡的档位；不修改 state）
-function legalBuild(p, str) {
+export function legalBuild(p, str) {
   const eff = effEffects(p);
   const out = [];
-  const push = (what, minStr, cost, ok) => {
-    const real = Math.max(0, cost - eff.bDisc);
-    if (ok && str >= minStr && p.money >= real) out.push({ kind: 'build', what, cost: real });
-  };
-  push('std5', 4, 10, !p.enc.std5.on);
-  push('std3', 2, 6, !p.enc.std3.on);
-  push('std2', 1, 4, !p.enc.std2.on);
-  push('pz', 2, 8, !p.enc.pz.on);
-  push('rh0', 3, 12, !p.enc.rh0.on);
-  push('rh1', 3, 12, !p.enc.rh1.on);
-  push('av', 4, 12, !p.enc.av.on);
-  push('kiosk', 2, 5, p.kiosk < BOARD.shops[0].cap);
-  push('rest', 3, 10, p.rest < BOARD.shops[1].cap);
+  for (const sp of BUILD_SPECS) {
+    const real = Math.max(0, sp.cost - eff.bDisc);
+    if (sp.open(p) && str >= sp.minStr && p.money >= real) out.push({ kind: 'build', what: sp.what, cost: real });
+  }
   return out;
 }
 

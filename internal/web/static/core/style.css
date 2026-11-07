@@ -1857,3 +1857,23 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
 .an-modal-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; font-size: 13px; }
 .an-modal-row { border-bottom: 1px dashed var(--border); padding-bottom: 6px; }
 .an-modal-row:last-child { border-bottom: none; }
+/* —— 操作提示条（core/action-hints.js）：每回合可做 / 不可做项一览 —— */
+.ah-list {
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+  margin: 0 0 8px; padding: 0; font-size: 12.5px; line-height: 1.5;
+}
+.ah-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px;
+  background: var(--bg); color: var(--fg); white-space: nowrap;
+}
+.ah-chip i { font-style: normal; color: var(--muted); font-size: 11.5px; }
+.ah-ok { border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); }
+.ah-no { border-color: color-mix(in srgb, var(--err) 35%, var(--border)); color: var(--muted); }
+@media (max-width: 700px) {
+  .ah-list { font-size: 12px; gap: 4px; }
+  .ah-chip { white-space: normal; }
+}
+
+/* 方舟动物园提示条独占一行（.an-prompt 是横向 flex） */
+.an-prompt .ah-list { flex-basis: 100%; margin: 0; }

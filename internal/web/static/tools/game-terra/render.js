@@ -2,6 +2,7 @@
 // SVG 六边形棋盘（地形底色 + 玩家色建筑 + 桥）+ 官方环形地形轮（高区分度配色）
 // + 邪教轨/能量动作/板块区 + 规划提示（下轮收入 + 终局 VP 投影）+ 阶段操作区。
 import { t, tr, getLang } from '/core/i18n.js';
+import { fmtArgs, lackOf, noHint, okHint, reasonCap, reasonNoSpot, renderActionHints } from '/core/action-hints.js';
 import { HEXES } from './map-data.js';
 import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
@@ -367,7 +368,38 @@ function renderAction(s, legal, human) {
   else if (ph === 'pickBonus') body = bonusPanel(legal);
   else if (ph === 'act') body = actPanel(s, legal);
   else if (ph === 'resolve') body = resolvePanel(s, legal);
-  return `<div class="tm-action" data-bg-focus>${prompt}${body}</div>`;
+  return `<div class="tm-action" data-bg-focus>${prompt}${stageHints(s, legal, ph)}${body}</div>`;
+}
+
+// stageHints 阶段级提示：选牌系/放初始民居/领奖励板块/结算选择的选项数与内容
+function stageHints(s, legal, ph) {
+  const n = (k) => legal.filter((a) => a.kind === k).length;
+  if (ph === 'act') return '';
+  let items = [];
+  switch (ph) {
+    case 'chooseFaction':
+      items = [okHint('🧙', t('tm.ui.hintFaction'), n('faction'), t('tm.ui.hintFreePick'))];
+      break;
+    case 'placeDwelling':
+      items = [okHint('🏠', t('tm.ui.placeDwelling'), n('placeDwelling'))];
+      break;
+    case 'pickBonus':
+      items = [okHint('🎁', t('tm.ui.hintBonus'), n('pickBonus'))];
+      break;
+    case 'resolve': items = resolveHints(s, legal); break;
+    default: items = [];
+  }
+  return renderActionHints(items);
+}
+
+// resolveHints 结算选择提示（城镇板块 / 恩惠板块 / 祭司上轨）
+function resolveHints(s, legal) {
+  const item = s.pending[0];
+  const kind = item ? item.kind : 'cultChoice';
+  const n = (k) => legal.filter((a) => a.kind === k).length;
+  if (kind === 'townTile') return [okHint('🏘️', t('tm.ui.hintTownTile'), n('townTile'))];
+  if (kind === 'favorChoice') return [okHint('✨', t('tm.ui.hintFavor'), n('favorChoice'))];
+  return [okHint('🙏', t('tm.ui.hintCult'), n('cultChoice'))];
 }
 
 // factionPanel 选派系卡：派色头像 + 家园地形 + 六地形挖铲行 + 专长
@@ -485,7 +517,7 @@ function shPanel(s, legal) {
 
 // tilePanel 板块行动（BON1 铲 / BON2、FAV6 邪教步）——占主行动，每张板块每轮 1 次
 // （jsnell command_action → require_subaction：板块行动同样消耗 allowed_actions）
-function tilePanel(s, legal) {
+function tilePanel(legal) {
   const acts = legal.filter((a) => a.kind === 'tileAction');
   if (!acts.length) return '';
   const btns = acts.map((a) => actBtn(a, `${a.id} · ${t(`tm.ui.tile.${a.id}`)}`)).join('');
@@ -637,12 +669,82 @@ function actPanel(s, legal) {
     upgradePanel(s, legal),
     priestPanel(legal),
     shPanel(s, legal),
-    tilePanel(s, legal),
+    tilePanel(legal),
     freePanel(s, legal),
     miscPanel(s, legal),
   ];
   const rows = parts.filter(Boolean).map((x) => `<div class="tm-row">${x}</div>`).join('');
-  return `${rows}<div class="tm-row">${passPanel(s, legal)}</div>`;
+  return `<div class="tm-row">${renderActionHints(actHints(s, legal))}</div>
+    ${rows}<div class="tm-row">${passPanel(s, legal)}</div>`;
+}
+
+// actHints 主行动提示条：逐项给出「可选几处」或「缺什么资源 / 为何不可用」
+function actHints(s, legal) {
+  const p = s.players[s.phase.cur];
+  const f = curFaction(s);
+  const n = (k) => legal.filter((a) => a.kind === k).length;
+  const out = [buildActHint(s, p, n('build')), upgradeHint(legal, n('upgrade'))];
+  if (n('priestSend')) out.push(okHint('🙏', t('tm.ui.priestSend'), n('priestSend')));
+  if (n('shAction')) out.push(okHint('🏰', t('tm.ui.shAction'), n('shAction')));
+  if (f && f.ship) out.push(shipHint(s, p, f, legal.find((a) => a.kind === 'shipping')));
+  if (f && !f.noDigUpgrade) out.push(digHint(s, p, f, legal.find((a) => a.kind === 'digUpgrade')));
+  const powers = n('powerAction');
+  if (powers) out.push(okHint('⚡', t('tm.ui.powerSlots'), powers));
+  return out;
+}
+
+// buildActHint 建民居：有格可建列出数量，否则区分上限 / 范围无空位 / 缺资源
+function buildActHint(s, p, count) {
+  const label = tr(BLD_NAME.D);
+  if (count > 0) return okHint('🏠', label, count);
+  const dwellings = Object.values(p.buildings).filter((b) => b === 'D').length;
+  if (dwellings >= BLD_CAP.D) return noHint('🏠', label, reasonCap());
+  const range = buildRangeSet(s, p);
+  if (range.size === 0) return noHint('🏠', label, reasonNoSpot());
+  // 范围有空格但都付不起：取最便宜一格的缺口作为原因
+  let best = null;
+  for (const hex of range) {
+    const c = buildCost(s, p, hex);
+    const miss = costLack(p, c);
+    if (!best || miss.length < best.length) best = miss;
+    if (!miss) break;
+  }
+  return noHint('🏠', label, best || reasonNoSpot());
+}
+
+// upgradeHint 升级：可能因上限/资源不足为空
+function upgradeHint(legal, count) {
+  const label = t('tm.ui.upgrade');
+  if (count > 0) return okHint('⬆️', label, count);
+  return noHint('⬆️', label, t('tm.ui.cantAfford'));
+}
+
+// shipHint 船运：已满级 / 缺资源 / 可升级
+function shipHint(s, p, f, act) {
+  const label = t('tm.ui.shipping');
+  if (act) return okHint('⚓', label, 1, `${incStr(SHIPPING_COST)} → ⚓${p.shipping + 1}`);
+  if (p.shipping >= f.ship.max) return noHint('⚓', label, t('tm.ui.shipMax'));
+  return noHint('⚓', label, costLack(p, SHIPPING_COST) || t('tm.ui.cantAfford'));
+}
+
+// digHint 铲子升级：已满级 / 缺资源 / 可升级
+function digHint(s, p, f, act) {
+  const label = t('tm.ui.digUpgrade');
+  const cost = f.digUpgradeCost || DIG_UPGRADE_COST;
+  if (act) return okHint('⛏️', label, 1, `${incStr(cost)} 🏆+${DIG_UPGRADE_VP}`);
+  const maxUp = f.digLevels !== undefined ? f.digLevels : 2;
+  if ((p.digLevel || 0) >= maxUp) return noHint('⛏️', label, t('tm.ui.digMax'));
+  return noHint('⛏️', label, costLack(p, cost) || t('tm.ui.cantAfford'));
+}
+
+// costLack 金币/工人/祭司缺口串（如「缺 💰×2 👷×1」），够付返回空串
+function costLack(p, cost) {
+  const lack = lackOf([
+    ['💰', cost.coins || 0, p.coins],
+    ['👷', cost.workers || 0, p.workers],
+    ['🙏', cost.priests || 0, p.priests],
+  ]);
+  return lack ? fmtArgs(t('bg.hint.lack'), { d: lack }) : '';
 }
 
 function resolvePanel(s, legal) {

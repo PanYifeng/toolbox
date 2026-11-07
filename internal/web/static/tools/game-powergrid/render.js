@@ -1,6 +1,7 @@
 // 电力公司渲染层：renderBoard(el, state, legal, pick) 全量重绘 + 事件委托。
 // SVG 德国地图（42 城 + 费用边 + 产权位）+ 电厂市场 + 资源市场 + 拍卖/建城/结算交互。
 import { t, tr } from '/core/i18n.js';
+import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import { PLANT_BY_ID } from './plant-data.js';
 import { CITY_NAMES, REGIONS } from './map-data.js';
 import {
@@ -212,17 +213,71 @@ function renderAction(s, legal, human) {
   const p = s.players[ph.cur];
   const prompt = `<p class="pg-prompt">${t('pg.ui.prompt.' + ph.kind)}</p>`;
   if (!human) return `<div class="pg-action" data-bg-focus>${prompt}</div>`;
+  const hints = renderActionHints(phaseHints(s, legal, p, ph));
   switch (ph.kind) {
-    case 'chooseRegion': return `<div class="pg-action" data-bg-focus>${prompt}${regionChips(s, legal)}</div>`;
-    case 'auction': return `<div class="pg-action" data-bg-focus>${prompt}${ph.plant === null
+    case 'chooseRegion': return `<div class="pg-action" data-bg-focus>${prompt}${hints}${regionChips(s, legal)}</div>`;
+    case 'auction': return `<div class="pg-action" data-bg-focus>${prompt}${hints}${ph.plant === null
       ? offerPanel(legal) : bidPanel(s, ph, p)}</div>`;
-    case 'discardPlant': return `<div class="pg-action" data-bg-focus>${prompt}${discardPanel(p)}</div>`;
-    case 'resources': return `<div class="pg-action" data-bg-focus>${prompt}
+    case 'discardPlant': return `<div class="pg-action" data-bg-focus>${prompt}${hints}${discardPanel(p)}</div>`;
+    case 'resources': return `<div class="pg-action" data-bg-focus>${prompt}${hints}
       <div class="pg-btns">${actBtn({ kind: 'passRes' }, t('pg.ui.done'))}</div></div>`;
-    case 'cities': return `<div class="pg-action" data-bg-focus>${prompt}${cityPanel(s, legal, p)}</div>`;
-    case 'bureaucracy': return `<div class="pg-action" data-bg-focus>${prompt}${powerPanel(s, p)}</div>`;
+    case 'cities': return `<div class="pg-action" data-bg-focus>${prompt}${hints}${cityPanel(s, legal, p)}</div>`;
+    case 'bureaucracy': return `<div class="pg-action" data-bg-focus>${prompt}${hints}${powerPanel(s, p)}</div>`;
     default: return `<div class="pg-action" data-bg-focus>${prompt}</div>`;
   }
+}
+
+// phaseHints 各阶段可做项与不可做原因（钱不够 / 存储满 / 无可建城市）
+function phaseHints(s, legal, p, ph) {
+  switch (ph.kind) {
+    case 'chooseRegion': return [okHint('🗺️', t('pg.ui.hintRegion'), legal.length)];
+    case 'auction': return auctionHints(s, legal, p, ph);
+    case 'discardPlant': return [okHint('🃏', t('pg.ui.discardHint'), legal.length)];
+    case 'resources': return resHints(s, legal, p);
+    case 'cities': return cityHints(s, legal, p);
+    case 'bureaucracy': return powerHints(p);
+    default: return [];
+  }
+}
+
+// auctionHints 拍卖：正在竞拍看出价上限，起拍回合看买得起的电厂
+function auctionHints(s, legal, p, ph) {
+  if (ph.plant !== null) {
+    const max = Math.max(0, ...legal.filter((a) => a.kind === 'bid').map((a) => a.amount));
+    return [max > ph.bid
+      ? okHint('💰', t('pg.ui.bid'), 0, t('pg.ui.hintMaxBid') + ` 💰${max}`)
+      : noHint('💰', t('pg.ui.bid'), t('pg.ui.hintNoMoney'))];
+  }
+  const offers = legal.filter((a) => a.kind === 'offer').length;
+  return offers
+    ? [okHint('🏭', t('pg.ui.offerPlant'), offers)]
+    : [noHint('🏭', t('pg.ui.offerPlant'), t('pg.ui.hintNoMoney'))];
+}
+
+// resHints 资源购买：可行组合数；无组合时说明（存储满/钱不够/市场空）
+function resHints(s, legal, p) {
+  const buys = legal.filter((a) => a.kind === 'buyRes').length;
+  if (buys) return [okHint('⛽', t('pg.ui.buy'), buys)];
+  const marketEmpty = RES_KINDS.every((k) => s.resMarket[k] === 0);
+  if (marketEmpty) return [noHint('⛽', t('pg.ui.buy'), t('pg.ui.hintMarketEmpty'))];
+  const full = RES_KINDS.every((k) => resStorageLeft(p, k) <= 0);
+  return [noHint('⛽', t('pg.ui.buy'), full ? t('pg.ui.hintStorageFull') : t('pg.ui.hintNoMoney'))];
+}
+
+// cityHints 建城：可建城市数；否则说明钱不够或无合法位置
+function cityHints(s, legal, p) {
+  const builds = legal.filter((a) => a.kind === 'build').length;
+  if (builds) return [okHint('🏙️', t('pg.ui.build'), builds)];
+  const anySpot = Object.keys(s.map).some((id) => cityBuildable(s, p, id));
+  return [noHint('🏙️', t('pg.ui.build'), anySpot ? t('pg.ui.hintNoMoney') : t('pg.ui.noBuildable'))];
+}
+
+// powerHints 发电：可用燃料发电与否
+function powerHints(p) {
+  const max = maxPowerSet(p);
+  return max.length
+    ? [okHint('⚡', t('pg.ui.confirm'), max.length)]
+    : [noHint('⚡', t('pg.ui.confirm'), t('pg.ui.fuelShort'))];
 }
 
 function regionChips(s, legal) {

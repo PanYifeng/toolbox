@@ -4,8 +4,11 @@
 // 银行交易/国内交易）+ 微阶段面板（弃牌/强盗/抢牌/免费路/丰年/垄断/交易裁决）。
 
 import { t } from '/core/i18n.js';
+import { fmtArgs, lackOf, noHint, okHint, reasonCap, reasonNoSpot, renderActionHints } from '/core/action-hints.js';
 import {
   HEX_SIZE, VERTICES, EDGES, HEXES, HEX_VERTS, RES_NAMES,
+  COST_ROAD, COST_SETTLEMENT, COST_CITY, COST_DEV,
+  MAX_ROADS, MAX_SETTLEMENTS, MAX_CITIES,
 } from './data-board.js';
 import { DEV_NAMES, harborRatio, currentPlayer, vpOf } from './engine.js';
 
@@ -287,9 +290,11 @@ function actionHtml(s, legal, human) {
   if (!human) return '';
   if (s.pending) return pendingHtml(s, legal);
   if (s.phase === 'roll') {
-    return `<div class="ct-actions" data-bg-focus><button class="btn-soft" data-act="roll">🎲 ${t('ct.ui.roll')}</button></div>`;
+    return `<div class="ct-actions" data-bg-focus>${renderActionHints([okHint('🎲', t('ct.ui.roll'), 1)])}
+      <button class="btn-soft" data-act="roll">🎲 ${t('ct.ui.roll')}</button></div>`;
   }
   return `<div class="ct-actions" data-bg-focus>
+    ${renderActionHints(mainHints(s, legal))}
     ${mainButtonsHtml(legal)}
     ${bankFormHtml(s, legal)}
     ${domFormHtml(s)}
@@ -297,26 +302,105 @@ function actionHtml(s, legal, human) {
   </div>`;
 }
 
+// mainHints 主阶段操作提示：每类建造/发展卡给出「可做（几个格）」或「缺什么资源」
+function mainHints(s, legal) {
+  const p = s.players[currentPlayer(s)];
+  const n = (k) => legal.filter((a) => a.kind === k).length;
+  return [
+    buildHint(p, n('road'), '🛤️', t('ct.ui.buildRoad'), COST_ROAD, p.roads.length, MAX_ROADS),
+    buildHint(p, n('settlement'), '🏘️', t('ct.ui.buildSettlement'), COST_SETTLEMENT,
+      p.settlements.length, MAX_SETTLEMENTS),
+    buildHint(p, n('city'), '🏙️', t('ct.ui.upgradeCity'), COST_CITY, p.cities.length, MAX_CITIES),
+    devHint(s, p, n('buyDev')),
+    ...playHints(legal),
+  ];
+}
+
+// buildHint 单个建造项提示：有合法位置标可选数量，否则区分为「达上限 / 缺资源 / 无位置」
+function buildHint(p, count, icon, label, cost, held, cap) {
+  if (count > 0) {
+    return okHint(icon, label, count, fmtArgs(t('ct.ui.hintCost'), { c: resCostStr(cost) }));
+  }
+  if (held >= cap) return noHint(icon, label, reasonCap());
+  const lack = resCostLack(p, cost);
+  return noHint(icon, label, lack || reasonNoSpot());
+}
+
+// devHint 发展卡：牌堆空 / 缺资源 / 可以买
+function devHint(s, p, count) {
+  const label = t('ct.ui.buyDev');
+  if (count > 0) return okHint('🂠', label, count, fmtArgs(t('ct.ui.hintCost'), { c: resCostStr(COST_DEV) }));
+  if (s.devDeck.length === 0) return noHint('🂠', label, t('ct.ui.hintDeckEmpty'));
+  return noHint('🂠', label, resCostLack(p, COST_DEV) || reasonNoSpot());
+}
+
+// playHints 手牌可打的发展卡（只有能打时才出现，避免常驻噪声）
+function playHints(legal) {
+  const map = [['playKnight', '🗡️', 'ct.ui.playKnight'], ['playRoadBuild', '🛤️', 'ct.ui.playRoadBuild'],
+    ['playYop', '🎁', 'ct.ui.playYop'], ['playMono', '💰', 'ct.ui.playMono']];
+  return map.filter(([k]) => legal.some((a) => a.kind === k))
+    .map(([, ic, key]) => okHint(ic, t(key)));
+}
+
+// resCostStr 费用串（🪵2 🧱1 …）
+function resCostStr(cost) {
+  return cost.map((c, i) => (c > 0 ? `${RES_ICON[i]}${c}` : '')).join(' ');
+}
+
+// resCostLack 资源缺口串（缺 🪵×1 🧱×1），够付返回空串
+function resCostLack(p, cost) {
+  const lack = lackOf(cost.map((c, i) => [RES_ICON[i], c, p.res[i]]));
+  return lack ? fmtArgs(t('bg.hint.lack'), { d: lack }) : '';
+}
+
 // pendingHtml 微阶段面板
 function pendingHtml(s, legal) {
   const k = s.pending.kind;
-  if (k === 'steal') return `<div class="ct-actions" data-bg-focus><div class="ct-sub">${t('ct.ui.prompt.steal')}</div>
+  if (k === 'steal') return `<div class="ct-actions" data-bg-focus>${renderActionHints(pendingHints(s, legal))}<div class="ct-sub">${t('ct.ui.prompt.steal')}</div>
     ${legal.map((a) => `<button class="btn-soft" data-act="steal" data-victim="${a.victim}" data-res="${a.res}">
       ${esc(s.players[a.victim].name)} ${RES_ICON[a.res]}</button>`).join('')}</div>`;
   if (k === 'yop' || k === 'mono') {
-    return `<div class="ct-actions" data-bg-focus><div class="ct-sub">${t('ct.ui.prompt.' + k)}</div>
+    return `<div class="ct-actions" data-bg-focus>${renderActionHints(pendingHints(s, legal))}<div class="ct-sub">${t('ct.ui.prompt.' + k)}</div>
       ${legal.map((a) => `<button class="btn-soft" data-act="${k === 'yop' ? 'yopTake' : 'monoPick'}" data-res="${a.res}">
       ${RES_ICON[a.res]}</button>`).join('')}</div>`;
   }
   if (k === 'tradeOffer') return tradeOfferHtml(s);
-  return `<div class="ct-actions" data-bg-focus><div class="ct-sub">${t('ct.ui.prompt.' + k)}</div></div>`;
+  return `<div class="ct-actions" data-bg-focus>${renderActionHints(pendingHints(s, legal))}<div class="ct-sub">${t('ct.ui.prompt.' + k)}</div></div>`;
+}
+
+// pendingHints 微阶段提示：明确「还能做什么 / 剩多少」，替代只靠棋子高亮的隐式提示
+function pendingHints(s, legal) {
+  const pd = s.pending;
+  switch (pd.kind) {
+    case 'setupSettle': return [okHint('🏘️', t('ct.ui.buildSettlement'), legal.length)];
+    case 'setupRoad': return [okHint('🛤️', t('ct.ui.buildRoad'), legal.length)];
+    case 'discard': return [okHint('🗑️', t('ct.ui.discardLeft'), pd.remaining, t('ct.ui.discardPick'))];
+    case 'robber': return [okHint('R', t('ct.ui.moveRobberTo'), legal.length)];
+    case 'steal': return stealHints(s, legal);
+    case 'freeRoad': return [okHint('🛤️', t('ct.ui.buildRoad'), legal.length, t('ct.ui.freeRoadNote'))];
+    case 'yop': return [okHint('🎁', t('ct.ui.playYop'), legal.length)];
+    case 'mono': return [okHint('💰', t('ct.ui.playMono'), legal.length)];
+    default: return [];
+  }
+}
+
+// stealHints 抢牌：列出每名受害者与可选资源数（无受害者时说明原因）
+function stealHints(s, legal) {
+  const seats = [...new Set(legal.map((a) => a.victim))];
+  if (!seats.length) return [noHint('🃏', t('ct.ui.steal'), t('ct.ui.stealNone'))];
+  return seats.map((seat) => okHint('🃏', t('ct.ui.steal') + ' ' + esc(s.players[seat].name),
+    legal.filter((a) => a.victim === seat).length));
 }
 
 // tradeOfferHtml 交易提议裁决面板（收到方视角）
 function tradeOfferHtml(s) {
   const pd = s.pending;
   const from = s.players[pd.from];
-  return `<div class="ct-actions ct-offer" data-bg-focus><b>${esc(from.name)}</b> ${t('ct.ui.offers')}
+  const hints = renderActionHints([
+    okHint('✅', t('ct.ui.tradeAccept'), 1, `← ${resList(pd.get)} / → ${resList(pd.give)}`),
+    okHint('❌', t('ct.ui.tradeDecline'), 1),
+  ]);
+  return `<div class="ct-actions ct-offer" data-bg-focus>${hints}<b>${esc(from.name)}</b> ${t('ct.ui.offers')}
     <span class="ct-chip">→ ${resList(pd.give)}</span> / <span class="ct-chip">← ${resList(pd.get)}</span>
     <button class="btn-soft" data-act="tradeAccept">✅ ${t('ct.ui.tradeAccept')}</button>
     <button class="btn-soft" data-act="tradeDecline">❌ ${t('ct.ui.tradeDecline')}</button></div>`;

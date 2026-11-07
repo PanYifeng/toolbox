@@ -3,6 +3,7 @@
 // 农场格点击直接映射子阶段动作（建房/犁田/播种/围栏 toggle），无需本地选择态。
 import { t, tr } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import {
   RES_INFO, RES_KEYS, ANIMAL_KEYS, MAT_NAMES, visibleSpaces,
   FARM_COLS, FARM_SPACES, HARVEST_ROUNDS, TOTAL_ROUNDS, SPACE_ICON,
@@ -77,6 +78,16 @@ function renderBoardSpaces(s, legal, human) {
   return `<div class="ag-board"><span class="ag-label">${t('ag.ui.board')}</span><div class="ag-boardgrid">${cells}</div></div>`;
 }
 
+// placeHints 放工阶段提示：可直接放工的行动格数量（行动板高亮格即操作入口）
+function placeHints(s, legal, human) {
+  if (!human || s.phase.kind !== 'place') return '';
+  const places = legal.filter((a) => a.kind === 'place');
+  const items = [places.length
+    ? okHint('🖐️', t('ag.ui.board'), places.length)
+    : noHint('🖐️', t('ag.ui.board'), t('bg.hint.noSpot'))];
+  return renderActionHints(items);
+}
+
 // ==== 子阶段操作面板 ====
 
 // buildCostStr 建房子阶段当前合计费用串
@@ -96,6 +107,7 @@ function subPanel(s, p, pd, legal, human) {
       ${done ? actBtn(done, `✅ ${t('ag.ui.done')}`, 'ag-primary') : ''}
       ${cancel ? actBtn(cancel, t('ag.ui.cancel')) : ''}
     </div>`;
+  const hints = renderActionHints(subHints(s, p, pd, legal));
   let body = '';
   switch (pd.type) {
     case 'build':
@@ -149,7 +161,71 @@ function subPanel(s, p, pd, legal, human) {
         actBtn(a, `${RES_INFO[a.crop].emoji} #${a.idx + 1}`)).join('')}</div>` : ''}
       ${bakes.length ? `<div class="ag-btns"><span class="ag-label">${t('ag.ui.bake')}</span>${bakeBtns}</div>` : ''}`;
   }
-  return `<div class="ag-action" data-bg-focus>${body}${tail}</div>`;
+  return `<div class="ag-action" data-bg-focus>${hints}${body}${tail}</div>`;
+}
+
+// subHints 子阶段提示：本阶段可做什么 + 做不了的原因（缺木材/资源/前置）
+function subHints(s, p, pd, legal) {
+  const n = (k) => legal.filter((a) => a.kind === k).length;
+  const lackStr = (cost) => {
+    const lack = lackList(p, cost);
+    return lack ? fmt(t('bg.hint.lack'), { d: lack }) : '';
+  };
+  switch (pd.type) {
+    case 'build': {
+      const rc = E.roomCostOf(p), sc = E.stableCostOf(p);
+      const rooms = n('subRoom'), stables = n('subStable');
+      return [
+        rooms ? okHint('🏠', t('ag.ui.room'), rooms, E.gainList(rc))
+          : noHint('🏠', t('ag.ui.room'), lackStr(rc) || t('bg.hint.noSpot')),
+        stables ? okHint('🏗️', t('ag.ui.stable'), stables, E.gainList(sc))
+          : noHint('🏗️', t('ag.ui.stable'), lackStr(sc) || t('bg.hint.none')),
+      ];
+    }
+    case 'plow': case 'plowsow': return [fieldHint(n('subPlow'), t('ag.ui.plow'))];
+    case 'sow': return [okHint('🌱', t('ag.ui.sow'), n('subSow'))];
+    case 'fence': return [fenceHint(p, pd)];
+    case 'renov': return renovHints(p, legal);
+    case 'occ': return [okHint('🧑‍🌾', t('ag.ui.playOcc'), n('subOcc'))];
+    case 'minor': return [okHint('🃏', t('ag.ui.playMinor'), n('subMinor'))];
+    default: return [];
+  }
+}
+
+// fieldHint 犁田/播种格提示（0 个时给通用原因）
+function fieldHint(count, label) {
+  return count ? okHint('🌱', label, count) : noHint('🌱', label, t('bg.hint.noSpot'));
+}
+
+// fenceHint 围栏：可继续选格，或木材不足
+function fenceHint(p, pd) {
+  const need = E.minFenceCost(p);
+  if (pd.sel.length) return okHint('🪵', t('ag.ui.fence'), 1, fmt(t('ag.ui.pendingFence'), { n: pd.sel.length, w: E.fenceCostOf(p, pd.sel) }));
+  return p.wood >= need ? okHint('🪵', t('ag.ui.fence'), 1, `🪵${need}`)
+    : noHint('🪵', t('ag.ui.fence'), fmt(t('bg.hint.lack'), { d: `🪵×${need - p.wood}` }));
+}
+
+// renovHints 翻新 +（可购大设施）可用性与缺口
+function renovHints(p, legal) {
+  const out = [];
+  const info = E.renovInfo(p);
+  const can = legal.some((a) => a.kind === 'subRenovate');
+  if (can) out.push(okHint('🔨', t('ag.ui.renovate'), 1, E.gainList(info.cost)));
+  else {
+    const lack = lackList(p, info.cost);
+    out.push(noHint('🔨', t('ag.ui.renovate'), lack ? fmt(t('bg.hint.lack'), { d: lack }) : t('bg.hint.none')));
+  }
+  const majors = legal.filter((a) => a.kind === 'subMajor').length;
+  if (majors) out.push(okHint('🏺', t('ag.ui.major'), majors));
+  return out;
+}
+
+// lackList 缺料串（如 🪵×2 🧱×1）
+function lackList(p, cost) {
+  return Object.entries(cost || {})
+    .filter(([k, v]) => (p[k] || 0) < v)
+    .map(([k, v]) => `${RES_INFO[k] ? RES_INFO[k].emoji : k}×${v - (p[k] || 0)}`)
+    .join(' ');
 }
 
 // majorCardBtn 大设施购买按钮（名 + 费用 + 说明）
@@ -178,10 +254,21 @@ function feedPanel(s, p, legal) {
       actBtn(a, `${a.n}→🍞${(a.raw ? 1 : I.cookRates(p)[res]) * a.n}`)).join('')}</span>`).join('');
   return `
     <div class="ag-action" data-bg-focus>
+      ${renderActionHints(feedHints(p, legal, short))}
       <p>${fmt(t('ag.ui.feedNeed'), { n: need, m: p.food })}${short ? ` <b class="ag-warn">${fmt(t('ag.ui.feedShort'), { n: short })}</b>` : ''}</p>
       ${cookBtns ? `<div class="ag-btns">${cookBtns}</div>` : ''}
       <div class="ag-btns">${actBtn(legal.find((x) => x.kind === 'feedConfirm'), `✅ ${t('ag.ui.feedConfirm')}`, 'ag-primary')}</div>
     </div>`;
+}
+
+// feedHints 喂食提示：缺口 / 可烹食项
+function feedHints(p, legal, short) {
+  const cooks = legal.filter((a) => a.kind === 'feedCook').length;
+  if (!short) return [okHint('🍞', t('ag.ui.feedConfirm'), 1)];
+  return [
+    noHint('🍞', t('ag.ui.feedNeedShort'), fmt(t('ag.ui.feedShort'), { n: short })),
+    cooks ? okHint('🔥', t('ag.ui.bake'), cooks) : noHint('🔥', t('ag.ui.bake'), t('bg.hint.none')),
+  ];
 }
 
 // ==== 玩家面板与农场 ====
@@ -303,7 +390,7 @@ export function renderBoard(el, s, legal, pick) {
   const human = !p.isAI;
   const promptKey = s.phase.kind === 'place' ? 'ag.ui.prompt.place'
     : s.phase.kind === 'feed' ? 'ag.ui.prompt.feed' : 'ag.ui.prompt.sub';
-  let panel = `<div class="ag-action" data-bg-focus><p class="muted">${t(promptKey)}</p></div>`;
+  let panel = `<div class="ag-action" data-bg-focus><p class="muted">${t(promptKey)}</p>${placeHints(s, legal, human)}</div>`;
   if (s.phase.kind === 'sub' && human) panel = subPanel(s, p, s.pending, legal, human);
   else if (s.phase.kind === 'feed' && human) panel = feedPanel(s, p, legal);
   el.innerHTML = `

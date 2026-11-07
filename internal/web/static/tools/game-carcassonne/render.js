@@ -4,6 +4,7 @@
 
 import { t } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import { TILES } from './data-tiles.js';
 import { currentPlayer } from './engine.js';
 
@@ -46,7 +47,7 @@ export function renderBoard(el, s, legal, pick) {
 function draw() {
   const { el, s, legal, human } = ctx;
   el.innerHTML = `
-    <div class="ca-prompt" data-bg-focus>${promptHtml(s)}</div>
+    <div class="ca-prompt" data-bg-focus>${promptHtml(s)}${hintHtml(s, legal, human)}</div>
     <div class="ca-wrap">
       ${toolbarHtml(s, legal, human)}
       <div class="ca-boardwrap">${boardSvg(s, legal, human)}</div>
@@ -60,6 +61,31 @@ function promptHtml(s) {
   const p = s.players[currentPlayer(s)];
   const key = s.gameOver ? 'ca.ui.prompt.over' : `ca.ui.prompt.${s.phase}`;
   return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t(key)}`;
+}
+
+// hintHtml 阶段提示条：拼块放置可选位置数 / 随从可选位置数 + 不可用原因
+function hintHtml(s, legal, human) {
+  if (!human || s.gameOver) return '';
+  return renderActionHints(s.phase === 'tile' ? tileHints(s, legal) : meepleHints(s, legal));
+}
+
+// tileHints 放置拼块：可选「格×朝向」数量；无合法位置时说明当前块会弃掉
+function tileHints(s, legal) {
+  const places = legal.filter((a) => a.kind === 'place');
+  const cells = new Set(places.map((a) => `${a.x},${a.y}`));
+  if (!places.length) {
+    return [noHint('🧩', t('ca.ui.hintPlaceTile'), t('ca.ui.hintNoPlacement'))];
+  }
+  return [okHint('🧩', t('ca.ui.hintPlaceTile'), cells.size, fmt(t('ca.ui.hintRot'), { n: places.length }))];
+}
+
+// meepleHints 派随从：可选位置数 / 剩余随从为 0 或无可派地点
+function meepleHints(s, legal) {
+  const opts = legal.filter((a) => a.kind === 'meeple').length;
+  const p = s.players[currentPlayer(s)];
+  if (opts) return [okHint('🧍', t('ca.ui.hintMeeple'), opts, fmt(t('ca.ui.hintMeepleLeft'), { n: p.meeples }))];
+  if (p.meeples <= 0) return [noHint('🧍', t('ca.ui.hintMeeple'), t('ca.ui.hintMeepleNone'))];
+  return [noHint('🧍', t('ca.ui.hintMeeple'), t('ca.ui.hintNoMeepleSpot'))];
 }
 
 // toolbarHtml 工具栏：当前块预览 + 旋转 + 牌堆 + （随从阶段）跳过

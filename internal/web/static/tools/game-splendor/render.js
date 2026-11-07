@@ -2,7 +2,8 @@
 // 贵族行 + 宝石供应 + 三阶牌市（牌堆 + 4 明牌）+ 玩家面板（宝石/折扣/预留/贵族）。
 // 微阶段：弃宝石时己方面板宝石可点；择贵族时贵族牌可点。
 import { t } from '/core/i18n.js';
-import { CARDS, NOBLES, MARKET_SLOTS } from './data-cards.js';
+import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
+import { CARDS, NOBLES, MARKET_SLOTS, RESERVE_CAP, GEM_CAP } from './data-cards.js';
 
 // 宝石色（游戏固定色，深浅色主题通用；白/黑加描边保证可辨）
 const GEM_COLOR = ['#ece9e2', '#4d84e0', '#57b06a', '#e05d5d', '#43434f'];
@@ -108,11 +109,65 @@ export function renderBoard(el, s, legal, pick) {
 
 // promptHtml 阶段提示行（humanMain 时附拿宝石操作提示）
 function promptHtml(s, pendingDiscard, pendingNoble, humanMain) {
-  if (pendingDiscard) return `⚠️ ${t('sl.ui.prompt.discard')}`;
-  if (pendingNoble) return `👑 ${t('sl.ui.prompt.noble')}`;
+  if (pendingDiscard) return `⚠️ ${t('sl.ui.prompt.discard')}${pendingHints(s, 'discard')}`;
+  if (pendingNoble) return `👑 ${t('sl.ui.prompt.noble')}${pendingHints(s, 'noble')}`;
   const p = s.players[s.cur];
   const hint = humanMain ? ` <span class="sl-hint">💎 ${t('sl.ui.prompt.takeHint')}</span>` : '';
-  return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t('sl.ui.prompt.act')}${hint}`;
+  const chips = humanMain ? renderActionHints(mainHints(s)) : '';
+  return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t('sl.ui.prompt.act')}${hint}${chips}`;
+}
+
+// pendingHints 微阶段提示：弃宝石还需弃几颗 / 可选贵族数（提示条与其他阶段同构）
+function pendingHints(s, kind) {
+  if (kind === 'discard') {
+    const p = s.players[s.pending.seat];
+    const over = p.gold + p.gems.reduce((a, b) => a + b, 0) - GEM_CAP;
+    return renderActionHints([okHint('💎', t('sl.ui.hintDiscard'), Math.max(0, over))]);
+  }
+  return renderActionHints([okHint('👑', t('sl.ui.hintNoble'), s.pending.options.length)]);
+}
+
+// mainHints 主行动提示：拿 3 色 / 拿 2 同色 / 预留 / 买卡 四项的可做性与原因
+function mainHints(s) {
+  const p = s.players[s.cur];
+  const avail = s.supply.gems.map((n, i) => (n > 0 ? i : -1)).filter((i) => i >= 0);
+  const take2Cols = avail.filter((c) => s.supply.gems[c] >= 4);
+  const buyable = buyCount(s, p);
+  return [
+    avail.length
+      ? okHint('💎', t('sl.ui.hintTake3'), Math.min(3, avail.length))
+      : noHint('💎', t('sl.ui.hintTake3'), t('sl.ui.hintSupplyEmpty')),
+    take2Cols.length
+      ? okHint('💎', t('sl.ui.hintTake2'), take2Cols.length)
+      : noHint('💎', t('sl.ui.hintTake2'), t('sl.ui.hintTake2Why')),
+    p.reserved.length < RESERVE_CAP
+      ? okHint('🔒', t('sl.ui.hintReserve'), RESERVE_CAP - p.reserved.length)
+      : noHint('🔒', t('sl.ui.hintReserve'), t('sl.ui.hintReserveFull')),
+    buyable > 0
+      ? okHint('🛒', t('sl.ui.hintBuy'), buyable)
+      : noHint('🛒', t('sl.ui.hintBuy'), t('sl.ui.hintBuyWhy')),
+  ];
+}
+
+// buyCount 当前买得起的卡数（明牌 + 预留），与引擎 canAfford 同口径
+function buyCount(s, p) {
+  let n = 0;
+  for (let t = 0; t < 3; t++) {
+    for (let k = 0; k < MARKET_SLOTS; k++) {
+      const cid = s.market[t][k];
+      if (cid !== null && affordable(p, cid)) n++;
+    }
+  }
+  for (const cid of p.reserved) if (affordable(p, cid)) n++;
+  return n;
+}
+
+// affordable 宝石+金+折扣是否够付卡价（复刻引擎 canAfford，金可替代任一色）
+function affordable(p, cid) {
+  const cost = CARDS[cid][3];
+  let need = 0;
+  for (let i = 0; i < 5; i++) need += Math.max(0, cost[i] - p.bonus[i] - p.gems[i]);
+  return need <= p.gold;
 }
 
 // take2RowHtml 同色拿 2 快捷按钮行（供应 ≥4 时才有合法 take2；点即提交）

@@ -4,9 +4,11 @@
 // 移动优先：竖向堆叠（地图板 → 市场 → 行动卡 → 玩家面板），clamp() 字号，≥44px 触达。
 import { t, tr, getLang } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { fmtArgs, lackOf, noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import {
-  animalOf, sponsorOf, projectOf, endgameOf, encUsed, encMeta, effTerrain,
+  animalOf, sponsorOf, projectOf, endgameOf, encUsed, encMeta, effTerrain, encIds,
   canPlaceAnimal, catName, encShow, egBonusCP, projFulfilled, effEffects,
+  currentPlayer, BUILD_SPECS,
 } from './engine.js';
 import { TAGS, VARIANTS, RULES, ABILITIES } from './data-cards.js';
 import { aEmoji, spEmoji, projEmoji, habitatOf, ENC_ICON, CAT_ICON, EG_ICON } from './data-visual.js';
@@ -488,15 +490,133 @@ function conceptsPanel() {
   </div>`;
 }
 
-// phasePrompt 各阶段引导提示
-function phasePrompt(s) {
+// phasePrompt 各阶段引导提示 + 行动提示条（可做什么 / 做不了的原因）
+function phasePrompt(s, legal) {
   const k = { action: 'an.ui.pAct', place: 'an.ui.p0', assoc: 'an.ui.p1', build: 'an.ui.p2', take: 'an.ui.p3', sponsor: 'an.ui.p4', discard: 'an.ui.p5', endgame: 'an.ui.pE' }[s.phase];
+  if (!k) return '';
   let extra = '';
   if (s.phase === 'place' && s.sub) {
     extra = ` — ${t('an.ui.budget')} <b>${s.sub.budget - s.sub.spent}</b>`;
   }
   if (s.finalRound) extra += ` · 🏁 ${t('an.ui.finalRound')}`;
-  return k ? `<div class="an-prompt" data-bg-focus>💡 <b>${t(k)}</b>${extra}</div>` : '';
+  // AI 回合不显示操作提示（提示是给人类玩家的选择清单）
+  const human = !s.players[currentPlayer(s)].isAI;
+  const chips = human ? renderActionHints(phaseHints(s, legal || [])) : '';
+  return `<div class="an-prompt" data-bg-focus><span>💡 <b>${t(k)}</b>${extra}</span>${chips}</div>`;
+}
+
+// phaseHints 按阶段给出可做项（含数量）与不可做原因
+function phaseHints(s, legal) {
+  const p = s.players[s.phase === 'discard' && s.sub ? s.sub.seat : s.turn];
+  switch (s.phase) {
+    case 'action': return actionHints(s, legal);
+    case 'place': return placeHints(s, legal, p);
+    case 'take': return takeHints(s, legal);
+    case 'sponsor': return sponsorHints(s, legal);
+    case 'assoc': return [okHint('🤝', t('an.ui.hintAssoc'), legal.filter((a) => a.kind === 'assoc').length)];
+    case 'build': return buildHints(s, legal, p);
+    case 'discard': return discardHints(s, legal, p);
+    case 'endgame': return [okHint('🏁', t('an.ui.hintEndgame'), 2)];
+    default: return [];
+  }
+}
+
+// actionHints 主阶段：可用行动卡数 + 休息区借用数
+function actionHints(s, legal) {
+  const acts = legal.filter((a) => a.kind === 'act').length;
+  const borrows = legal.filter((a) => a.kind === 'useBreak').length;
+  const items = [acts ? okHint('🎴', t('an.ui.hintAct'), acts) : noHint('🎴', t('an.ui.hintAct'), t('an.ui.hintNoCard'))];
+  if (borrows) items.push(okHint('☕', t('an.ui.hintBorrow'), borrows));
+  return items;
+}
+
+// placeHints 放动物：可放组合数；无组合时说明首要卡点（无围栏/空间/岩石/水域/图标/预算）
+function placeHints(s, legal, p) {
+  const places = legal.filter((a) => a.kind === 'place').length;
+  if (places) return [okHint('🦁', t('an.ui.hintPlace'), places)];
+  return [noHint('🦁', t('an.ui.hintPlace'), placeWhy(s, p))];
+}
+
+// PLACE_PRIORITY 受阻原因的展示优先级（越靠前越值得玩家先处理）
+const PLACE_PRIORITY = [
+  'noBudget', 'noSpace', 'needRock', 'needWater', 'req',
+  'dupSpecies', 'specialMismatch', 'petOnly', 'pzPetsOnly', 'notBuilt',
+];
+
+// placeWhy 放动物受阻原因：汇总所有「手牌动物 × 已建围栏」的首个卡点，按优先级取前两条
+function placeWhy(s, p) {
+  const hand = [...new Set(p.hand)].filter((id) => animalOf(id));
+  if (!hand.length) return t('an.ui.hintNoHand');
+  const built = encIds.filter((e) => p.enc[e].on);
+  if (!built.length) return t('an.ui.hintNoBuilt');
+  const sub = s.sub || { spent: 0, budget: 0 };
+  const seen = new Map();
+  for (const id of hand) {
+    for (const enc of built) {
+      const r = canPlaceAnimal(p, id, enc, sub.spent, sub.budget);
+      if (!r.ok && !seen.has(r.reason)) seen.set(r.reason, r);
+    }
+  }
+  const order = (k) => { const i = PLACE_PRIORITY.indexOf(k); return i < 0 ? PLACE_PRIORITY.length : i; };
+  const tops = [...seen.keys()].sort((a, b) => order(a) - order(b)).slice(0, 2);
+  if (!tops.length) return t('an.ui.hintFull');
+  return tops.map((k) => placeReason(seen.get(k))).join(' / ');
+}
+
+// placeReason canPlaceAnimal().reason → 白话（数值型原因带缺口数字）
+function placeReason(r) {
+  switch (r.reason) {
+    case 'notBuilt': return t('an.ui.hintNoBuilt');
+    case 'dupSpecies': return t('an.ui.hintDup');
+    case 'petOnly': case 'pzPetsOnly': return t('an.ui.hintPzOnly');
+    case 'specialMismatch': return t('an.ui.hintSpecial');
+    case 'noSpace': return t('an.ui.hintFull');
+    case 'needRock': return `${t('an.ui.hintRock')} · ${fmtArgs(t('bg.hint.lack'), { d: `⛰️×${(r.need || 0) - (r.have || 0)}` })}`;
+    case 'needWater': return `${t('an.ui.hintWater')} · ${fmtArgs(t('bg.hint.lack'), { d: `🌊×${(r.need || 0) - (r.have || 0)}` })}`;
+    case 'noBudget': return fmtArgs(t('an.ui.hintNoBudget'), { left: r.left || 0, need: r.need || 0 });
+    case 'req': return t('an.ui.hintReq');
+    default: return t('bg.hint.none');
+  }
+}
+
+// takeHints 拿牌：可拿位置数与剩余次数
+function takeHints(s, legal) {
+  const takes = legal.filter((a) => a.kind === 'take').length;
+  const left = s.sub && s.sub.left ? s.sub.left : 0;
+  return takes
+    ? [okHint('🂠', t('an.ui.hintTake'), takes, fmtArgs(t('an.ui.hintTakesLeft'), { n: left }))]
+    : [noHint('🂠', t('an.ui.hintTake'), t('an.ui.hintMarketEmpty'))];
+}
+
+// sponsorHints 赞助：可打出的赞助卡数
+function sponsorHints(s, legal) {
+  const n = legal.filter((a) => a.kind === 'playSponsor').length;
+  return [n ? okHint('📣', t('an.ui.hintSponsor'), n)
+    : noHint('📣', t('an.ui.hintSponsor'), t('an.ui.hintSponsorMissing'))];
+}
+
+// buildHints 建造：可建项数；无则说明（全建好 / 钱不够缺多少 / 档位不够）
+function buildHints(s, legal, p) {
+  const builds = legal.filter((a) => a.kind === 'build').length;
+  if (builds) return [okHint('🏗️', t('an.ui.hintBuild'), builds)];
+  const eff = effEffects(p);
+  const open = BUILD_SPECS.filter((sp) => sp.open(p));
+  if (!open.length) return [noHint('🏗️', t('an.ui.hintBuild'), t('an.ui.hintAllBuilt'))];
+  const cheapest = open.map((sp) => ({ ...sp, real: Math.max(0, sp.cost - eff.bDisc) }))
+    .sort((a, b) => a.real - b.real)[0];
+  if (p.money < cheapest.real) {
+    const d = lackOf([['💰', cheapest.real, p.money]]);
+    return [noHint('🏗️', t('an.ui.hintBuild'), fmtArgs(t('bg.hint.lack'), { d }))];
+  }
+  return [noHint('🏗️', t('an.ui.hintBuild'), t('an.ui.hintStr'))];
+}
+
+// discardHints 弃牌：可弃牌数 + 手牌上限进度
+function discardHints(s, legal, p) {
+  const n = legal.filter((a) => a.kind === 'discardCard').length;
+  const limit = fmtArgs(t('an.ui.hintHandLimit'), { n: p.hand.length, m: RULES.handMax });
+  return n ? [okHint('🗑️', t('an.ui.hintDiscard'), n, limit)]
+    : [noHint('🗑️', t('an.ui.hintDiscard'), limit)];
 }
 
 // —— 主入口 ——
@@ -513,7 +633,7 @@ export function renderBoard(el, state, legal, pick, selArg, whyArg) {
   const $wrap = document.createElement('div');
   $wrap.className = 'an-wrap';
   // 提示 + 概念
-  let h = phasePrompt(s) + conceptsPanel();
+  let h = phasePrompt(s, legal) + conceptsPanel();
   $wrap.innerHTML = h;
 
   const $board = document.createElement('div');

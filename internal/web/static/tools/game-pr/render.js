@@ -1,6 +1,7 @@
 // 波多黎各渲染层：renderBoard(el, state, legal, pick) 全量重绘 + 事件委托。
 // 多步收集（市长安置、弃货保留、装货数量）用模块级 ui 暂存；同一决策点内重绘不清空。
 import { t, tr } from '/core/i18n.js';
+import { lackOf, noHint, okHint, renderActionHints, fmtArgs } from '/core/action-hints.js';
 import {
   GOODS, GOOD_VALUE, GOOD_ICON, ROLE_ICON, BUILDING_ICON, BUILDINGS, BUILDING_BY_ID, ROLE_NAMES, hasOccupied,
 } from './data.js';
@@ -116,17 +117,102 @@ function renderAction(s, legal, human) {
   const p = s.players[ph.cur];
   const prompt = `<p class="pr-prompt">${t('pr.ui.prompt.' + ph.kind)}</p>`;
   if (!human) return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
+  const hints = renderActionHints(phaseHints(s, legal, p, ph));
+  const head = `${prompt}${hints}`;
   switch (ph.kind) {
-    case 'pickRole': return `<div class="pr-action" data-bg-focus>${prompt}${roleBtns(s, legal)}</div>`;
-    case 'settler': return `<div class="pr-action" data-bg-focus>${prompt}${settlerBtns(s, legal)}</div>`;
-    case 'builder': return `<div class="pr-action" data-bg-focus>${prompt}${builderPanel(s, legal, p, ph)}</div>`;
-    case 'mayor': return `<div class="pr-action" data-bg-focus>${prompt}${mayorPanel(s, legal, p, ph)}</div>`;
-    case 'craftsman': return `<div class="pr-action" data-bg-focus>${prompt}${craftsmanBtns(legal)}</div>`;
-    case 'trader': return `<div class="pr-action" data-bg-focus>${prompt}${traderBtns(s, legal, p, ph)}</div>`;
-    case 'captain': return `<div class="pr-action" data-bg-focus>${prompt}${captainPanel(s, legal)}</div>`;
-    case 'discard': return `<div class="pr-action" data-bg-focus>${prompt}${discardPanel(s, p)}</div>`;
-    default: return `<div class="pr-action" data-bg-focus>${prompt}</div>`;
+    case 'pickRole': return `<div class="pr-action" data-bg-focus>${head}${roleBtns(s, legal)}</div>`;
+    case 'settler': return `<div class="pr-action" data-bg-focus>${head}${settlerBtns(s, legal)}</div>`;
+    case 'builder': return `<div class="pr-action" data-bg-focus>${head}${builderPanel(s, legal, p, ph)}</div>`;
+    case 'mayor': return `<div class="pr-action" data-bg-focus>${head}${mayorPanel(s, legal, p, ph)}</div>`;
+    case 'craftsman': return `<div class="pr-action" data-bg-focus>${head}${craftsmanBtns(legal)}</div>`;
+    case 'trader': return `<div class="pr-action" data-bg-focus>${head}${traderBtns(s, legal, p, ph)}</div>`;
+    case 'captain': return `<div class="pr-action" data-bg-focus>${head}${captainPanel(s, legal)}</div>`;
+    case 'discard': return `<div class="pr-action" data-bg-focus>${head}${discardPanel(s, p)}</div>`;
+    default: return `<div class="pr-action" data-bg-focus>${head}</div>`;
   }
+}
+
+// phaseHints 各阶段「能做什么 / 为什么做不了」：数量、缺口金币、库存/空位限制
+function phaseHints(s, legal, p, ph) {
+  switch (ph.kind) {
+    case 'pickRole': return [okHint('🎭', t('pr.ui.hintRole'), legal.length)];
+    case 'settler': return settlerHints(s, legal, p, ph);
+    case 'builder': return builderHints(s, legal, p, ph);
+    case 'mayor': return mayorHints(s, legal, p, ph);
+    case 'craftsman': return craftsmanHints(legal, p, ph);
+    case 'trader': return traderHints(s, legal, p);
+    case 'captain': return captainHints(legal, p);
+    case 'discard': return discardHints(p);
+    default: return [];
+  }
+}
+
+// mayorHints 市长：待安置数；无空圆圈时说明只能确认（移民滞留圣胡安）
+function mayorHints(s, legal, p, ph) {
+  const want = legal[0] ? legal[0].count : 0;
+  if (want > 0) return [okHint('🧍', t('pr.ui.toPlace'), want)];
+  const waiting = (ph.pending[p.seat] || 0) + p.san;
+  if (waiting > 0) return [noHint('🧍', t('pr.ui.toPlace'), t('pr.ui.hintNoCircle'))];
+  return [noHint('🧍', t('pr.ui.toPlace'), t('pr.ui.hintNoColonist'))];
+}
+
+// craftsmanHints 工匠：特权可取数；非选择者或本回合无产出时说明原因
+function craftsmanHints(legal, p, ph) {
+  const extras = legal.filter((a) => a.kind === 'craftsmanExtra').length;
+  if (extras > 0) return [okHint('🔨', t('pr.ui.takeOne'), extras)];
+  if (p.seat !== ph.chooser) return [noHint('🔨', t('pr.ui.takeOne'), t('pr.ui.hintNotChooser'))];
+  return [noHint('🔨', t('pr.ui.takeOne'), t('pr.ui.hintNoProduce'))];
+}
+
+// traderHints 商人：可卖数；不可卖时区分「无货 / 交易所满 / 同种货在所内」
+function traderHints(s, legal, p) {
+  const sells = legal.filter((a) => a.kind === 'sell').length;
+  if (sells > 0) return [okHint('💱', t('pr.ui.sellOne'), sells)];
+  if (!GOODS.some((g) => p.goods[g] > 0)) return [noHint('💱', t('pr.ui.sellOne'), t('pr.ui.hintNoGoods'))];
+  if (!s.tradingHouse.includes(null)) return [noHint('💱', t('pr.ui.sellOne'), t('pr.ui.hintHouseFull'))];
+  return [noHint('💱', t('pr.ui.sellOne'), t('pr.ui.hintHouseDup'))];
+}
+
+// captainHints 船长：可装货方式数；无货可装时说明原因（船已满/同种已上船/无货）
+function captainHints(legal, p) {
+  const loads = legal.filter((a) => a.kind === 'ship' || a.kind === 'wharf').length;
+  if (loads > 0) return [okHint('🚢', t('pr.ui.hintLoad'), loads)];
+  if (!GOODS.some((g) => p.goods[g] > 0)) return [noHint('🚢', t('pr.ui.hintLoad'), t('pr.ui.hintNoGoods'))];
+  return [noHint('🚢', t('pr.ui.hintLoad'), t('pr.ui.hintShipsBusy'))];
+}
+
+// settlerHints 开拓者：可拿地块数 / 岛满只能弃权
+function settlerHints(s, legal, p) {
+  const take = legal.filter((a) => a.kind === 'settler' && a.tile !== 'pass').length;
+  if (p.island.length >= 12) return [noHint('🌱', t('pr.ui.hintTakeTile'), t('pr.ui.hintIslandFull'))];
+  return [okHint('🌱', t('pr.ui.hintTakeTile'), take)];
+}
+
+// builderHints 建筑：可建数量 + （无可建时）最便宜建筑的缺口
+function builderHints(s, legal, p, ph) {
+  const chooser = p.seat === ph.chooser;
+  const builds = legal.filter((a) => a.kind === 'build');
+  if (builds.length) return [okHint('🏛️', t('pr.ui.hintBuild'), builds.length)];
+  const out = [];
+  const stockLeft = BUILDINGS.filter((b) => s.buildingStock[b.id] > 0
+    && !p.city.some((slot) => slot.id === b.id)
+    && (b.size || 1) === 1 && p.city.some((c) => !c.id));
+  if (!stockLeft.length) return [noHint('🏛️', t('pr.ui.hintBuild'), t('pr.ui.hintNoSlot'))];
+  const cheapest = Math.min(...stockLeft.map((b) => buildCost(p, b.id, chooser)));
+  out.push(noHint('🏛️', t('pr.ui.hintBuild'), reasonMoney(p.doubloons, cheapest)));
+  return out;
+}
+
+// discardHints 弃货保留：需保留几桶
+function discardHints(p) {
+  const kinds = GOODS.filter((g) => p.goods[g] > 0).length;
+  return [okHint('📦', t('pr.ui.hintKeep'), kinds)];
+}
+
+// reasonMoney 金币缺口文案
+function reasonMoney(have, need) {
+  const lack = lackOf([['💰', need, have]]);
+  return lack ? fmtArgs(t('bg.hint.lack'), { d: lack }) : t('bg.hint.none');
 }
 
 function actBtn(action, label, cls) {
