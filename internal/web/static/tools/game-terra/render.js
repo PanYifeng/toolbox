@@ -25,7 +25,7 @@ const CULT_ICON = { fire: '🔥', water: '💧', earth: '⛰️', air: '💨' };
 const SQ3 = Math.sqrt(3);
 const S = 30; // 六边形边长（SVG 单位）
 
-let ui = { stamp: '', upSel: null, passBonus: null };
+let ui = { stamp: '', upSel: null, passBonus: null, blockMsg: null };
 let ctx = null; // {el, s, legal, pick}，供局部重绘
 
 function esc(s) {
@@ -156,24 +156,42 @@ function clickableHexes(legal, human) {
   return m;
 }
 
-// hexTitle 悬停提示（坐标 · 地形 · 费用）
-function hexTitle(s, a) {
-  const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
-  if (a.kind === 'build') {
-    const c = buildCost(s, s.players[s.phase.cur], a.hex);
-    return `${a.hex} · ${terr} · ${incStr(c)}`;
+// hexBlock 不可建造格的解释：范围内 → 已达上限或报具体缺口；范围外 → 说明要相邻/船运/传送。
+// 没有这一层，玩家点了自家民居旁边的格子毫无反应，会误判成「地图上不能建民居」。
+function hexBlock(s, p, hexId, inRange) {
+  if (!inRange) return { kind: 'far', why: t('tm.ui.buildFar'), cost: null };
+  const dwellings = Object.values(p.buildings).filter((b) => b === 'D').length;
+  if (dwellings >= BLD_CAP.D) return { kind: 'far', why: t('tm.ui.buildCap'), cost: null };
+  const c = buildCost(s, p, hexId);
+  return { kind: 'short', why: costLack(p, c) || t('tm.ui.cantAfford'), cost: c };
+}
+
+// hexTitle 悬停提示（坐标 · 地形 · 费用 / 不可建原因）
+function hexTitle(s, a, blk, hexId) {
+  const head = `${hexId} · ${tr(TERRAIN_NAMES[s.hexes[hexId].terrain])}`;
+  if (a) {
+    const p = s.players[currentPlayer(s)];
+    return a.kind === 'build' ? `${head} · ${incStr(buildCost(s, p, hexId))}` : head;
   }
-  return `${a.hex} · ${terr}`;
+  if (blk.kind === 'short') return `${head} · ${incStr(blk.cost)} · ${blk.why}`;
+  return `${head} · ${blk.why}`;
 }
 
 function renderMap(s, legal, human) {
   const clicks = clickableHexes(legal, human);
   const f = curFaction(s);
   const p = f ? s.players[currentPlayer(s)] : null;
+  // 行动阶段当前玩家的所有空陆地块都要可点：能建就建，不能建必须当场说明原因。
+  // 只给合法格挂 data-hex 会让「范围内缺资源」和「不相邻」两类格子完全静默，
+  // 玩家点了自家民居旁边的格子毫无反应，就会认定「地图上不能建民居」。
+  const actPhase = !!p && human && s.phase.kind === 'act';
+  const range = actPhase ? buildRangeSet(s, p) : new Set();
   const hexes = HEXES.map((h) => {
     const c = POS[h.id];
     const st = s.hexes[h.id];
     const a = clicks.get(h.id);
+    const cand = actPhase && !a && st.owner === null && st.terrain !== 'river';
+    const blk = cand ? hexBlock(s, p, h.id, range.has(h.id)) : null;
     const dug = st.terrain !== h.terrain ? ' stroke="var(--fg)" stroke-width="1.5"' : '';
     // 空陆地块的铲数角标：当前玩家挖到该地形需几铲（家园/河流不标）
     let dig = '';
@@ -181,11 +199,14 @@ function renderMap(s, legal, human) {
       const n = spadesNeeded(p, st.terrain);
       dig = `<text x="${c.x - S + 11}" y="${c.y - S + 16}" class="tm-dig">${n}</text>`;
     }
+    // 范围内但付不起的格子打红色虚线框，让「差一点」的候选一眼可辨
+    const cls = a ? 'tm-hexbtn' : blk ? `tm-hexbtn tm-hex-${blk.kind}` : '';
     return `
-      <g ${a ? `class="tm-hexbtn" data-hex="${h.id}">` : '>'}
+      <g ${cls ? `class="${cls}" data-hex="${h.id}">` : '>'}
         <polygon points="${hexPoints(c.x, c.y, S)}" class="tm-hex" fill="${TERR_COLOR[st.terrain]}"${dug}></polygon>
-        ${a ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="tm-ring"></polygon>
-          <title>${hexTitle(s, a)}</title>` : ''}
+        ${a ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="tm-ring"></polygon>` : ''}
+        ${blk && blk.kind === 'short' ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="tm-ring-short"></polygon>` : ''}
+        ${a || blk ? `<title>${esc(hexTitle(s, a, blk, h.id))}</title>` : ''}
         ${dig}
         ${st.owner !== null ? bldMark(s, st, c) : ''}
       </g>`;
@@ -368,7 +389,12 @@ function renderAction(s, legal, human) {
   else if (ph === 'pickBonus') body = bonusPanel(legal);
   else if (ph === 'act') body = actPanel(s, legal);
   else if (ph === 'resolve') body = resolvePanel(s, legal);
-  return `<div class="tm-action" data-bg-focus>${prompt}${stageHints(s, legal, ph)}${body}</div>`;
+  return `<div class="tm-action" data-bg-focus>${prompt}${ui.blockMsg ? blockChip(ui.blockMsg) : ''}${stageHints(s, legal, ph)}${body}</div>`;
+}
+
+// blockChip 点击不可建格后的原因条（下一次有效操作或重绘即清除）
+function blockChip(msg) {
+  return renderActionHints([noHint('🏠', msg.label, msg.why)]);
 }
 
 // stageHints 阶段级提示：选牌系/放初始民居/领奖励板块/结算选择的选项数与内容
@@ -657,10 +683,22 @@ function buildPanel(s, legal) {
   const dwellings = Object.values(p.buildings).filter((b) => b === 'D').length;
   let why;
   if (dwellings >= BLD_CAP.D) why = t('tm.ui.buildCap');
-  else if (buildRangeSet(s, p).size === 0) why = t('tm.ui.buildNoRange');
-  else why = t('tm.ui.cantAfford');
+  else why = buildFailReason(s, p);
   return `<span class="tm-label">${t('tm.ui.build')}</span><div class="tm-btns">
-    <button class="btn-soft" disabled title="${why}">🏠 ${tr(BLD_NAME.D)} · ${why}</button></div>`;
+    <button class="btn-soft" disabled title="${esc(why)}">🏠 ${tr(BLD_NAME.D)} · ${esc(why)}</button></div>`;
+}
+
+// buildFailReason 建造失败原因：范围无空位，或取最便宜一格的资源缺口
+function buildFailReason(s, p) {
+  const range = buildRangeSet(s, p);
+  if (range.size === 0) return t('tm.ui.buildNoRange');
+  let best = '';
+  for (const hex of range) {
+    const miss = costLack(p, buildCost(s, p, hex));
+    if (!best || (miss && miss.length < best.length)) best = miss;
+    if (!miss) return t('tm.ui.cantAfford');
+  }
+  return best || t('tm.ui.cantAfford');
 }
 
 function actPanel(s, legal) {
@@ -785,7 +823,14 @@ function bind(el, s, legal, pick, human) {
     $g.onclick = () => {
       if (!human) return;
       const a = hexAction(legal, $g.dataset.hex);
-      if (a) pick(a);
+      if (a) { pick(a); return; }
+      // 点了不能建的格子：把原因直接摆到操作区，而不是静默忽略
+      const p = s.players[currentPlayer(s)];
+      const f = factionById(p.faction);
+      if (!f || s.phase.kind !== 'act') return;
+      const blk = hexBlock(s, p, $g.dataset.hex, buildRangeSet(s, p).has($g.dataset.hex));
+      ui.blockMsg = { label: tr(BLD_NAME.D), why: `${$g.dataset.hex} · ${blk.why}` };
+      renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
     };
   });
   el.querySelectorAll('[data-fac]').forEach(($b) => {
