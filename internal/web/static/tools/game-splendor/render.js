@@ -2,8 +2,9 @@
 // 贵族行 + 宝石供应 + 三阶牌市（牌堆 + 4 明牌）+ 玩家面板（宝石/折扣/预留/贵族）。
 // 微阶段：弃宝石时己方面板宝石可点；择贵族时贵族牌可点。
 import { t } from '/core/i18n.js';
+import { fmt } from '/core/boardgame.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
-import { CARDS, NOBLES, MARKET_SLOTS, RESERVE_CAP, GEM_CAP } from './data-cards.js';
+import { CARDS, NOBLES, MARKET_SLOTS, RESERVE_CAP, GEM_CAP, VP_TO_END } from './data-cards.js';
 
 // 宝石色（游戏固定色，深浅色主题通用；白/黑加描边保证可辨）
 const GEM_COLOR = ['#ece9e2', '#4d84e0', '#57b06a', '#e05d5d', '#43434f'];
@@ -114,7 +115,10 @@ function promptHtml(s, pendingDiscard, pendingNoble, humanMain) {
   const p = s.players[s.cur];
   const hint = humanMain ? ` <span class="sl-hint">💎 ${t('sl.ui.prompt.takeHint')}</span>` : '';
   const chips = humanMain ? renderActionHints(mainHints(s)) : '';
-  return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t('sl.ui.prompt.act')}${hint}${chips}`;
+  // 终局已触发：其余玩家各剩最后一回合，必须明示（原先成品触发后全无提示）
+  const last = s.endTrigger !== null && s.endTrigger !== undefined
+    ? `<div class="sl-lastround">🏁 ${fmt(t('sl.ui.lastRound'), { n: s.players[s.endTrigger].name })}</div>` : '';
+  return `${last}${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t('sl.ui.prompt.act')}${hint}${chips}`;
 }
 
 // pendingHints 微阶段提示：弃宝石还需弃几颗 / 可选贵族数（提示条与其他阶段同构）
@@ -202,6 +206,18 @@ function marketRowHtml(s, tier, buySet, resSet, blindSet) {
 }
 
 // playerHtml 玩家面板：VP / 宝石 / 折扣 / 预留 / 贵族
+// vpGoalHtml 距 15 分触发终局还差几分（一次可达即高亮，让玩家知道自己的收尾节奏）
+function vpGoalHtml(p) {
+  const left = VP_TO_END - p.vp;
+  if (left <= 0) return `<i class="sl-vpdone">✔ ${t('sl.ui.vpDone')}</i>`;
+  return `<i class="sl-vpleft">${fmt(t('sl.ui.vpLeft'), { n: left })}</i>`;
+}
+
+// boughtTip 平局判据提示：同分时购卡数少者胜，故这一项需要一直可见
+function boughtTip(p) {
+  return `<i class="sl-pbought" title="${t('sl.ui.tieBreakTip')}">🛒${p.bought}</i>`;
+}
+
 function playerHtml(s, p, seatIdx, pendingDiscard, resBuyIdx) {
   const isCur = seatIdx === s.cur;
   const chips = p.gems.map((n, i) => gemChip(i, n, false, pendingDiscard, i)).join('')
@@ -222,7 +238,7 @@ function playerHtml(s, p, seatIdx, pendingDiscard, resBuyIdx) {
     <div class="sl-player${isCur ? ' sl-player-cur' : ''}" style="--pc:${p.color}">
       <div class="sl-phead">
         <span class="sl-dot-name"><i class="sl-dot" style="background:${p.color}"></i><b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}</span>
-        <span class="sl-pvp"><b>${p.vp}</b> VP ${nobleBadges}</span>
+        <span class="sl-pvp"><b>${p.vp}</b> VP ${nobleBadges}${vpGoalHtml(p)}${boughtTip(p)}</span>
       </div>
       <div class="sl-pgems">${chips}</div>
       ${bonus ? `<div class="sl-pbonus">${t('sl.ui.bonus')} ${bonus}</div>` : ''}
