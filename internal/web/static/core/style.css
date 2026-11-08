@@ -1636,6 +1636,8 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
 .ca-player-active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
 .ca-player-head { display: flex; align-items: center; gap: 6px; font-size: 14px; }
 .ca-score { margin-left: auto; font-size: 18px; font-weight: 700; }
+/* 终局投影角标：未完成城市/道路/修道院 + 农夫分的合计 */
+.ca-score-pend { font-style: normal; font-size: 12px; font-weight: 700; color: #2e8b3d; margin-left: 4px; }
 .ca-player-meeples { display: flex; gap: 4px; margin-top: 6px; min-height: 10px; flex-wrap: wrap; }
 .ca-meeple-mini {
   width: 9px; height: 9px; border-radius: 50% 50% 50% 0;

@@ -254,6 +254,65 @@ section('终局结算');
   ok(f2.players[0].meeples === 7 && f2.players[1].meeples === 7, '终局随从应全部归还');
 }
 
+// —— 终局投影（纯只读，须与 finalize 口径一致且不改 state）——
+
+section('终局投影');
+{
+  // 未完成城市 2 块 + 未完成道路 2 块：投影应等于终局实得
+  const s = mkGame(2, 1);
+  setCell(s, 0, -1, typeOf('N'), 2);
+  setCell(s, 1, 0, typeOf('A'), 1);
+  putMeeple(s, 0, 0, 0, 0);
+  putMeeple(s, 1, 0, 0, 1);
+  const before = JSON.stringify(s);
+  const pr = E.projectedScore(s);
+  ok(JSON.stringify(s) === before, '投影不得改写 state');
+  ok(pr[0].pending.city === 2, `未完成 2 块城市投影应 2 分，实际 ${pr[0].pending.city}`);
+  ok(pr[1].pending.road === 2, `未完成 2 块道路投影应 2 分，实际 ${pr[1].pending.road}`);
+  ok(pr[0].total === 2 && pr[1].total === 2, '投影合计应等于终局实得');
+
+  // 农夫 + 修道院投影须与 finalize 结果一致
+  const f = mkGame(2, 2);
+  setCell(f, 0, -1, typeOf('N'), 2);
+  setCell(f, -1, -1, typeOf('E'), 1);
+  putMeeple(f, 0, 0, 2, 0);
+  setCell(f, 1, 1, typeOf('B'), 0);
+  putMeeple(f, 1, 1, 1, 1);
+  const fp = E.projectedScore(f);
+  ok(fp[0].pending.farm === 3, `农夫投影应 3 分，实际 ${fp[0].pending.farm}`);
+  ok(fp[1].pending.mon === 2, `未围满修道院投影应 2 分，实际 ${fp[1].pending.mon}`);
+
+  // 已落袋分不重复计入
+  const g = mkGame(2, 3);
+  g.players[0].score = 5;
+  g.players[0].city = 5;
+  setCell(g, 0, -1, typeOf('N'), 2);
+  putMeeple(g, 0, 0, 0, 0);
+  ok(E.projectedScore(g)[0].total === 7, `已落袋 5 + 未完成 2 应 7，实际 ${E.projectedScore(g)[0].total}`);
+
+  // 随机对局中截取状态：投影值必须等于「此刻直接终局」的实得（同一状态两份副本对照）
+  for (let n = 1; n <= 6; n++) {
+    let s = mkGame(2 + (n % 3), 900 + n);
+    for (let i = 0; i < 25 && !s.gameOver; i++) {
+      const legal = E.legalActions(s);
+      if (!legal.length) break;
+      s = E.apply(s, bot(s, legal));
+    }
+    if (s.gameOver) continue;
+    const pr = E.projectedScore(s);
+    const copy = JSON.parse(JSON.stringify(s));
+    copy.deck = [];
+    forceTile(copy, -1, []);
+    copy.current = -1;
+    const fin = E.apply(copy, { kind: 'skip' });
+    ok(fin.gameOver, `投影对照 ${n}: 未终局`);
+    fin.players.forEach((p) => {
+      const exp = pr.find((x) => x.seat === p.seat).total;
+      ok(p.score === exp, `投影对照 ${n} seat${p.seat}: 投影 ${exp} ≠ 实得 ${p.score}`);
+    });
+  }
+}
+
 // —— 农田槽位镜像连通 ——
 
 section('农田连通');

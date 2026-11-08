@@ -6,7 +6,7 @@ import { t } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import { TILES } from './data-tiles.js';
-import { currentPlayer } from './engine.js';
+import { currentPlayer, projectedScore } from './engine.js';
 
 const S = 52; // 单块像素（SVG 用户单位）
 const EDGE_ENDS = [ // 正则边两端点（单位坐标，顺时针）
@@ -46,12 +46,14 @@ export function renderBoard(el, s, legal, pick) {
 // draw 内部重绘（旋转按钮触发）
 function draw() {
   const { el, s, legal, human } = ctx;
+  // 终局投影：已落袋分 + 未完成城市/道路/修道院 + 农夫分（纯函数，不改 state）
+  const proj = new Map(projectedScore(s).map((x) => [x.seat, x]));
   el.innerHTML = `
     <div class="ca-prompt" data-bg-focus>${promptHtml(s)}${hintHtml(s, legal, human)}</div>
     <div class="ca-wrap">
       ${toolbarHtml(s, legal, human)}
       <div class="ca-boardwrap">${boardSvg(s, legal, human)}</div>
-      <div class="ca-players">${s.players.map((p) => playerHtml(s, p)).join('')}</div>
+      <div class="ca-players">${s.players.map((p) => playerHtml(s, p, proj.get(p.seat))).join('')}</div>
     </div>`;
   wire();
 }
@@ -225,17 +227,32 @@ function meepleSvg(color, pos) {
   return `<circle class="ca-meeple" cx="${pos.x * S}" cy="${pos.y * S}" r="5.5" fill="${color}"/>`;
 }
 
-// playerHtml 玩家面板：色点 + 名 + 得分 + 剩余随从
-function playerHtml(s, p) {
+// projTip 终点分构成：已落袋（城市/道路/修道院/农田）+ 若此刻结束还能拿的分项
+function projTip(p, pr) {
+  const settled = [['ca.bd.city', p.city], ['ca.bd.road', p.road], ['ca.bd.mon', p.mon], ['ca.bd.farm', p.farm]]
+    .filter(([, v]) => v).map(([k, v]) => `${t(k)} ${v}`).join(' · ') || '0';
+  const pend = [['ca.bd.city', pr.pending.city], ['ca.bd.road', pr.pending.road],
+    ['ca.bd.mon', pr.pending.mon], ['ca.bd.farm', pr.pending.farm]]
+    .filter(([, v]) => v).map(([k, v]) => `${t(k)} +${v}`).join(' · ');
+  return `${t('ca.ui.projSettled')}: ${settled}${pend ? `\n${t('ca.ui.projPending')}: ${pend}` : ''}`;
+}
+
+// playerHtml 玩家面板：色点 + 名 + 得分（含终局投影）+ 剩余随从
+function playerHtml(s, p, pr) {
   const active = currentPlayer(s) === p.seat && !s.gameOver;
   const meeples = `<span class="ca-meeple-mini" style="color:${p.color}"></span>`.repeat(p.meeples)
     || '<span class="muted">0</span>';
+  // 终局前把「已落袋 + 未完成分量」一起给出来：卡卡颂的未完成城市/农田分往往比已落袋分还大
+  const pending = pr ? pr.pending.city + pr.pending.road + pr.pending.mon + pr.pending.farm : 0;
+  const totalHtml = s.gameOver
+    ? `<span class="ca-score">${p.score}</span>`
+    : `<span class="ca-score" title="${projTip(p, pr)}">${p.score}${pending ? `<i class="ca-score-pend">+${pending}</i>` : ''}</span>`;
   return `
     <div class="ca-player${active ? ' ca-player-active' : ''}">
       <div class="ca-player-head">
         <span class="bg-dot" style="background:${p.color}"></span>
         <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
-        <span class="ca-score">${p.score}</span>
+        ${totalHtml}
       </div>
       <div class="ca-player-meeples" title="${t('ca.ui.meeples')}">${meeples}</div>
     </div>`;

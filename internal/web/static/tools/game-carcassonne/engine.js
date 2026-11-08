@@ -531,6 +531,63 @@ export function currentPlayer(s) { return s.turn; }
 // isGameOver 是否终局
 export function isGameOver(s) { return !!s.gameOver; }
 
+// projectedScore 终局投影（纯函数，不改 state）：现在结束各玩家能拿多少分。
+// finalize 会改写分数并归还随从，不能拿来做预览，故另立一份只读口径：
+// 未完成城市/道路按段+盾牌（城市）计给多数方，未完成修道院按已占格，农夫 3 分/相邻完成城市
+export function projectedScore(s) {
+  const out = s.players.map((p) => ({
+    seat: p.seat,
+    settled: p.score,
+    pending: { city: 0, road: 0, mon: 0, farm: 0 },
+  }));
+  const seenCity = new Set(), seenRoad = new Set(), seenFarm = new Set();
+  for (const k of Object.keys(s.board)) {
+    const [x, y] = k.split(',').map(Number);
+    const cell = s.board[k];
+    if (cell.m < 0) continue;
+    const feat = TILES[cell.t].feats[cell.m];
+    if (feat.k === 'M') {
+      for (const w of winners(compMeeples([{ x, y, f: cell.m, cell, feat }]))) {
+        out[w].pending.mon += monOccupied(s, x, y);
+      }
+      continue;
+    }
+    if (feat.k === 'F') {
+      const comp = farmComp(s, x, y, cell.m);
+      const sig = compSig(comp);
+      if (seenFarm.has(sig)) continue;
+      seenFarm.add(sig);
+      const cities = new Set();
+      for (const m of comp.members) {
+        for (const ci of TILES[m.cell.t].feats[m.f].adj) {
+          const cc = cityComp(s, m.x, m.y, ci);
+          if (!cc.open) cities.add(compSig(cc));
+        }
+      }
+      for (const w of winners(compMeeples(comp.members))) out[w].pending.farm += cities.size * 3;
+      continue;
+    }
+    const isCity = feat.k === 'C';
+    const comp = isCity ? cityComp(s, x, y, cell.m) : roadComp(s, x, y, cell.m);
+    const sig = compSig(comp);
+    const seen = isCity ? seenCity : seenRoad;
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    // 已完成的城市/道路在完成当时就结算并归还随从，这里只剩未完成分量
+    const pennants = comp.members.reduce((a, m) => a + (m.feat.p || 0), 0);
+    const pts = isCity ? comp.members.length + pennants : comp.members.length;
+    for (const w of winners(compMeeples(comp.members))) {
+      out[w].pending[isCity ? 'city' : 'road'] += pts;
+    }
+  }
+  return out.map((o) => ({
+    seat: o.seat,
+    settled: o.settled,
+    pending: o.pending,
+    total: o.settled + o.pending.city + o.pending.road + o.pending.mon + o.pending.farm,
+  }));
+}
+
 // score 结算（框架终局屏调用；total 为累计分，breakdown 为明细键值）
 export function score(s) {
   return s.players.map((p) => ({

@@ -1138,6 +1138,8 @@ const dict = {
     'ca.ui.skipMeeple': '不放随从',
     'ca.ui.curTile': '当前块',
     'ca.ui.meeples': '剩余随从',
+    'ca.ui.projSettled': '已落袋',
+    'ca.ui.projPending': '若现在结束还能得',
 
     // —— 方舟动物园（game-arknova）——
     'an.ui.title': '方舟动物园',
@@ -2449,6 +2451,8 @@ const dict = {
     'ca.ui.skipMeeple': 'No follower',
     'ca.ui.curTile': 'Current tile',
     'ca.ui.meeples': 'Followers left',
+    'ca.ui.projSettled': 'Banked',
+    'ca.ui.projPending': 'If the game ended now',
 
     // —— Ark Nova (game-arknova) ——
     'an.ui.title': 'Ark Nova',
