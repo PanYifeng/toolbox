@@ -7,7 +7,7 @@
 
 import * as E from './engine.js';
 import * as T from './tables.js';
-import { HEXES, ADJACENCY, BRIDGE_PAIRS } from './map-data.js';
+import { HEXES, ADJACENCY, BRIDGE_PAIRS, hexLabel, ROW_LETTERS } from './map-data.js';
 import { factionById } from './data-factions.js';
 import { bot } from './bot.js';
 
@@ -158,6 +158,13 @@ for (const h of HEXES) {
     ok(ADJACENCY[nid].includes(h.id), `邻接不对称 ${h.id}<->${nid}`);
   }
 }
+// 棋面坐标：每格唯一（A1–I13），且能反查回原 id —— 操作区按钮与棋盘标签共用同一套坐标
+const labelSet = new Set(HEXES.map((h) => hexLabel(h.id)));
+ok(labelSet.size === HEXES.length, `棋面坐标应两两不同，实际 ${labelSet.size}/${HEXES.length}`);
+ok(hexLabel('3,0') === 'A4', `3,0 的棋面坐标应为 A4，实际 ${hexLabel('3,0')}`);
+ok(hexLabel('1,2') === 'C3', `1,2 的棋面坐标应为 C3（行内第 3 槽），实际 ${hexLabel('1,2')}`);
+ok(ROW_LETTERS.length === 9, '行字母应 9 个');
+ok(hexLabel('999,999') === '999,999', '未知格应回显原串');
 // 官方桥位：29 对，每对两端为互不相邻的陆地格、恰有 2 个公共邻格且均为河格
 ok(BRIDGE_PAIRS.length === 29, `官方桥位应 29 对，实际 ${BRIDGE_PAIRS.length}`);
 const pairKeys = new Set();

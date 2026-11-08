@@ -49,7 +49,7 @@ import {
   SHIPPING_COST, BRIDGE_COST, BRIDGE_MAX, PRIEST_CAP, START, FACTION_START_VP,
   BONUS_TOWN_KEEP, wheelDist,
 } from './tables.js';
-import { HEXES, ADJACENCY, BRIDGE_PAIRS } from './map-data.js';
+import { HEXES, ADJACENCY, BRIDGE_PAIRS, hexLabel } from './map-data.js';
 import { FACTIONS as FACTIONS_ALL, factionById } from './data-factions.js';
 
 // 阶段种类常量（避免魔术字符串散落）
@@ -1273,7 +1273,7 @@ function applyPlace(s, a) {
   h.owner = step.seat;
   h.bld = 'D';
   p.buildings[a.hex] = 'D';
-  log(s, step.seat, 'tm.log.place', { n: p.name, hex: a.hex });
+  log(s, step.seat, 'tm.log.place', { n: p.name, hex: hexLabel(a.hex) });
   s.placeQueue.shift();
   if (s.placeQueue.length === 0) {
     startRound(s, 1);
@@ -1356,7 +1356,7 @@ function applyBuild(s, p, a) {
   if (c.teleport) p.vp += teleportCostOf(p).vp;
   scoreTileBuild(s, p, 'D');
   favorTileVp(s, p, 'D');
-  log(s, p.seat, 'tm.log.build', { n: p.name, hex: a.hex });
+  log(s, p.seat, 'tm.log.build', { n: p.name, hex: hexLabel(a.hex) });
   leechFrom(s, a.hex, 'D', p.seat);
   detectTownsFrom(s, p.seat, a.hex);
   afterAction(s, p);
@@ -1384,7 +1384,7 @@ function applyUpgrade(s, p, a) {
   if (a.to === 'SH') applyShGain(s, p);
   scoreTileBuild(s, p, a.to);
   favorTileVp(s, p, a.to);
-  log(s, p.seat, 'tm.log.upgrade', { n: p.name, hex: a.hex, b: BLD_NAME[a.to] });
+  log(s, p.seat, 'tm.log.upgrade', { n: p.name, hex: hexLabel(a.hex), b: BLD_NAME[a.to] });
   leechFrom(s, a.hex, a.to, p.seat);
   detectTownsFrom(s, p.seat, a.hex);
   afterAction(s, p);
@@ -1440,7 +1440,7 @@ function applyPowerAction(s, p, a) {
   payPower(p, pa.power);
   if (pa.id === 'ACT1') {
     s.bridges.push({ a: a.a, b: a.b, owner: p.seat });
-    log(s, p.seat, 'tm.log.bridge', { n: p.name, a: a.a, b: a.b });
+    log(s, p.seat, 'tm.log.bridge', { n: p.name, a: hexLabel(a.a), b: hexLabel(a.b) });
     detectTownsFrom(s, p.seat, a.a);
     detectTownsFrom(s, p.seat, a.b);
   } else {
@@ -1550,7 +1550,7 @@ function applyBridge(s, p, a, cost, free) {
   if (!valid || !afford(p, cost)) return;
   pay(p, cost);
   s.bridges.push({ a: a.a, b: a.b, owner: p.seat });
-  log(s, p.seat, 'tm.log.bridge', { n: p.name, a: a.a, b: a.b });
+  log(s, p.seat, 'tm.log.bridge', { n: p.name, a: hexLabel(a.a), b: hexLabel(a.b) });
   detectTownsFrom(s, p.seat, a.a);
   detectTownsFrom(s, p.seat, a.b);
   if (!free) afterAction(s, p);
@@ -1570,7 +1570,7 @@ function applyShAction(s, p, a) {
       h.owner = p.seat;
       h.bld = 'D';
       p.buildings[a.hex] = 'D';
-      log(s, p.seat, 'tm.log.witch', { n: p.name, hex: a.hex });
+      log(s, p.seat, 'tm.log.witch', { n: p.name, hex: hexLabel(a.hex) });
       leechFrom(s, a.hex, 'D', p.seat);
       detectTownsFrom(s, p.seat, a.hex);
       break;
@@ -1583,7 +1583,7 @@ function applyShAction(s, p, a) {
       h.owner = p.seat;
       h.bld = 'D';
       p.buildings[a.hex] = 'D';
-      log(s, p.seat, 'tm.log.nomad', { n: p.name, hex: a.hex });
+      log(s, p.seat, 'tm.log.nomad', { n: p.name, hex: hexLabel(a.hex) });
       leechFrom(s, a.hex, 'D', p.seat);
       detectTownsFrom(s, p.seat, a.hex);
       break;
@@ -1594,7 +1594,7 @@ function applyShAction(s, p, a) {
       p.buildings[a.hex] = 'TP';
       scoreTileBuild(s, p, 'TP');
       favorTileVp(s, p, 'TP');
-      log(s, p.seat, 'tm.log.upgrade', { n: p.name, hex: a.hex, b: BLD_NAME.TP });
+      log(s, p.seat, 'tm.log.upgrade', { n: p.name, hex: hexLabel(a.hex), b: BLD_NAME.TP });
       leechFrom(s, a.hex, 'TP', p.seat);
       detectTownsFrom(s, p.seat, a.hex);
       break;
@@ -1737,7 +1737,7 @@ export function score(s) {
 
 // —— 供渲染/自测导出的内部工具 ——
 export {
-  buildRangeSet, reachInfo, townEdges, spadesNeeded, buildCost, upgradeCostOf,
+  buildRangeSet, reachInfo, townEdges, spadesNeeded, buildCost, upgradeCostOf, chainOf,
   incomeOf, finalScoring, largestNetwork, passVpOf,
   detectTownsFrom, checkTowns, advanceCult, freeFavorTiles, rankScoring,
 };

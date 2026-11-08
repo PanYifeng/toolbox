@@ -27,14 +27,27 @@ const MAP_ROWS = [
   'red black gray blue red green yellow brown gray x blue green red',
 ];
 
-// HEXES 展开为 {id, q, r, terrain} 列表
+// ROW_LETTERS 行字母（自上而下 A–I）：棋面上直接可读的定位坐标，
+// 取代 q,r 这类玩家无法映射到棋盘的内部编号
+export const ROW_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+
+// HEXES 展开为 {id, q, r, ci, terrain} 列表（ci = 行内槽位下标 0-12）
 export const HEXES = [];
 MAP_ROWS.forEach((line, r) => {
   line.split(' ').forEach((color, ci) => {
     const q = ci - Math.floor(r / 2);
-    HEXES.push({ id: `${q},${r}`, q, r, terrain: COLOR_TO_TERRAIN[color] });
+    HEXES.push({ id: `${q},${r}`, q, r, ci, terrain: COLOR_TO_TERRAIN[color] });
   });
 });
+
+// hexLabel 棋面坐标：行字母 + 行内序号（如 D4）——与地图上渲染的格标签一致，
+// 玩家看到按钮里的 D4 能在棋盘上原样找到。传入未知 id 时回显原串。
+const BY_ID = Object.fromEntries(HEXES.map((h) => [h.id, h]));
+export function hexLabel(id) {
+  const h = BY_ID[id];
+  if (!h) return String(id);
+  return `${ROW_LETTERS[h.r]}${h.ci + 1}`;
+}
 
 // TERRAIN_BY_ID 格 id → 地形（桥位计算用）
 const TERRAIN_BY_ID = {};

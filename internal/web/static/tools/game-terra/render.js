@@ -3,7 +3,7 @@
 // + 邪教轨/能量动作/板块区 + 规划提示（下轮收入 + 终局 VP 投影）+ 阶段操作区。
 import { t, tr, getLang } from '/core/i18n.js';
 import { fmtArgs, lackOf, noHint, okHint, reasonCap, reasonNoSpot, renderActionHints } from '/core/action-hints.js';
-import { HEXES } from './map-data.js';
+import { HEXES, hexLabel } from './map-data.js';
 import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
   POWER_ACTIONS, BONUS_TILES, FAVOR_TILES, CULT_TRACKS, CULT_TOP,
@@ -13,7 +13,7 @@ import {
 } from './tables.js';
 import {
   buildCost, buildRangeSet, upgradeCostOf, spadesNeeded, incomeOf, projectedVp, currentPlayer,
-  BLD_NAME, CULT_NAME,
+  chainOf, BLD_NAME, CULT_NAME,
 } from './engine.js';
 
 // 地形配色：高区分度七色（色相间隔拉大 + 深浅交错，官方轮环序）
@@ -25,7 +25,7 @@ const CULT_ICON = { fire: '🔥', water: '💧', earth: '⛰️', air: '💨' };
 const SQ3 = Math.sqrt(3);
 const S = 30; // 六边形边长（SVG 单位）
 
-let ui = { stamp: '', upSel: null, passBonus: null, blockMsg: null };
+let ui = { stamp: '', upSel: null, upFav: [], passBonus: null, blockMsg: null };
 let ctx = null; // {el, s, legal, pick}，供局部重绘
 
 function esc(s) {
@@ -94,7 +94,7 @@ function actBtn(action, label) {
 
 export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.phase.kind}:${s.phase.cur || 0}:${s.round}:${s.log.length}:${s.bridges.length}:${s.pending.map((x) => x.kind).join()}`;
-  if (ui.stamp !== stamp) ui = { stamp, upSel: null, passBonus: null };
+  if (ui.stamp !== stamp) ui = { stamp, upSel: null, upFav: [], passBonus: null };
   ctx = { el, s, legal, pick };
   const human = !s.players[currentPlayer(s)].isAI;
   el.innerHTML = `
@@ -144,14 +144,23 @@ function renderStatus(s) {
 
 // —— SVG 棋盘 ——
 
-// clickableHexes 可点格 → 动作映射（建民居优先；SH 格目标/初始放置也可点）
+// clickableHexes 可点格 → 该格候选动作（建造优先；升级可有多条：TP 可升 TE 或 SH，
+// TE/SA 还按恩惠板块展开，所以升级单独存列表，由点击逻辑决定直接执行还是让玩家先选）
 function clickableHexes(legal, human) {
-  const m = new Map();
+  const m = new Map(); // hex → {a: 主行动, ups: [升级动作...]}
   if (!human) return m;
+  const slot = (hex) => {
+    if (!m.has(hex)) m.set(hex, { a: null, ups: [] });
+    return m.get(hex);
+  };
   for (const a of legal) {
-    if (a.kind === 'placeDwelling') m.set(a.hex, a);
-    else if (a.kind === 'build' && !m.has(a.hex)) m.set(a.hex, a);
-    else if (a.kind === 'shAction' && a.hex && !m.has(a.hex)) m.set(a.hex, a);
+    if (a.kind === 'placeDwelling') {
+      slot(a.hex).a = a;
+    } else if ((a.kind === 'build' || (a.kind === 'shAction' && a.hex)) && !slot(a.hex).a) {
+      slot(a.hex).a = a;
+    } else if (a.kind === 'upgrade') {
+      slot(a.hex).ups.push(a);
+    }
   }
   return m;
 }
@@ -166,9 +175,36 @@ function hexBlock(s, p, hexId, inRange) {
   return { kind: 'short', why: costLack(p, c) || t('tm.ui.cantAfford'), cost: c };
 }
 
-// hexTitle 悬停提示（坐标 · 地形 · 费用 / 不可建原因）
-function hexTitle(s, a, blk, hexId) {
-  const head = `${hexId} · ${tr(TERRAIN_NAMES[s.hexes[hexId].terrain])}`;
+// upBlock 己方建筑格不能升级的原因：升级链到底 / 目标已达上限 / 资源不足
+function upBlock(s, p, hexId) {
+  const cur = p.buildings[hexId];
+  const targets = chainOf(cur);
+  if (!targets.length) return t('tm.ui.upTerminal');
+  let best = '';
+  let anyAffordable = false;
+  for (const to of targets) {
+    if (Object.values(p.buildings).filter((b) => b === to).length >= BLD_CAP[to]) continue;
+    const miss = costLack(p, upgradeCostOf(s, p, to, hexId));
+    if (!miss) anyAffordable = true;
+    if (!best || miss.length < best.length) best = miss;
+  }
+  // 付得起却没有升级动作，说明卡在上限或缺恩惠板块池——用最接近那条的缺口说明
+  if (anyAffordable) return t('tm.ui.upUnavailable');
+  return best || t('tm.ui.upCap');
+}
+
+// hexTitle 悬停提示（棋面坐标 · 地形 · 费用 / 升级目标 / 不可操作原因）
+function hexTitle(s, a, blk, hexId, ups) {
+  const st = s.hexes[hexId];
+  const head = `${hexLabel(hexId)} · ${tr(TERRAIN_NAMES[st.terrain])}`;
+  if (ups && ups.length) {
+    const p = s.players[currentPlayer(s)];
+    const cur = p.buildings[hexId];
+    const seen = new Map();
+    for (const u of ups) if (!seen.has(u.to)) seen.set(u.to, incStr(upgradeCostOf(s, p, u.to, hexId)));
+    const to = [...seen.entries()].map(([k, c]) => `${tr(BLD_NAME[k])}${paren(c)}`).join(' / ');
+    return `${head} · ${tr(BLD_NAME[cur])} → ${to}`;
+  }
   if (a) {
     const p = s.players[currentPlayer(s)];
     return a.kind === 'build' ? `${head} · ${incStr(buildCost(s, p, hexId))}` : head;
@@ -180,7 +216,8 @@ function hexTitle(s, a, blk, hexId) {
 function renderMap(s, legal, human) {
   const clicks = clickableHexes(legal, human);
   const f = curFaction(s);
-  const p = f ? s.players[currentPlayer(s)] : null;
+  const seat = currentPlayer(s);
+  const p = f ? s.players[seat] : null;
   // 行动阶段当前玩家的所有空陆地块都要可点：能建就建，不能建必须当场说明原因。
   // 只给合法格挂 data-hex 会让「范围内缺资源」和「不相邻」两类格子完全静默，
   // 玩家点了自家民居旁边的格子毫无反应，就会认定「地图上不能建民居」。
@@ -189,26 +226,31 @@ function renderMap(s, legal, human) {
   const hexes = HEXES.map((h) => {
     const c = POS[h.id];
     const st = s.hexes[h.id];
-    const a = clicks.get(h.id);
-    const cand = actPhase && !a && st.owner === null && st.terrain !== 'river';
+    const e = clicks.get(h.id);
+    const a = e ? e.a : null;
+    const ups = e ? e.ups : [];
+    const owned = st.owner !== null;
+    const mine = owned && st.owner === seat;
+    // 己方建筑格走升级分支，空陆地块走建民居分支——两套原因不能混用
+    const cand = actPhase && !a && !ups.length && !owned && st.terrain !== 'river';
     const blk = cand ? hexBlock(s, p, h.id, range.has(h.id)) : null;
+    const vis = hexVis(a, ups, blk, actPhase && owned, mine);
     const dug = st.terrain !== h.terrain ? ' stroke="var(--fg)" stroke-width="1.5"' : '';
     // 空陆地块的铲数角标：当前玩家挖到该地形需几铲（家园/河流不标）
     let dig = '';
-    if (p && f && st.owner === null && st.terrain !== 'river' && st.terrain !== f.terrain) {
+    if (p && f && !owned && st.terrain !== 'river' && st.terrain !== f.terrain) {
       const n = spadesNeeded(p, st.terrain);
       dig = `<text x="${c.x - S + 11}" y="${c.y - S + 16}" class="tm-dig">${n}</text>`;
     }
-    // 范围内但付不起的格子打红色虚线框，让「差一点」的候选一眼可辨
-    const cls = a ? 'tm-hexbtn' : blk ? `tm-hexbtn tm-hex-${blk.kind}` : '';
+    const tip = a || ups.length || blk ? `<title>${esc(hexTitle(s, a, blk, h.id, ups))}</title>` : '';
     return `
-      <g ${cls ? `class="${cls}" data-hex="${h.id}">` : '>'}
+      <g ${vis.cls ? `class="${vis.cls}" data-hex="${h.id}">` : '>'}>
         <polygon points="${hexPoints(c.x, c.y, S)}" class="tm-hex" fill="${TERR_COLOR[st.terrain]}"${dug}></polygon>
-        ${a ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="tm-ring"></polygon>` : ''}
-        ${blk && blk.kind === 'short' ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="tm-ring-short"></polygon>` : ''}
-        ${a || blk ? `<title>${esc(hexTitle(s, a, blk, h.id))}</title>` : ''}
+        ${vis.ring ? `<polygon points="${hexPoints(c.x, c.y, S)}" class="${vis.ring}"></polygon>` : ''}
+        ${tip}
+        ${vis.cls ? `<text x="${c.x}" y="${c.y - S + 11}" class="tm-hexlbl" text-anchor="middle">${hexLabel(h.id)}</text>` : ''}
         ${dig}
-        ${st.owner !== null ? bldMark(s, st, c) : ''}
+        ${owned ? bldMark(s, st, c) : ''}
       </g>`;
   }).join('');
   const bridges = s.bridges.map((br) => {
@@ -218,6 +260,16 @@ function renderMap(s, legal, human) {
       class="tm-bridge" style="stroke:${s.players[br.owner].color}"></line>`;
   }).join('');
   return `<svg viewBox="${VB}" class="tm-svg" role="img">${hexes}${bridges}</svg>`;
+}
+
+// hexVis 单格交互样式：a 可直接执行、ups 可升级、ownedClick 为建筑格（可点但多半要解释），
+// mine 为己方建筑格；blk 为不可建原因（资源不足打红圈）
+function hexVis(a, ups, blk, ownedClick, mine) {
+  if (a) return { cls: 'tm-hexbtn', ring: 'tm-ring' };
+  if (ups.length) return { cls: 'tm-hexbtn tm-hex-up', ring: 'tm-ring-up' };
+  if (ownedClick) return { cls: `tm-hexbtn ${mine ? 'tm-hex-dead' : 'tm-hex-far'}`, ring: null };
+  if (blk) return { cls: `tm-hexbtn tm-hex-${blk.kind}`, ring: blk.kind === 'short' ? 'tm-ring-short' : null };
+  return { cls: '', ring: null };
 }
 
 // bldMark 建筑标记：玩家色圆 + 类别图标
@@ -392,9 +444,11 @@ function renderAction(s, legal, human) {
   return `<div class="tm-action" data-bg-focus>${prompt}${ui.blockMsg ? blockChip(ui.blockMsg) : ''}${stageHints(s, legal, ph)}${body}</div>`;
 }
 
-// blockChip 点击不可建格后的原因条（下一次有效操作或重绘即清除）
+// blockChip 点击棋盘后的即时反馈条：ok 为选中提示，否则是不可操作原因
 function blockChip(msg) {
-  return renderActionHints([noHint('🏠', msg.label, msg.why)]);
+  return renderActionHints([msg.ok
+    ? okHint(msg.icon || '⬆️', msg.label, 0, msg.why)
+    : noHint(msg.icon || '🏠', msg.label, msg.why)]);
 }
 
 // stageHints 阶段级提示：选牌系/放初始民居/领奖励板块/结算选择的选项数与内容
@@ -452,7 +506,7 @@ function placePanel(s, legal) {
   if (!places.length) return '';
   const btns = places.map((a) => {
     const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
-    return actBtn(a, `🏠 ${a.hex} · ${terr}`);
+    return actBtn(a, `🏠 ${hexLabel(a.hex)} · ${terr}`);
   }).join('');
   return `<span class="tm-label">${t('tm.ui.placeDwelling')}</span><div class="tm-btns">${btns}</div>`;
 }
@@ -468,35 +522,79 @@ function bonusPanel(legal) {
   return `<div class="tm-btns">${btns}</div>`;
 }
 
-// upgradePanel 升级：按（格,目标）分组；TE/SA 展开恩惠板块选择
+// upgradePanel 升级：每格一行（棋面坐标 + 当前建筑 → 可选目标），点开展开目标；
+// 目标是 TE/SA 时再展开恩惠板块选择。棋盘上点己方建筑同样会选中该格。
 function upgradePanel(s, legal) {
-  const groups = new Map();
+  const byHex = new Map();
   for (const a of legal) {
     if (a.kind !== 'upgrade') continue;
-    const key = `${a.hex}|${a.to}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(a);
+    if (!byHex.has(a.hex)) byHex.set(a.hex, []);
+    byHex.get(a.hex).push(a);
   }
-  if (!groups.size) return '';
-  let html = '';
-  for (const [key, acts] of groups) {
-    const [hex, to] = key.split('|');
-    const p = s.players[s.phase.cur];
-    // 费用必须走引擎的 upgradeCostOf：TP 无他派系邻接时额外加收一次 TP 费
-    const cost = incStr(upgradeCostOf(s, p, to, hex));
-    const open = ui.upSel === key;
-    html += `<button class="btn-soft tm-upbtn ${open ? 'tm-usel' : ''}" data-up="${key}">
-      ${hex} → ${tr(BLD_NAME[to])}${paren(cost)}</button>`;
-    const needFavor = to === 'TE' || to === 'SA';
-    if (open && needFavor) {
-      html += `<div class="tm-favors"><span class="muted">${t('tm.ui.favorHint')}</span>${acts.map((a) =>
-        `<button class="btn-soft" data-act='${JSON.stringify(a)}'>${a.favor.map((fid) =>
-          favChip(FAVOR_TILES.find((x) => x.id === fid))).join('+')}</button>`).join('')}</div>`;
-    } else if (open) {
-      html += `<div class="tm-btns">${actBtn(acts[0], `${t('tm.ui.upgrade')} ✅`)}</div>`;
-    }
+  if (!byHex.size) return '';
+  const rows = [...byHex.entries()].map(([hex, acts]) => upgradeRow(s, hex, acts)).join('');
+  return `<span class="tm-label">${t('tm.ui.upgrade')}</span><div class="tm-btns">${rows}</div>`;
+}
+
+// upgradeRow 单格升级行：未展开时显示目标摘要，展开后逐个目标出按钮；
+// 目标是 TE/SA 时换用恩惠板块选择器（组合数随恩惠池平方增长，不能逐组合列按钮）
+function upgradeRow(s, hex, acts) {
+  const p = s.players[s.phase.cur];
+  const cur = p.buildings[hex];
+  const targets = uniqBy(acts, (a) => a.to);
+  const summary = targets.map((a) => tr(BLD_NAME[a.to])).join(' / ');
+  const open = ui.upSel === hex;
+  const head = `<button class="btn-soft tm-upbtn ${open ? 'tm-usel' : ''}" data-up="${hex}">
+    ${hexLabel(hex)} · ${tr(BLD_NAME[cur])} → ${summary}</button>`;
+  if (!open) return head;
+  const picks = targets.map((a) => (a.favor ? favorPicker(s, hex, a, acts) : plainPick(s, hex, a, acts)));
+  return `${head}${picks.join('')}`;
+}
+
+// plainPick 无恩惠目标的直接升级按钮（民居→交易站、交易站→要塞）
+function plainPick(s, hex, target, acts) {
+  const p = s.players[s.phase.cur];
+  const cost = incStr(upgradeCostOf(s, p, target.to, hex));
+  const a = acts.find((x) => x.to === target.to);
+  return `<div class="tm-btns"><button class="btn-soft" data-act='${JSON.stringify(a)}'>${
+    tr(BLD_NAME[target.to])}${paren(cost)} ✅</button></div>`;
+}
+
+// favorPicker 恩惠板块选择器：池子里每张板块一个芯片，选满 needed 张即提交。
+// needed 由动作的 favor 数组长度决定（混沌法师神殿/圣所需要 2 张）
+function favorPicker(s, hex, target, acts) {
+  const p = s.players[s.phase.cur];
+  const cost = incStr(upgradeCostOf(s, p, target.to, hex));
+  const needed = target.favor.length;
+  const pool = uniqBy(acts.filter((x) => x.to === target.to).flatMap((x) => x.favor), (id) => id);
+  // 渲染不改状态：已选里不在此池的（面板切格后残留）直接忽略
+  const chosen = (ui.upFav || []).filter((id) => pool.includes(id));
+  const chips = pool.map((fid) => {
+    const tile = FAVOR_TILES.find((t) => t.id === fid);
+    const on = chosen.includes(fid);
+    return `<button class="btn-soft tm-favbtn ${on ? 'tm-usel' : ''}" data-fav="${fid}">${favChip(tile)}</button>`;
+  }).join('');
+  const hint = `${tr(BLD_NAME[target.to])}${paren(cost)} ${t('tm.ui.favorHint')}`;
+  return `<div class="tm-favors"><span class="muted">${hint}${needed > 1 ? ` (${chosen.length}/${needed})` : ''}</span>${chips}</div>`;
+}
+
+// favorAct 已选恩惠集合 → 对应合法动作（顺序无关）
+function favorAct(acts, hex, to, chosen) {
+  return acts.find((x) => x.hex === hex && x.to === to && x.favor
+    && x.favor.length === chosen.length && x.favor.every((id) => chosen.includes(id))) || null;
+}
+
+// uniqBy 按 key 去重保序
+function uniqBy(list, keyOf) {
+  const seen = new Set();
+  const out = [];
+  for (const x of list) {
+    const k = keyOf(x);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(x);
   }
-  return `<span class="tm-label">${t('tm.ui.upgrade')}</span><div class="tm-btns">${html}</div>`;
+  return out;
 }
 
 // priestPanel 发祭司上轨（每轨空槽任选）
@@ -527,14 +625,14 @@ function shPanel(s, legal) {
       actBtn(a, `${CULT_ICON[a.track]} ${tr(CULT_NAME[a.track])} +2`)).join('')}</div>`;
   }
   if (id === 'ACTE') {
-    return `${head}<div class="tm-btns">${acts.map((a) => actBtn(a, `🌉${a.a}↔${a.b}`)).join('')}</div>`;
+    return `${head}<div class="tm-btns">${acts.map((a) => actBtn(a, `🌉${hexLabel(a.a)}↔${hexLabel(a.b)}`)).join('')}</div>`;
   }
   if (id === 'ACTW' || id === 'ACTN' || id === 'ACTS') {
     // 目标格既有高亮棋盘可点，也在这里列成按钮（否则玩家在操作区看不到可执行项）
     return `${head}<div class="tm-btns">${acts.map((a) => {
-      if (id === 'ACTS') return actBtn(a, `🏠→🏪 ${a.hex}`);
+      if (id === 'ACTS') return actBtn(a, `🏠→🏪 ${hexLabel(a.hex)}`);
       const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
-      return actBtn(a, `🏠 ${a.hex} · ${terr}`);
+      return actBtn(a, `🏠 ${hexLabel(a.hex)} · ${terr}`);
     }).join('')}</div>`;
   }
   // ACTG 巨人 +2 铲 / ACTC 混沌 +2 行动
@@ -598,7 +696,7 @@ function miscPanel(s, legal) {
     const btns = powers.map((a) => {
       const pa = POWER_ACTIONS[a.slot];
       const label = pa.id === 'ACT1'
-        ? `⚡${pa.power}→🌉${a.a}↔${a.b}`
+        ? `⚡${pa.power}→🌉${hexLabel(a.a)}↔${hexLabel(a.b)}`
         : `⚡${pa.power}→${incStr(pa.gain)}`;
       return actBtn(a, label);
     }).join('');
@@ -637,7 +735,7 @@ function miscPanel(s, legal) {
   const bridges = legal.filter((a) => a.kind === 'bridge');
   if (bridges.length) {
     parts.push(`<span class="tm-label">${t('tm.ui.bridge')}</span><div class="tm-btns">${
-      bridges.map((a) => actBtn(a, `🌉${a.a}↔${a.b}`)).join('')}</div>`);
+      bridges.map((a) => actBtn(a, `🌉${hexLabel(a.a)}↔${hexLabel(a.b)}`)).join('')}</div>`);
   }
   return parts.join('');
 }
@@ -675,7 +773,7 @@ function buildPanel(s, legal) {
       const c = buildCost(s, p, a.hex);
       const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
       const tp = c.teleport ? ` 🌀${t('tm.ui.teleport')}` : '';
-      return actBtn(a, `🏠 ${a.hex} · ${terr}${tp}${paren(incStr(c))}`);
+      return actBtn(a, `🏠 ${hexLabel(a.hex)} · ${terr}${tp}${paren(incStr(c))}`);
     }).join('');
     return `<span class="tm-label">${t('tm.ui.build')}</span><div class="tm-btns">${btns}</div>`;
   }
@@ -721,7 +819,9 @@ function actHints(s, legal) {
   const p = s.players[s.phase.cur];
   const f = curFaction(s);
   const n = (k) => legal.filter((a) => a.kind === k).length;
-  const out = [buildActHint(s, p, n('build')), upgradeHint(legal, n('upgrade'))];
+  // 升级按格计数：一个交易站可能同时可升神殿和要塞，动作数会重复计同一格
+  const upHexes = new Set(legal.filter((a) => a.kind === 'upgrade').map((a) => a.hex)).size;
+  const out = [buildActHint(s, p, n('build')), upgradeHint(s, upHexes)];
   if (n('priestSend')) out.push(okHint('🙏', t('tm.ui.priestSend'), n('priestSend')));
   if (n('shAction')) out.push(okHint('🏰', t('tm.ui.shAction'), n('shAction')));
   if (f && f.ship) out.push(shipHint(s, p, f, legal.find((a) => a.kind === 'shipping')));
@@ -750,11 +850,32 @@ function buildActHint(s, p, count) {
   return noHint('🏠', label, best || reasonNoSpot());
 }
 
-// upgradeHint 升级：可能因上限/资源不足为空
-function upgradeHint(legal, count) {
+// upgradeHint 升级：可升级数量，或不可升级的具体原因
+function upgradeHint(s, count) {
   const label = t('tm.ui.upgrade');
   if (count > 0) return okHint('⬆️', label, count);
-  return noHint('⬆️', label, t('tm.ui.cantAfford'));
+  return noHint('⬆️', label, upgradeFailReason(s));
+}
+
+// upgradeFailReason 无升级动作时的原因：建筑都到链末端 / 目标达上限 / 缺恩惠板块 / 资源不足
+function upgradeFailReason(s) {
+  const p = s.players[s.phase.cur];
+  const targets = [];
+  for (const [hex, cur] of Object.entries(p.buildings)) {
+    for (const to of chainOf(cur)) targets.push({ hex, to });
+  }
+  if (!targets.length) return t('tm.ui.upTerminal');
+  let capOnly = true;
+  let best = '';
+  for (const { hex, to } of targets) {
+    if (Object.values(p.buildings).filter((b) => b === to).length >= BLD_CAP[to]) continue;
+    capOnly = false;
+    const miss = costLack(p, upgradeCostOf(s, p, to, hex));
+    if (!miss) return t('tm.ui.upUnavailable');
+    if (!best || miss.length < best.length) best = miss;
+  }
+  if (capOnly) return t('tm.ui.upCap');
+  return best || t('tm.ui.upUnavailable');
 }
 
 // shipHint 船运：已满级 / 缺资源 / 可升级
@@ -809,10 +930,72 @@ function resolvePanel(s, legal) {
 
 // —— 事件绑定 ——
 
-// hexAction 地图点击 → 对应合法动作（建民居优先于 SH 格动作）
+// hexAction 地图点击 → 可直接执行的合法动作（建民居优先于 SH 格动作）
 function hexAction(legal, hex) {
   return legal.find((a) => (a.kind === 'placeDwelling' || a.kind === 'build'
     || (a.kind === 'shAction' && a.hex)) && a.hex === hex);
+}
+
+// upgradeClick 己方建筑格点击：唯一目标且无需选恩惠 → 直接升级；
+// 否则选中该格，让操作区的升级面板展开全部目标（TP 可升 TE/SH，TE/SA 需选恩惠）供玩家取一
+function upgradeClick(ups) {
+  if (ups.length === 1 && !ups[0].favor) return { act: ups[0] };
+  return { sel: ups[0].hex };
+}
+
+// onFavorClick 恩惠芯片点击：切换选中；选满 needed 张立即提交对应升级动作
+function onFavorClick(s, legal, pick, favId) {
+  const hex = ui.upSel;
+  if (!hex) return;
+  const acts = legal.filter((x) => x.kind === 'upgrade' && x.hex === hex && x.favor);
+  if (!acts.length) return;
+  const needed = acts[0].favor.length;
+  const cur = ui.upFav || [];
+  const next = cur.includes(favId) ? cur.filter((x) => x !== favId) : [...cur, favId].slice(-needed);
+  const act = needed === next.length ? favorAct(acts, hex, acts[0].to, next) : null;
+  if (act) {
+    pick(act);
+    return;
+  }
+  ui.upFav = next;
+  renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
+}
+
+// onHexClick 棋盘单格点击分发：可建/可放置 → 直接执行；己方建筑 → 升级；
+// 其余空格 → 把「为什么不能在这里建」摆到操作区，绝不静默
+function onHexClick(s, legal, pick, hex) {
+  const a = hexAction(legal, hex);
+  if (a) {
+    pick(a);
+    return;
+  }
+  const p = s.players[currentPlayer(s)];
+  const f = factionById(p.faction);
+  if (!f || s.phase.kind !== 'act') return;
+  const ups = legal.filter((x) => x.kind === 'upgrade' && x.hex === hex);
+  if (ups.length) {
+    const r = upgradeClick(ups);
+    if (r.act) {
+      pick(r.act);
+      return;
+    }
+    // 多个升级目标（TP 可升 TE/SH，TE/SA 还要挑恩惠）：选中该格并在升级面板展开
+    ui.upSel = r.sel;
+    ui.blockMsg = { ok: true, icon: '⬆️', label: hexLabel(r.sel), why: t('tm.ui.upPickTarget') };
+    renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
+    return;
+  }
+  if (s.hexes[hex].owner !== null) {
+    // 自己的建筑不能升级 / 别派系的建筑：说明原因，别让点击变成死键
+    const mine = s.hexes[hex].owner === p.seat;
+    const why = mine ? upBlock(s, p, hex) : t('tm.ui.upForeign');
+    ui.blockMsg = { icon: mine ? '⬆️' : '🚫', label: `${hexLabel(hex)} · ${tr(BLD_NAME[s.hexes[hex].bld] || '')}`, why };
+    renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
+    return;
+  }
+  const blk = hexBlock(s, p, hex, buildRangeSet(s, p).has(hex));
+  ui.blockMsg = { icon: '🏠', label: `${hexLabel(hex)} · ${tr(BLD_NAME.D)}`, why: blk.why };
+  renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
 }
 
 function bind(el, s, legal, pick, human) {
@@ -820,18 +1003,7 @@ function bind(el, s, legal, pick, human) {
     $b.onclick = () => { if (human) pick(JSON.parse($b.dataset.act)); };
   });
   el.querySelectorAll('[data-hex]').forEach(($g) => {
-    $g.onclick = () => {
-      if (!human) return;
-      const a = hexAction(legal, $g.dataset.hex);
-      if (a) { pick(a); return; }
-      // 点了不能建的格子：把原因直接摆到操作区，而不是静默忽略
-      const p = s.players[currentPlayer(s)];
-      const f = factionById(p.faction);
-      if (!f || s.phase.kind !== 'act') return;
-      const blk = hexBlock(s, p, $g.dataset.hex, buildRangeSet(s, p).has($g.dataset.hex));
-      ui.blockMsg = { label: tr(BLD_NAME.D), why: `${$g.dataset.hex} · ${blk.why}` };
-      renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
-    };
+    $g.onclick = () => { if (human) onHexClick(s, legal, pick, $g.dataset.hex); };
   });
   el.querySelectorAll('[data-fac]').forEach(($b) => {
     $b.onclick = () => { if (human) pick({ kind: 'faction', faction: $b.dataset.fac }); };
@@ -839,8 +1011,12 @@ function bind(el, s, legal, pick, human) {
   el.querySelectorAll('[data-up]').forEach(($b) => {
     $b.onclick = () => {
       ui.upSel = ui.upSel === $b.dataset.up ? null : $b.dataset.up;
+      ui.upFav = [];
       renderBoard(ctx.el, ctx.s, ctx.legal, ctx.pick);
     };
+  });
+  el.querySelectorAll('[data-fav]').forEach(($b) => {
+    $b.onclick = () => { if (human) onFavorClick(s, legal, pick, $b.dataset.fav); };
   });
   el.querySelectorAll('[data-pickb]').forEach(($b) => {
     $b.onclick = () => {
