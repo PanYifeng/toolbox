@@ -1336,6 +1336,14 @@ pre {
 .tm-planrow { font-size: 12.5px; display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
 .tm-plandetail { font-size: 11.5px; color: var(--muted); }
 
+/* 实时分数读数条（我的分数 / 本轮已得 / 本轮计分还能拿 / 本轮板块收入） */
+.tm-scoreband { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 13px; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 10px; background: var(--bg-soft); padding: 7px 12px; }
+.tm-sb-me { display: inline-flex; align-items: baseline; gap: 5px; font-size: 15px; }
+.tm-sb-gain { font-style: normal; font-size: 12px; font-weight: 700; color: #2e8b3d; }
+.tm-sb-item { display: inline-flex; align-items: baseline; gap: 5px; }
+.tm-sb-detail { font-style: normal; font-size: 11.5px; color: var(--muted); }
+.tm-sb-wait { opacity: 0.72; border-left-color: var(--muted); }
+
 /* 选派系卡：派色描边 + 挖铲行 */
 .tm-fcard { border-color: color-mix(in srgb, var(--fc) 55%, var(--border)); }
 .tm-fcard:hover { border-color: var(--fc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--fc) 35%, transparent); }

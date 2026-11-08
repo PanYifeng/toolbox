@@ -610,6 +610,9 @@ function startRound(s, r) {
     p.shUsed = {};
     p.tileUsed = {};
     p.spades = 0; // 官方：轮末未用铲子不保留（收入 SPADE 亦当轮使用）
+    // 本轮起点 VP 基线（收入发放之后取值）：渲染层用 vp - vpAtRoundStart
+    // 实时显示「本轮已得」，无需在每个 p.vp += 处单独记账
+    p.vpAtRoundStart = p.vp;
   }
   s.powerActions = POWER_ACTIONS.map(() => null);
   // 顺位：起始玩家（首个过牌者）优先，其余保持座次（factions_in_turn_order）
@@ -829,6 +832,106 @@ function passVpOf(s, p) {
   return vp;
 }
 
+// —— 本轮收益实时读数（计分板块「现在就还能拿多少」）——
+// 与 projectedVp 的区别：projectedVp 是终局投影（含名次分），这里只回答
+// 「本轮计分板块此刻还能给我多少分 / 多少资源」，全部来自当前合法动作，不做多步推演。
+
+// bldOfAction 动作对应的建筑类型（build 模式计分板块用；非计分动作返回 null）。
+// 注意：只有真正写 p.buildings 的分支才算——女巫 ACTW / 游牧 ACTN 的免费民居不触发计分
+function bldOfAction(a) {
+  if (a.kind === 'build' || a.kind === 'placeDwelling') return 'D';
+  if (a.kind === 'upgrade') return a.to;
+  if (a.kind === 'shAction' && a.id === 'ACTS') return 'TP';
+  return null;
+}
+
+// spadesOfAction 动作当场新挖的铲数（gain 模式计分板块用；
+// 存货铲已在入库存时计过分，不重复计）
+function spadesOfAction(s, p, a) {
+  if (a.kind === 'build') {
+    const need = spadesNeeded(p, s.hexes[a.hex].terrain);
+    return Math.max(0, need - Math.min(p.spades, need));
+  }
+  if (a.kind === 'tileAction' && a.id === 'BON1') return 1;
+  if (a.kind === 'darklingDig') return 1;
+  if (a.kind === 'powerAction') return (POWER_ACTIONS[a.slot].gain.spades || 0);
+  if (a.kind === 'shAction' && a.id === 'ACTG') return 2;
+  return 0;
+}
+
+// roundVpFor 该动作此刻能拿到的 VP 合计（本轮计分板块 + 已持恩惠板块的建造加成）
+export function roundVpFor(s, p, a) {
+  const bld = bldOfAction(a);
+  // 开局放民居不计分（那时还没有计分板块，也无恩惠板块）
+  if (!bld || a.kind === 'placeDwelling') return 0;
+  const tile = currentScoreTile(s);
+  let vp = 0;
+  if (tile && tile.vpMode === 'build') vp += tile.vp[bld] || 0;
+  if (tile && tile.vpMode === 'gain' && tile.vp.spade) {
+    vp += (tile.vp.spade || 0) * spadesOfAction(s, p, a);
+  }
+  // 恩惠板块 FAV10（每 TP +3VP）/ FAV11（每民居 +2VP）
+  for (const fid of p.favor) {
+    const t = FAVOR_TILES.find((x) => x.id === fid);
+    if (t && t.vp && t.vp[bld]) vp += t.vp[bld];
+  }
+  return vp;
+}
+
+// roundTileIncome 本轮计分板块给本人的收入（下轮开头结算）= income × int(cult/req)；
+// need = 还差几格邪教进度到下一份（轨道封顶则 null）
+export function roundTileIncome(s, p) {
+  const tile = currentScoreTile(s);
+  if (!tile) return null;
+  const cult = p.cult[tile.cult];
+  const mul = Math.floor(cult / tile.req);
+  const inc = {};
+  for (const [k, v] of Object.entries(tile.income)) inc[k] = v * mul;
+  const cap = p.cultMax[tile.cult] || CULT_TOP;
+  const nextAt = (mul + 1) * tile.req;
+  return {
+    tile, cult, req: tile.req, mul, inc,
+    need: cult >= cap || nextAt > cap ? null : nextAt - cult,
+  };
+}
+
+// roundPot 本轮计分板块的实时存量：还能拿多少 VP、还能拿几份收入。
+// legal 传当前玩家的合法动作，全部来自引擎枚举，不做多步推演（不做「再建两座就到」的猜测）。
+export function roundPot(s, seat, legal) {
+  const p = s.players[seat];
+  const tile = currentScoreTile(s);
+  const out = {
+    tile,
+    already: p.vp - (p.vpAtRoundStart !== undefined ? p.vpAtRoundStart : p.vp),
+    build: [], // 按建筑类型：[{bld, per, hexes:[{hex,to}], total}]
+    gain: null, // {kind, per, count, total}
+    income: roundTileIncome(s, p),
+  };
+  if (!tile) return out;
+  if (tile.vpMode === 'build') {
+    // 同一格同一目标只算一次：TE/SA 按恩惠组合展开成多条动作，重复计数会虚报
+    for (const bld of Object.keys(tile.vp)) {
+      const seen = new Map();
+      for (const a of legal) {
+        if (bldOfAction(a) !== bld) continue;
+        if (a.kind === 'placeDwelling') continue; // 开局放置民居不计分
+        seen.set(`${a.hex}:${a.to || 'D'}`, { hex: a.hex, to: bld });
+      }
+      const hexes = [...seen.values()];
+      out.build.push({ bld, per: tile.vp[bld], hexes, total: hexes.length * tile.vp[bld] });
+    }
+    return out;
+  }
+  if (tile.vp.spade) {
+    let count = 0;
+    for (const a of legal) count += spadesOfAction(s, p, a);
+    out.gain = { kind: 'spade', per: tile.vp.spade, count, total: count * tile.vp.spade };
+  } else if (tile.vp.town) {
+    out.gain = { kind: 'town', per: tile.vp.town, count: 0, total: 0 };
+  }
+  return out;
+}
+
 // projectedVp 规划提示（scoring.pm faction_vps 投影）：
 // 当前 VP + 过牌 VP（未过牌时）+ 终局名次分投影（按当前排名并列均摊）
 // + 资源折算分
@@ -873,6 +976,7 @@ function newPlayer(seat, info) {
     priestsOnCult: { fire: 0, water: 0, earth: 0, air: 0 },
     favor: [], bonus: null, passed: false, towns: [],
     teleportUsed: false, bonusActions: 0, shUsed: {}, tileUsed: {}, wToPriest: 0,
+    vpAtRoundStart: 20,
   };
 }
 

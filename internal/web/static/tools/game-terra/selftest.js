@@ -733,6 +733,76 @@ section('回合收入与过牌');
   }
 }
 
+// ==== 14b. 实时读数（本轮计分板块存量 / 本轮已得 / 板块收入倍数） ====
+section('实时读数');
+{
+  const tileOf = (id) => T.ROUND_TILES.find((t) => t.id === id);
+  // 本轮起点基线：mkGame 进入第 1 轮后基线必须等于当前 VP
+  const s = mkGame(['halflings', 'witches']);
+  ok(s.players.every((p) => p.vpAtRoundStart === p.vp),
+    `第 1 轮起点基线应等于当前 VP，实际 ${s.players.map((p) => `${p.vpAtRoundStart}/${p.vp}`).join(',')}`);
+
+  // 建造类计分板块：本轮还能拿 = 可建处数 × 每处 VP（全部来自合法动作枚举）
+  s.roundTiles[0] = tileOf('SCORE3'); // D +2VP, cult water req 4, income priests 1
+  const seat = E.currentPlayer(s);
+  const legal = E.legalActions(s);
+  const pot = E.roundPot(s, seat, legal);
+  const builds = legal.filter((a) => a.kind === 'build' && s.hexes[a.hex].terrain !== 'river');
+  const dBucket = pot.build.find((b) => b.bld === 'D');
+  ok(!!dBucket, 'SCORE3 的存量应含民居分组');
+  ok(dBucket.per === 2, `SCORE3 民居每处应 2VP，实际 ${dBucket.per}`);
+  ok(dBucket.hexes.length === builds.length,
+    `民居可建处数应等于合法 build 动作数 ${builds.length}，实际 ${dBucket.hexes.length}`);
+  ok(dBucket.total === dBucket.hexes.length * 2,
+    `民居存量总分应为处数×2，实际 ${dBucket.total}`);
+
+  // 恩惠组合去重：同格同目标的 12 条 TE 动作只能算 1 处
+  s.roundTiles[0] = tileOf('SCORE4'); // SH +5 / SA +5
+  const dup = E.roundPot(s, seat, [
+    { kind: 'upgrade', hex: '0,0', to: 'SA', favor: ['FAV1'] },
+    { kind: 'upgrade', hex: '0,0', to: 'SA', favor: ['FAV2'] },
+    { kind: 'upgrade', hex: '1,0', to: 'SA', favor: ['FAV1'] },
+  ]);
+  const sa = dup.build.find((b) => b.bld === 'SA');
+  ok(sa.hexes.length === 2, `同格多恩惠组合应只算 1 处，实际 ${sa.hexes.length}`);
+  ok(sa.total === 10, `2 处圣所应 10VP，实际 ${sa.total}`);
+
+  // 开局放民居不计分（placeDwelling 不算建造 VP）
+  const pl = E.roundPot(s, seat, [{ kind: 'placeDwelling', hex: '2,0' }]);
+  ok(pl.build.every((b) => b.total === 0), '开局放民居不应计入本轮计分存量');
+
+  // 资源类计分板块：SCORE1 铲 +2VP，按「当场新挖的铲」计数（存货铲已计过分）
+  s.roundTiles[0] = tileOf('SCORE1');
+  const sp = E.roundPot(s, seat, [
+    { kind: 'powerAction', slot: 5 },  // ACT6 = +2 铲
+    { kind: 'tileAction', id: 'BON1' }, // +1 铲
+  ]);
+  ok(sp.gain && sp.gain.count === 3, `ACT6+BON1 应计 3 铲，实际 ${sp.gain && sp.gain.count}`);
+  ok(sp.gain.total === 6, `3 铲 ×2VP 应为 6，实际 ${sp.gain && sp.gain.total}`);
+
+  // 板块收入倍数：income × int(cult/req)，并给出下一份还差几格
+  s.roundTiles[0] = tileOf('SCORE3'); // cult water req 4, income priests 1
+  s.players[seat].cult.water = 9;
+  const inc9 = E.roundTileIncome(s, s.players[seat]);
+  ok(inc9.mul === 2, `water=9 req=4 应 2 倍，实际 ${inc9.mul}`);
+  ok(inc9.inc.priests === 2, `2 倍应得 2 祭司，实际 ${inc9.inc.priests}`);
+  ok(inc9.need === null, '轨道封顶后不应再给出缺口');
+  s.players[seat].cult.water = 3;
+  const inc3 = E.roundTileIncome(s, s.players[seat]);
+  ok(inc3.mul === 0, `water=3 req=4 应 0 倍，实际 ${inc3.mul}`);
+  ok(inc3.need === 1, `water=3 距下一份应差 1 格，实际 ${inc3.need}`);
+
+  // 本轮已得：起点基线之差（convert 到 VP 后应 +1）
+  const g = mkGame(['halflings', 'witches']);
+  const gs = E.currentPlayer(g);
+  g.players[gs].coins = 30;
+  const vpBefore = g.players[gs].vp;
+  const g2 = E.apply(g, { kind: 'convert', from: 'coins', to: 'vp', n: 2 });
+  ok(g2.players[gs].vp === vpBefore + 2, 'convert 币→VP 应 +2');
+  const gp = E.roundPot(g2, gs, E.legalActions(g2));
+  ok(gp.already === 2, `本轮已得应为 2，实际 ${gp.already}`);
+}
+
 // ==== 15. 终局计分 ====
 section('终局计分');
 {

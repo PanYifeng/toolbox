@@ -13,7 +13,7 @@ import {
 } from './tables.js';
 import {
   buildCost, buildRangeSet, upgradeCostOf, spadesNeeded, incomeOf, projectedVp, currentPlayer,
-  chainOf, BLD_NAME, CULT_NAME,
+  chainOf, roundVpFor, roundTileIncome, roundPot, BLD_NAME, CULT_NAME,
 } from './engine.js';
 
 // 地形配色：高区分度七色（色相间隔拉大 + 深浅交错，官方轮环序）
@@ -100,6 +100,7 @@ export function renderBoard(el, s, legal, pick) {
   el.innerHTML = `
     <div class="tm-board">
       ${renderStatus(s)}
+      ${renderScoreBand(s, legal)}
       <div class="tm-main">
         <div class="tm-col">
           ${renderAction(s, legal, human)}
@@ -139,6 +140,86 @@ function renderStatus(s) {
         const p = s.players[seat];
         return `<i class="tm-seatchip ${i === 0 ? 'tm-first' : ''}" style="--pc:${p.color}">${esc(p.name)}</i>`;
       }).join('')}</span>
+    </div>`;
+}
+
+// —— 实时分数与本轮收益读数 ——
+// 玩家最常问的三个数：我现在多少分 / 本轮已经拿到多少 / 本轮计分板块我还能再拿多少。
+// 第三个全部由当前合法动作枚举得出（不做多步推演），所以不会给出"再建两座就能拿"这种误导。
+
+// vpGainOf 本轮已得 VP（本轮起点基线之差，收入发放后取基线）
+function vpGainOf(p) {
+  return p.vp - (p.vpAtRoundStart !== undefined ? p.vpAtRoundStart : p.vp);
+}
+
+// bandSeat 读数条展示哪个座位：轮到自己就看自己；AI 回合时继续显示「我这个真人」的读数，
+// 否则读数条会在 AI 行动期间整条消失，布局上下跳动且无法趁机规划。
+function bandSeat(s) {
+  const cur = currentPlayer(s);
+  if (!s.players[cur].isAI) return cur;
+  const mine = s.players.find((p) => !p.isAI);
+  return mine ? mine.seat : cur;
+}
+
+// zeroReason 「本轮还能拿 0」的原因（避免玩家以为是 bug）：
+// 计分板块要求的目标建筑已达上限 / 资源不够 / 本轮已无升级空间
+function zeroReason(s, p, pot, legal) {
+  const tile = pot.tile;
+  if (!tile) return '';
+  if (tile.vpMode === 'gain') {
+    return tile.vp.town
+      ? t('tm.ui.rpNoTown')
+      : `${t('tm.ui.rpNoSpade')}${costLack(p, { workers: SPADE_COST[p.digLevel || 0] * 2 })}`.trim();
+  }
+  const targets = Object.keys(tile.vp).filter((b) => b !== 'D');
+  for (const bld of targets) {
+    if (Object.values(p.buildings).filter((b) => b === bld).length >= BLD_CAP[bld]) return t('tm.ui.upCap');
+  }
+  if (legal.some((a) => a.kind === 'build' || a.kind === 'upgrade' || (a.kind === 'shAction' && a.to))) {
+    return t('tm.ui.rpNoTarget');
+  }
+  return '';
+}
+
+// renderScoreBand 顶部读数条：我的分数 / 本轮已得 / 本轮计分还能拿 / 本轮板块收入
+function renderScoreBand(s, legal) {
+  if (s.phase.kind !== 'act' || s.round < 1) return '';
+  const seat = bandSeat(s);
+  const p = s.players[seat];
+  if (!p || !p.faction) return '';
+  // 非当前玩家的合法动作集属于别人，不能用来估算「我还能拿多少」——留给当前玩家自己看
+  const mine = seat === currentPlayer(s);
+  const pool = mine ? legal : legal.filter(() => false);
+  const pot = roundPot(s, seat, pool);
+  const gained = vpGainOf(p);
+  // 本轮还能拿的 VP：建造类按「可建处数 × 每处得分」；资源类按当前动作可产出的份数
+  let canGet = 0;
+  if (pot.build.length) canGet = pot.build.reduce((a, b) => a + b.total, 0);
+  else if (pot.gain) canGet = pot.gain.total;
+  const detail = pot.build.filter((b) => b.hexes.length)
+    .map((b) => `${tr(BLD_NAME[b.bld])}×${b.hexes.length}${paren(`+${b.total}`)}`).join(' ');
+  const gainDetail = pot.gain && pot.gain.count
+    ? `${t('tm.ui.rpSpade')}×${pot.gain.count}${paren(`+${pot.gain.total}`)}` : '';
+  const zero = mine && !canGet ? zeroReason(s, p, pot, legal) : '';
+  const pending = [detail, gainDetail, zero].filter(Boolean).join(' ');
+  // 板块收入文案：倍数 0 时不显示「—」，改为「再 N 格 → 得 X」（否则玩家不知道 0 收入从何而来）
+  const inc = pot.income;
+  const incTxt = !inc ? '—'
+    : inc.mul > 0
+      ? `${incStr(inc.inc)}${inc.mul > 1 ? ` ×${inc.mul}` : ''}`
+      : inc.need !== null && inc.need > 0
+        ? `0${paren(`${t('tm.ui.rpNeedCult')}${inc.need}${CULT_ICON[inc.tile.cult]} → ${incStr(inc.tile.income)}`)}`
+        : '0';
+  // 别人回合时不显示「本轮还能拿」——合法动作集不属于我，估出来的数没有意义
+  const canGetHtml = mine
+    ? `<span class="tm-sb-item"><span class="muted">${t('tm.ui.rpCanGet')}</span>
+        <b>${canGet ? `+${canGet}` : '0'}</b>${pending ? `<i class="tm-sb-detail">${pending}</i>` : ''}</span>`
+    : '';
+  return `
+    <div class="tm-scoreband ${mine ? '' : 'tm-sb-wait'}" title="${t(mine ? 'tm.ui.rpTip' : 'tm.ui.rpTipWait')}">
+      <span class="tm-sb-me">${esc(p.name)} <b>🏆${p.vp}</b>${gained ? `<i class="tm-sb-gain">+${gained}</i>` : ''}</span>
+      ${canGetHtml}
+      <span class="tm-sb-item"><span class="muted">${t('tm.ui.rpIncome')}</span><b>${incTxt}</b></span>
     </div>`;
 }
 
@@ -542,7 +623,7 @@ function upgradeRow(s, hex, acts) {
   const p = s.players[s.phase.cur];
   const cur = p.buildings[hex];
   const targets = uniqBy(acts, (a) => a.to);
-  const summary = targets.map((a) => tr(BLD_NAME[a.to])).join(' / ');
+  const summary = targets.map((a) => `${tr(BLD_NAME[a.to])}${vpTag(s, p, a)}`).join(' / ');
   const open = ui.upSel === hex;
   const head = `<button class="btn-soft tm-upbtn ${open ? 'tm-usel' : ''}" data-up="${hex}">
     ${hexLabel(hex)} · ${tr(BLD_NAME[cur])} → ${summary}</button>`;
@@ -551,13 +632,19 @@ function upgradeRow(s, hex, acts) {
   return `${head}${picks.join('')}`;
 }
 
+// vpTag 动作按钮上的本轮得分角标（本轮计分板块 + 恩惠板块加成，0 分不显示）
+function vpTag(s, p, a) {
+  const vp = roundVpFor(s, p, a);
+  return vp ? ` 🏆+${vp}` : '';
+}
+
 // plainPick 无恩惠目标的直接升级按钮（民居→交易站、交易站→要塞）
 function plainPick(s, hex, target, acts) {
   const p = s.players[s.phase.cur];
   const cost = incStr(upgradeCostOf(s, p, target.to, hex));
   const a = acts.find((x) => x.to === target.to);
   return `<div class="tm-btns"><button class="btn-soft" data-act='${JSON.stringify(a)}'>${
-    tr(BLD_NAME[target.to])}${paren(cost)} ✅</button></div>`;
+    tr(BLD_NAME[target.to])}${paren(cost)}${vpTag(s, p, a)} ✅</button></div>`;
 }
 
 // favorPicker 恩惠板块选择器：池子里每张板块一个芯片，选满 needed 张即提交。
@@ -574,7 +661,7 @@ function favorPicker(s, hex, target, acts) {
     const on = chosen.includes(fid);
     return `<button class="btn-soft tm-favbtn ${on ? 'tm-usel' : ''}" data-fav="${fid}">${favChip(tile)}</button>`;
   }).join('');
-  const hint = `${tr(BLD_NAME[target.to])}${paren(cost)} ${t('tm.ui.favorHint')}`;
+  const hint = `${tr(BLD_NAME[target.to])}${paren(cost)}${vpTag(s, p, target)} ${t('tm.ui.favorHint')}`;
   return `<div class="tm-favors"><span class="muted">${hint}${needed > 1 ? ` (${chosen.length}/${needed})` : ''}</span>${chips}</div>`;
 }
 
@@ -773,7 +860,7 @@ function buildPanel(s, legal) {
       const c = buildCost(s, p, a.hex);
       const terr = tr(TERRAIN_NAMES[s.hexes[a.hex].terrain]);
       const tp = c.teleport ? ` 🌀${t('tm.ui.teleport')}` : '';
-      return actBtn(a, `🏠 ${hexLabel(a.hex)} · ${terr}${tp}${paren(incStr(c))}`);
+      return actBtn(a, `🏠 ${hexLabel(a.hex)} · ${terr}${tp}${paren(incStr(c))}${vpTag(s, p, a)}`);
     }).join('');
     return `<span class="tm-label">${t('tm.ui.build')}</span><div class="tm-btns">${btns}</div>`;
   }
