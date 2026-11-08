@@ -1130,6 +1130,8 @@ pre {
 .pr-player.pr-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .pr-phead { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
 .pr-res { margin-left: auto; display: inline-flex; gap: 7px; font-size: 12.5px; white-space: nowrap; }
+/* 实时总分：含建筑分的 VP 数字（悬停看构成明细） */
+.pr-total { font-weight: 700; color: var(--accent); }
 .pr-pisland { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; min-height: 30px; }
 .pr-city { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
 .pr-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font-size: 11.5px; padding: 2px; text-align: center; background: var(--bg); overflow: hidden; }

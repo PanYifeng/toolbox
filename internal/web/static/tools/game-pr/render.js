@@ -5,7 +5,7 @@ import { lackOf, noHint, okHint, renderActionHints, fmtArgs } from '/core/action
 import {
   GOODS, GOOD_VALUE, GOOD_ICON, ROLE_ICON, BUILDING_ICON, BUILDINGS, BUILDING_BY_ID, ROLE_NAMES, hasOccupied,
 } from './data.js';
-import { prodCapacity, buildCost, sellPrice, keepFeasible } from './engine.js';
+import { prodCapacity, buildCost, sellPrice, keepFeasible, score } from './engine.js';
 
 const ROLE_ORDER = ['settler', 'builder', 'mayor', 'craftsman', 'trader', 'captain', 'prospector'];
 let ui = { stamp: '', mayorAssigns: [], keep: null };
@@ -21,10 +21,12 @@ export function renderBoard(el, s, legal, pick) {
   if (ui.stamp !== stamp) ui = { stamp, mayorAssigns: [], keep: null };
   ctx = { el, s, legal, pick };
   const human = !s.players[s.phase.cur].isAI;
+  // 实时总分（筹码 + 建筑 + 大建筑加成）：终局计分口径在任何时刻都可算，直接复用 engine.score
+  const totals = new Map(score(s).map((x) => [x.seat, x]));
   el.innerHTML = `
     <div class="pr-board">
       ${renderSupply(s, legal, human)}
-      <div class="pr-players">${s.players.map((p) => renderPlayer(s, p, human)).join('')}</div>
+      <div class="pr-players">${s.players.map((p) => renderPlayer(s, p, human, totals.get(p.seat))).join('')}</div>
       ${renderAction(s, legal, human)}
     </div>`;
   bind(el, s, legal, pick, human);
@@ -72,7 +74,12 @@ function renderSupply(s, legal, human) {
 
 // —— 玩家面板 ——
 
-function renderPlayer(s, p, human) {
+// vpBreakText 总分构成明细（筹码 + 建筑 + 大建筑加成），零项省略
+function vpBreakText(total) {
+  return total.breakdown.filter(([, v]) => v).map(([k, v]) => `${t(k)} ${v}`).join(' + ') || '0';
+}
+
+function renderPlayer(s, p, human, total) {
   const isCur = p.seat === s.phase.cur;
   const isChooser = s.phase.chooser === p.seat && s.phase.kind !== 'pickRole';
   const mayorMode = human && isCur && s.phase.kind === 'mayor';
@@ -102,7 +109,7 @@ function renderPlayer(s, p, human) {
       <div class="pr-phead">
         <span class="bg-dot" style="background:${p.color}"></span>
         <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}${isChooser ? ' ★' : ''}
-        <span class="pr-res">💰${p.doubloons} 🏆${p.vp} 🧍${p.san}</span>
+        <span class="pr-res">💰${p.doubloons} <span class="pr-total" title="${vpBreakText(total)}">🏆${total.total}</span> 🧍${p.san}</span>
       </div>
       <div class="pr-pisland">${island}</div>
       <div class="pr-city">${city}</div>
@@ -248,8 +255,9 @@ function builderPanel(s, legal, p, ph) {
     const b = BUILDING_BY_ID[a.building];
     if (b.type !== lastType) { out += `<div class="pr-grp">${typeLabel[b.type]}</div>`; lastType = b.type; }
     const cost = buildCost(p, a.building, chooser);
+    // 建筑印刷 VP 是终局分主体，购买决策必须看得见（原先按钮只有价格和库存）
     out += `<button class="btn-soft pr-buildbtn" data-act='${JSON.stringify(a)}'>
-      ${BUILDING_ICON[a.building] || '🏛️'} ${tr(b.name)} <i>💰${cost} · ${t('pr.ui.stock')}${s.buildingStock[a.building]}</i></button>`;
+      ${BUILDING_ICON[a.building] || '🏛️'} ${tr(b.name)} <i>💰${cost} · 🏆${b.vp} · ${t('pr.ui.stock')}${s.buildingStock[a.building]}</i></button>`;
   }
   const pass = legal.find((a) => a.kind === 'buildPass');
   return `<div class="pr-buildmarket">${out || `<span class="muted">${t('pr.ui.noneAffordable')}</span>`}</div>
