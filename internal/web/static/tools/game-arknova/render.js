@@ -8,7 +8,7 @@ import { fmtArgs, lackOf, noHint, okHint, renderActionHints } from '/core/action
 import {
   animalOf, sponsorOf, projectOf, endgameOf, encUsed, encMeta, effTerrain, encIds,
   canPlaceAnimal, catName, encShow, egBonusCP, projFulfilled, effEffects,
-  currentPlayer, BUILD_SPECS,
+  currentPlayer, BUILD_SPECS, finalAppeal, score,
 } from './engine.js';
 import { TAGS, VARIANTS, RULES, ABILITIES } from './data-cards.js';
 import { aEmoji, spEmoji, projEmoji, habitatOf, ENC_ICON, CAT_ICON, EG_ICON } from './data-visual.js';
@@ -304,16 +304,27 @@ function cardsPanel(s, legal, pick) {
   return $div;
 }
 
+// vpTip 终局分构成明细：总分 = 终局魅力 × 2 − 保护点（终局卡保护点只计门槛不进分）
+function vpTip(total) {
+  const parts = total.breakdown.filter(([k]) => k !== 'an.bd.egcp')
+    .map(([k, v]) => `${t(k)} ${v}`).join(' · ');
+  return `${parts}\n${t('an.ui.vpTip')}`;
+}
+
 // playersPanel 玩家面板（资源/声望轨/终局卡/项目）
 function playersPanel(s, legal) {
   let h = `<div class="an-side-title">${t('an.ui.players')}</div><div class="an-players">`;
+  // 实时终局分：finalAppeal 含协会员工/大学/赞助加成，比面板上的 🌟 高，须单独展示
+  const totals = new Map(score(s).map((x) => [x.seat, x]));
   for (const p of s.players) {
     const goal = RULES.cpGoal[s.players.length] || 10;
+    const total = totals.get(p.seat);
     h += `<div class="an-player${p.seat === s.turn ? ' an-player-active' : ''}">
-      <div class="an-player-head"><span class="bg-dot" style="background:${p.color}"></span><b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}</div>
+      <div class="an-player-head"><span class="bg-dot" style="background:${p.color}"></span><b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
+        <span class="an-total" title="${vpTip(total)}">🏆${total.total}</span></div>
       <div class="an-stats">
         <span class="an-stat">💰 <b>${p.money}</b></span>
-        <span class="an-stat">🌟 <b>${p.appeal}</b></span>
+        <span class="an-stat" title="${t('an.ui.finalAppeal')}">🌟 <b>${finalAppeal(p)}</b></span>
         <span class="an-stat">🛡️ <b>${p.cp}/${goal}</b>${egBonusCP(p) ? `+${egBonusCP(p)}` : ''}</span>
         <span class="an-stat">🎓 <b>${p.universities}</b></span>
         <span class="an-stat">🤝 <b>${p.partnerZoos}</b></span>

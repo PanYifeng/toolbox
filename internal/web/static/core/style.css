@@ -1762,6 +1762,8 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
   font-size: clamp(11px, 3vw, 12px); background: var(--card); min-height: 24px;
 }
 .an-stat b { font-size: 13px; }
+/* 实时终局分（终局魅力×2 − 保护点，悬停看构成） */
+.an-total { margin-left: auto; font-weight: 700; color: var(--accent); font-size: 14px; }
 .an-rep { display: flex; gap: 3px; margin-top: 6px; }
 .an-rep-pip { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); }
 .an-rep-pip-on { background: var(--accent); border-color: var(--accent); }
