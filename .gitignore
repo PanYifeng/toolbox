@@ -1,6 +1,8 @@
 # 二进制与构建产物
 /toolbox
 /toolbox_*
+# 交叉编译产物（GOOS=linux GOARCH=amd64 go build -o ./toolbox-linux）
+/toolbox-*
 /bin/
 /dist/
 
