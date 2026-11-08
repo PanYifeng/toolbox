@@ -122,21 +122,45 @@ function plantMini(p, pl) {
 }
 
 function renderPlayers(s) {
+  // 排名判据是「上回合实际供电数」，并列第一不加冠（平局按资金分先后，此处不猜）
+  const best = Math.max(...s.players.map((p) => p.lastPowered));
+  const leaders = s.players.filter((p) => p.lastPowered === best);
+  const soleLead = leaders.length === 1 ? leaders[0].seat : null;
   return `<div class="pg-players">${s.players.map((p) => {
     const isCur = p.seat === s.phase.cur;
     const res = RES_KINDS.filter((k) => p.res[k] > 0)
       .map((k) => `<span title="${k}">${RES_ICON[k]}${p.res[k]}</span>`).join('') || '<span class="muted">—</span>';
+    const crown = p.seat === soleLead ? `<span class="pg-crown" title="${t('pg.ui.leadTip')}">👑</span>` : '';
     return `
       <div class="pg-player ${isCur ? 'pg-cur' : ''}" style="--pc:${p.color}">
         <div class="pg-phead">
           <span class="bg-dot" style="background:${p.color}"></span>
-          <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
-          <span class="pr-res">💰${p.electro} 🏙️${p.cities.length} ⚡${p.lastPowered}</span>
+          <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}${crown}
+          <span class="pr-res"><span title="${t('pg.ui.electroTip')}">💰${p.electro}</span>
+            <span title="${t('pg.ui.citiesTip')}">🏙️${p.cities.length}/${SETUP[s.n].endCities}</span>
+            <span title="${t('pg.ui.lastPoweredTip')}">⚡${p.lastPowered}</span></span>
         </div>
         <div class="pg-pplants">${p.plants.map((pl) => plantMini(p, pl)).join('') || '<span class="muted">—</span>'}</div>
+        ${prow(p)}
         <div class="pg-pres">${res}</div>
       </div>`;
   }).join('')}</div>`;
+}
+
+// prow 本回合潜在发电读数：现有燃料能点亮几城 + 结算可拿多少收入。
+// 结算收入只在上回合发电数上结算，玩家看不到「现在这套电厂到底值多少」是原先最大盲点
+function prow(p) {
+  if (!p.plants.length) return '';
+  const cap = maxPowerSet(p).reduce((a, pl) => a + PLANT_BY_ID[pl.id].cap, 0);
+  const potential = Math.min(cap, p.cities.length);
+  const cls = potential > p.lastPowered ? 'pg-pmr-up' : potential < p.lastPowered ? 'pg-pmr-dn' : '';
+  // 尚无城市时发电上限恒为 0，只展示容量与空转收入，避免「可发电 0/0」的噪声
+  const out = p.cities.length
+    ? `<span class="pg-pmr-v ${cls}" title="${t('pg.ui.powerPreviewTip')}">⚡${t('pg.ui.powerPreview')} <b>${potential}</b>/${p.cities.length}</span>`
+    : `<span class="pg-pmr-v pg-pmr-none" title="${t('pg.ui.powerPreviewTip')}">⚡${t('pg.ui.capacity')} <b>${cap}</b>${t('pg.ui.noCityYet')}</span>`;
+  return `<div class="pg-pmr">${out}
+    <span class="pg-pmr-i" title="${t('pg.ui.incomeTip')}">💰+${incomeOf(potential)}</span>
+  </div>`;
 }
 
 // —— 电厂市场 ——

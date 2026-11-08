@@ -1182,6 +1182,13 @@ pre {
 .pg-player.pg-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .pg-phead { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
 .pg-phead .pr-res { margin-left: auto; display: inline-flex; gap: 7px; font-size: 12.5px; white-space: nowrap; }
+/* 领先标记 / 本回合潜在发电与收入读数 */
+.pg-crown { font-size: 12px; }
+.pg-pmr { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.pg-pmr-v b { color: var(--fg); }
+.pg-pmr-up b { color: #2e8b3d; }
+.pg-pmr-dn b { color: #c4553a; }
+.pg-pmr-i { color: var(--accent); font-weight: 700; }
 .pg-pplants { margin-top: 5px; }
 .pg-pplant { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 12px; background: var(--bg); margin-right: 4px; }
 .pg-pplant i { font-style: normal; color: var(--muted); font-size: 10.5px; }
