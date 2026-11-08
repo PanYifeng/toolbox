@@ -41,13 +41,14 @@ function colon() { return '<span class="muted">：</span>'; }
 
 function renderStatus(s) {
   const isHarvest = HARVEST_ROUNDS.includes(s.round);
+  const cur = E.currentPlayer(s);
   return `
     <div class="ag-status">
       <span class="ag-round">${fmt(t('ag.ui.round'), { r: Math.max(s.round, 1), m: TOTAL_ROUNDS })}</span>
       ${isHarvest ? `<span class="ag-harvest">🌾 ${t('ag.ui.harvest')}</span>` : ''}
       <span class="ag-order">${s.order.map((seat) => {
         const p = s.players[seat];
-        return `<i class="ag-seatchip" style="--pc:${p.color}">${esc(p.name)}</i>`;
+        return `<i class="ag-seatchip ${seat === cur ? 'ag-seatcur' : ''}" style="--pc:${p.color}">${esc(p.name)}</i>`;
       }).join('')}</span>
     </div>`;
 }
@@ -330,19 +331,43 @@ function renderFarm(s, p, clickMap, human) {
   return `<div class="ag-farm" style="--pc:${p.color}">${cells}</div>`;
 }
 
+// vpTip 计分构成明细（终局口径）：只列非零项，负项保留符号。
+// 附一句说明：开局 -14 是官方计分表常态（7 个类别各缺项 -1 + 未用空地 -1/格），不是 bug
+function vpTip(total) {
+  const body = total.breakdown.filter(([, v]) => v)
+    .map(([k, v]) => `${t(k)} ${v > 0 ? '+' : ''}${v}`).join(' · ') || '0';
+  return `${body}\n${t('ag.ui.vpNote')}`;
+}
+
+// playedRow 已打出的职业/小改进（原先任何面板都看不到，而卡牌分是总分大头）
+function playedRow(p) {
+  const occ = p.occPlayed.map((id) => (OCC_BY_ID[id] ? tr(OCC_BY_ID[id].name) : id));
+  const min = p.minorsPlayed.map((id) => (MINOR_BY_ID[id] ? tr(MINOR_BY_ID[id].name) : id));
+  if (!occ.length && !min.length) return '';
+  const chip = (txt, cls) => `<span class="ag-pchip ${cls}">${txt}</span>`;
+  return `<div class="ag-prow">${occ.map((n) => chip(`🧑‍🌾 ${n}`, 'ag-pchip-occ')).join('')}${
+    min.map((n) => chip(`🃏 ${n}`, 'ag-pchip-min')).join('')}</div>`;
+}
+
 function renderPlayers(s, legal, human) {
   const clickMap = s.phase.kind === 'sub' ? cellActions(legal) : new Map();
+  // 实时总分：终局计分口径全部字段进行中即有效，可随时算（负分是官方计分表常态）
+  const totals = new Map(E.score(s).map((x) => [x.seat, x]));
   return `<div class="ag-players">${s.players.map((p) => {
     const isCur = p.seat === E.currentPlayer(s);
     const ca = p.cardAnimal;
+    const total = totals.get(p.seat);
     return `
       <div class="ag-player ${isCur ? 'ag-cur' : ''}" style="--pc:${p.color}">
         <div class="ag-phead">
           <span class="bg-dot" style="background:${p.color}"></span>
           <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
+          <span class="ag-vp" title="${vpTip(total)}">🏆${total.total}</span>
           <span class="muted">${fmt(t('ag.ui.family'), { n: p.family, m: E.remaining(p) })}</span>
+          <span class="ag-feed" title="${t('ag.ui.feedTip')}">🍞${E.feedNeedOf(p)}</span>
           ${p.beggars ? `<span class="ag-warn">🃏${p.beggars}</span>` : ''}
         </div>
+        ${playedRow(p)}
         <div class="ag-pbar">${resBar(p)}</div>
         ${ca ? `<div class="muted">${fmt(t('ag.ui.cardAnimal'), { a: RES_INFO[ca.type] ? RES_INFO[ca.type].emoji : '', n: ca.n })}</div>` : ''}
         ${p.majors.length ? `<div class="ag-mrow">${p.majors.map((id) =>
