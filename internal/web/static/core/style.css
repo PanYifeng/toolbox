@@ -1084,6 +1084,13 @@ pre {
 .bg-quick-hint { margin: 0; font-size: 13px; line-height: 1.6; }
 .bg-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
 .bg-banner { display: inline-flex; align-items: center; gap: 6px; }
+/* 实时排名条：按当前总分排序，当前行动者高亮 */
+.bg-standings { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; font-size: 12.5px; }
+.bg-std-label { color: var(--muted); }
+.bg-std { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; background: var(--bg-soft); }
+.bg-std-cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.bg-std-rank { font-style: normal; color: var(--muted); font-weight: 700; }
+.bg-std-vp { font-style: normal; font-weight: 700; color: var(--accent); margin-left: 2px; }
 .bg-layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 14px; margin-top: 8px; }
 .bg-side { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); padding: 10px; align-self: start; }
 .bg-log-title { margin: 0 0 8px; font-size: 13px; }

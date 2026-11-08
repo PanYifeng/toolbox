@@ -195,6 +195,7 @@ export function mountBoardGame(el, game) {
         <button id="bg-undo">${t('bg.undo')}</button>
         <button id="bg-newgame">${t('bg.new')}</button>
       </div>
+      <div id="bg-standings" class="bg-standings"></div>
       <div class="bg-layout">
         <div class="bg-main"><div id="bg-board"></div></div>
         <aside class="bg-side">
@@ -235,6 +236,7 @@ export function mountBoardGame(el, game) {
   function refresh() {
     if (game.isGameOver(session.state)) { renderResults(); return; }
     updateBanner();
+    updateStandings();
     if (needPrivacyGate()) return; // 遮罩确认后再继续渲染
     const legal = game.legalActions(session.state);
     game.renderBoard($root.querySelector('#bg-board'), session.state, legal, pick);
@@ -265,6 +267,42 @@ export function mountBoardGame(el, game) {
     $root.querySelector('#bg-banner').innerHTML =
       `<span class="bg-dot" style="background:${p.color}"></span><b>${esc(p.name)}</b>` +
       (p.isAI ? ' 🤖' : '') + ` <span class="muted">· ${t('bg.turnOf')}</span>`;
+  }
+
+  // updateStandings 顶部实时排名条：所有游戏此前只按固定座位序展示分数，
+  // 玩家必须自己心算谁领先。这里统一按分数排序（同分用游戏自带 tieBreak），
+  // 只做排序不改数值来源。liveScore 供「终局另有结算」的游戏替换口径
+  // （如卡卡颂未完成块要等终局才落袋，用投影分才公平）。
+  function updateStandings() {
+    const $box = $root.querySelector('#bg-standings');
+    if (!$box) return;
+    const st = session.state;
+    const read = game.liveScore || game.score;
+    const rows = read(st).map((r) => ({
+      ...r,
+      name: st.players[r.seat].name,
+      isAI: st.players[r.seat].isAI,
+      color: st.players[r.seat].color,
+    }));
+    if (!rows.length) { $box.innerHTML = ''; return; }
+    rows.sort((a, b) => b.total - a.total
+      || (game.tieBreak ? game.tieBreak(a.seat, b.seat, st) : a.seat - b.seat));
+    // 竞技排名：同分并列同名次（1,1,3），避免同分被排成 1/2 误导
+    let rank = 0;
+    let prev = null;
+    rows.forEach((r, i) => {
+      if (prev === null || r.total !== prev) rank = i + 1;
+      prev = r.total;
+      r.rank = rank;
+    });
+    const cur = game.currentPlayer(st);
+    $box.innerHTML = `<span class="bg-std-label">${t('bg.standings')}</span>` +
+      rows.map((r) => `<span class="bg-std${r.seat === cur ? ' bg-std-cur' : ''}" style="--pc:${r.color}">
+        <i class="bg-std-rank">${r.rank}</i>
+        <i class="bg-dot" style="background:${r.color}"></i>
+        <b>${esc(r.name)}</b>${r.isAI ? ' 🤖' : ''}
+        <i class="bg-std-vp">${r.total}</i>
+      </span>`).join('');
   }
 
   // needPrivacyGate 隐藏手牌游戏（如农场主）在人类间换手时弹交接遮罩

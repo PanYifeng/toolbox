@@ -17,6 +17,16 @@ const game = {
   currentPlayer: engine.currentPlayer,
   isGameOver: engine.isGameOver,
   score: engine.score,
+  // liveScore 中局排名口径：未完成城市/道路/修道院等到终局才落袋，
+  // 直接用 score() 排名会低估随从还压在盘上的玩家。投影分 = 已落袋 + 终局可得
+  liveScore: (s) => engine.projectedScore(s).map((r) => ({
+    seat: r.seat,
+    total: r.total,
+    breakdown: [
+      ['ca.ui.projSettled', r.settled],
+      ['ca.ui.projPending', r.pending.city + r.pending.road + r.pending.mon + r.pending.farm],
+    ],
+  })),
   bot,
   renderBoard,
 };
