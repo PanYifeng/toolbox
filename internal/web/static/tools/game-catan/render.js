@@ -8,9 +8,9 @@ import { fmtArgs, lackOf, noHint, okHint, reasonCap, reasonNoSpot, renderActionH
 import {
   HEX_SIZE, VERTICES, EDGES, HEXES, HEX_VERTS, RES_NAMES,
   COST_ROAD, COST_SETTLEMENT, COST_CITY, COST_DEV,
-  MAX_ROADS, MAX_SETTLEMENTS, MAX_CITIES,
+  MAX_ROADS, MAX_SETTLEMENTS, MAX_CITIES, WIN_VP, LONGEST_ROAD_MIN, LARGEST_ARMY_MIN,
 } from './data-board.js';
-import { DEV_NAMES, harborRatio, currentPlayer, vpOf } from './engine.js';
+import { DEV_NAMES, harborRatio, currentPlayer, vpOf, longestRoadFor } from './engine.js';
 
 const TERR = [
   { c: '#3f7d4e', zh: '森林', en: 'Forest' },
@@ -110,7 +110,9 @@ function promptHtml(s, human) {
   const p = s.players[currentPlayer(s)];
   const key = s.pending ? `ct.ui.prompt.${s.pending.kind}` : `ct.ui.prompt.${s.phase}`;
   const rob = t('ct.ui.robberAt') + ' ' + esc(terrName(s, s.robber));
-  return `${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t(key)} <span class="ct-sub">${rob} · ${t('ct.ui.devDeck')} ${s.devDeck.length}</span>${diceHtml(s)}`;
+  // 目标分与当前回合数：胜利条件 10 分原先完全不可见
+  const goal = `<span class="ct-goal">🎯 ${fmtArgs(t('ct.ui.goal'), { n: WIN_VP })} · ${fmtArgs(t('ct.ui.turn'), { n: s.turn })}</span>`;
+  return `${goal}${p.isAI ? '🤖 ' : ''}<b>${esc(p.name)}</b> — ${t(key)} <span class="ct-sub">${rob} · ${t('ct.ui.devDeck')} ${s.devDeck.length}</span>${diceHtml(s)}`;
 }
 
 // terrName 格子地形名（含数字）
@@ -256,14 +258,33 @@ function playerHtml(s, p, humanCur) {
     s.largestArmy.seat === p.seat ? `<span class="ct-badge" title="${t('ct.ui.largestArmy')}">⚔️+2</span>` : '',
   ].join('');
   const chips = RES_ICON.map((_, i) => resChip(i, p.res[i], isDiscarding)).join('');
+  const vp = vpOf(s, p.seat);
   return `<div class="ct-player${currentPlayer(s) === p.seat ? ' ct-cur' : ''}">
     <div class="ct-phead"><span class="ct-dot" style="background:${p.color}"></span>
       <b>${esc(p.name)}</b>${p.isAI ? ' 🤖' : ''}
-      <span class="ct-vp">${t('ct.ui.vp')} ${vpOf(s, p.seat)}</span>${badges}</div>
+      <span class="ct-vp">${t('ct.ui.vp')} <b>${vp}</b>/${WIN_VP}</span>${badges}</div>
     <div class="ct-res">${chips}</div>
     <div class="ct-pdev">${devHtml(s, p, humanCur)}</div>
-    <div class="ct-ppieces">🛣️${p.roads.length} 🏘️${p.settlements.length} 🏙️${p.cities.length} · 🗡️${p.knights}</div>
+    <div class="ct-ppieces">🛣️${p.roads.length} 🏘️${p.settlements.length} 🏙️${p.cities.length}${raceTip(s, p)}</div>
   </div>`;
+}
+
+// raceTip 两项 +2 奖励竞速读数：最长路分段数 / 骑士数 与取得门槛
+function raceTip(s, p) {
+  const chips = [];
+  if (p.roads.length) {
+    const len = longestRoadFor(s, p.seat);
+    const held = s.longestRoad.seat === p.seat;
+    const cls = held ? 'ct-rr-held' : len >= LONGEST_ROAD_MIN - 1 ? 'ct-rr-near' : 'ct-rr-far';
+    const title = fmtArgs(t(held ? 'ct.ui.roadTipHeld' : 'ct.ui.roadTip'), { n: LONGEST_ROAD_MIN });
+    chips.push(`<span class="ct-race ${cls}" title="${title}">🛣️${len}/${LONGEST_ROAD_MIN}</span>`);
+  }
+  if (p.knights > 0) {
+    const held = s.largestArmy.seat === p.seat;
+    const cls = held ? 'ct-rr-held' : p.knights >= LARGEST_ARMY_MIN - 1 ? 'ct-rr-near' : 'ct-rr-far';
+    chips.push(`<span class="ct-race ${cls}" title="${t('ct.ui.armyTip')}">🗡️${p.knights}/${LARGEST_ARMY_MIN}</span>`);
+  }
+  return chips.join('');
 }
 
 // devHtml 手牌发展卡（按类型聚合计数；当前人类可打的高亮）
