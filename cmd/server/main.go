@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"toolbox/internal/config"
+	"toolbox/internal/version"
 	"toolbox/internal/web"
 
 	// 通过 init 注册服务端工具
@@ -25,6 +26,9 @@ func main() {
 	setFlags := flag.String("set", "",
 		"配置覆盖 path=value，可逗号分隔多项，如 -set storage.driver=redis,server.addr=:9090")
 	flag.Parse()
+
+	// 启动即打印版本指纹：容器日志里能直接看到镜像里烤的是哪个构建
+	log.Printf("toolbox %s starting", version.String())
 
 	var sets []string
 	for _, s := range strings.Split(*setFlags, ",") {

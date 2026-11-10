@@ -17,6 +17,7 @@ import (
 	"toolbox/internal/config"
 	"toolbox/internal/queue"
 	"toolbox/internal/tools"
+	"toolbox/internal/version"
 )
 
 //go:embed all:static
@@ -94,6 +95,8 @@ func (s *Server) routes() {
 	mux.HandleFunc("GET /api/rooms/{code}/events", s.handleRoomEvents)
 	mux.HandleFunc("GET /api/jobs/{id}/download", s.handleDownload)
 	mux.HandleFunc("GET /api/ads", s.handleAds)
+	// 版本指纹：运维核对「镜像 tag 与二进制内含版本是否一致」，防快照烤旧二进制
+	mux.HandleFunc("GET /api/version", s.handleVersion)
 	mux.HandleFunc("POST /api/cert/send", s.handleCertSend)
 	mux.HandleFunc("GET /api/bootstrap", s.handleBootstrap)
 	mux.HandleFunc("GET /api/pro/status", s.handleProStatus)
@@ -413,6 +416,14 @@ func containsDotDot(p string) bool {
 // handleAds 返回广告配置
 func (s *Server) handleAds(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, s.cfg.Ads)
+}
+
+// handleVersion 返回二进制内含的版本指纹。
+// 运维用途：镜像构建是开发机文件系统快照，镜像 tag 与二进制版本可能不一致
+// （1.1.238 烤进的是九小时前的旧二进制），上线后拿这里的 version 与 tag 比对即可确认。
+func (s *Server) handleVersion(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, version.Current())
 }
 
 // serveVerification 返回第三方平台验证文件的固定内容（text/plain，不缓存）
