@@ -1940,3 +1940,80 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
 
 /* 方舟动物园提示条独占一行（.an-prompt 是横向 flex） */
 .an-prompt .ah-list { flex-basis: 100%; margin: 0; }
+
+/* —— 巫诺（game-uno）—— */
+.un-prompt { font-size: 14px; margin-bottom: 10px; color: var(--fg); }
+.un-prompt b { color: var(--fg); }
+/* 开局附加项：目标分 + 两条家庭规则 */
+.un-setup { display: flex; flex-direction: column; gap: 8px; }
+.un-setup label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.un-setup select { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.un-opt-check { cursor: pointer; }
+.un-opt-check input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.un-opt-tip { margin: 0; font-size: 12px; }
+.un-table { display: flex; flex-direction: column; gap: 10px; }
+.un-opps { display: flex; flex-wrap: wrap; gap: 8px; }
+.un-opp {
+  flex: 1 1 150px; min-width: 140px; display: flex; flex-direction: column; gap: 5px;
+  border: 1px solid var(--border); border-left: 3px solid var(--pc, var(--border));
+  border-radius: 10px; background: var(--bg-soft); padding: 7px 10px;
+}
+.un-opp-cur { border-color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent); }
+.un-opp-head { display: flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
+.un-opp-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.un-opp-cards { display: flex; align-items: center; gap: 2px; font-size: 12px; }
+.un-opp-cards .un-back { width: 13px; height: 19px; border-radius: 3px; }
+.un-opp-cards b { margin-left: 4px; font-size: 13px; }
+.un-opp-score { font-size: 12px; color: var(--muted); }
+.un-opp-score::before { content: '🎯 '; }
+.un-center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.un-piles { display: flex; align-items: flex-start; gap: 18px; }
+.un-pile { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.un-pile-label { font-size: 12px; color: var(--muted); }
+.un-color-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
+  border-radius: 999px; background: var(--cbg, var(--bg-soft)); color: var(--cfg, var(--fg));
+  font-size: 12.5px; font-weight: 700;
+}
+.un-rules { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; font-size: 12px; color: var(--muted); }
+.un-rules span { border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; background: var(--bg); }
+/* 牌面：固定宽高比，颜色底 + 居中大符号 */
+.un-card {
+  position: relative; width: 56px; height: 80px; border-radius: 8px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cbg, #888); color: var(--cfg, #fff);
+  border: 2px solid rgba(0, 0, 0, 0.35); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  font-size: 22px; font-weight: 700; line-height: 1; user-select: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.un-card-wild { border-color: rgba(255, 255, 255, 0.5); }
+/* 牌背：斜纹深色，无符号 */
+.un-back {
+  background: repeating-linear-gradient(45deg, #2b2f3a 0 6px, #3a4050 6px 12px);
+  border-color: #1b1e26; color: transparent; font-size: 0;
+}
+/* 可点：accent 描边 + 上浮；hover 更明显 */
+.un-card-act { cursor: pointer; box-shadow: 0 0 0 2px var(--accent), 0 2px 6px rgba(0, 0, 0, 0.3); }
+.un-card-act:hover { transform: translateY(-4px); }
+.un-hand { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.un-hand-label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.un-hand-label b { color: var(--fg); }
+.un-hand-cards { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+/* 微阶段操作面板 */
+.un-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.un-actions-label { font-size: 13px; color: var(--fg); font-weight: 700; }
+.un-colorbtn {
+  border: 2px solid rgba(0, 0, 0, 0.35); border-radius: 8px; padding: 6px 16px;
+  background: var(--cbg); color: var(--cfg); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.un-colorbtn:hover { filter: brightness(1.1); }
+.un-next {
+  border: 1px solid var(--accent); border-radius: 8px; padding: 6px 14px;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.un-next:hover { filter: brightness(1.06); }
+@media (max-width: 700px) {
+  .un-card { width: 44px; height: 63px; font-size: 18px; }
+  .un-piles { gap: 12px; }
+  .un-opp { flex: 1 1 120px; min-width: 110px; }
+}

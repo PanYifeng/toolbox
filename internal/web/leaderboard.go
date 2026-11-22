@@ -45,6 +45,7 @@ var lbScoreCaps = map[string]int{
 	"game-catan":       15,         // 卡坦岛终局 VP（10 分获胜，含最长路/最大军队 +2 加成 generous 上限）
 	"game-carcassonne": 300,        // 卡卡颂终局总分（72 块全计分 + 农夫，AI 对局实测量级 ~50-90），generous 上限
 	"game-arknova":     400,        // 方舟动物园终局总分（终局魅力×2 − 保护点；AI 实测 ~30-110，魅力堆满 generous 上限）
+	"game-uno":         3000,       // 巫诺累计分（目标分可选 200/500/1000，胜局超分 1 局最多再加 ~500，generous 上限）
 }
 
 // leaderboardEntry 单条榜单记录。IP/SignedCode 不下发前端（top() 已剥离 IP）。

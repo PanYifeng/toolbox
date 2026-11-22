@@ -130,6 +130,13 @@ export const THEMES = {
     message: { zh: '玩得开心，愿你常保欢喜之心。', en: 'Well played — may you keep a joyful heart.' },
     sampleDate: '2025-01-01',
   },
+  'game-uno': {
+    primary: '#b91c1c', secondary: '#1d4ed8', bg: '#FFF7ED', symbol: '🃏', auspicious: '★', pattern: 'grid4',
+    title: { zh: '巫诺 通关纪念卡', en: 'UNO Memorial Card' },
+    message: { zh: '一张当关，诸色皆通；愿你每次落牌都恰到好处。', en: 'One card to hold the line — may every play land exactly right.' },
+    // 样例完成时间：UNO 由 Merle Robbins 发明（1971 年）
+    sampleDate: '1971-01-01',
+  },
   // 人格测试分享卡（非纪念卡：无分数/无二维码，大类型标签 + 雷达图 + 寄语）
   'personality-mbti': {
     primary: '#5B4B9A', secondary: '#3D2E6B', bg: '#F4F1FB', symbol: '🧠', auspicious: '★', pattern: 'dots',
@@ -158,7 +165,7 @@ export const THEMES = {
 // 顺序即下拉分组顺序；themes 数组内每项为 THEMES 键。新增主题时归入对应分类或新建分类。
 export const THEME_CATEGORIES = [
   { title: { zh: '宗教文化', en: 'Religion & Culture' }, themes: ['buddhism', 'islam', 'christianity'] },
-  { title: { zh: '游戏', en: 'Games' }, themes: ['game-2048', 'game-snake', 'game-ttt', 'game-spider', 'game-minesweeper', 'game-tetris', 'game-flappy', 'game-wordle', 'game-suika', 'game-match3', 'game-xiangqi', 'game-chess', 'game'] },
+  { title: { zh: '游戏', en: 'Games' }, themes: ['game-2048', 'game-snake', 'game-ttt', 'game-spider', 'game-minesweeper', 'game-tetris', 'game-flappy', 'game-wordle', 'game-suika', 'game-match3', 'game-xiangqi', 'game-chess', 'game-uno', 'game'] },
   { title: { zh: '知识·趣味', en: 'Knowledge & Fun' }, themes: ['knowledge-quiz'] },
   { title: { zh: '人格测试', en: 'Personality' }, themes: ['personality-mbti', 'personality-bigfive', 'personality-disc'] },
 ];
