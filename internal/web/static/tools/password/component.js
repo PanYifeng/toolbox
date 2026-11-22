@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { flashCopy } from '/core/clipboard.js';
 
 // render 密码生成器（crypto.getRandomValues）
 export default function (el) {
@@ -21,7 +22,8 @@ export default function (el) {
     el.querySelector('#p-out').textContent = gen();
     el.querySelector('#p-out').className = 'ok';
   };
-  el.querySelector('#p-copy').onclick = () => navigator.clipboard?.writeText(el.querySelector('#p-out').textContent);
+  el.querySelector('#p-copy').onclick = (e) =>
+    flashCopy(e.currentTarget, el.querySelector('#p-out').textContent, t('common.copy'));
 
   function gen() {
     const len = parseInt(el.querySelector('#p-len').value) || 16;

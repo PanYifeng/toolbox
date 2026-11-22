@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { flashCopy } from '/core/clipboard.js';
 
 // render URL 编解码
 export default function (el) {
@@ -27,5 +28,5 @@ export default function (el) {
       $out.className = 'err';
     }
   };
-  el.querySelector('#u-copy').onclick = () => navigator.clipboard?.writeText($out.textContent);
+  el.querySelector('#u-copy').onclick = (e) => flashCopy(e.currentTarget, $out.textContent, t('common.copy'));
 }

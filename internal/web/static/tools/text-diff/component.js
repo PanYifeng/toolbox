@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { copyText } from '/core/clipboard.js';
 
 // render 文本差异（行级 diff，输入框带行号，新增/删除行着色，结果可复制）
 export default function (el) {
@@ -30,18 +31,13 @@ export default function (el) {
   el.querySelector('#d-go').onclick = runDiff;
   el.querySelector('#d-copy').onclick = copyResult;
 
-  // copyResult 复制纯文本差异结果
+  // copyResult 复制纯文本差异结果（HTTP 非安全上下文走降级，失败如实提示）
   async function copyResult(e) {
     if (!lastPlain) return;
     const btn = e.currentTarget;
-    try {
-      await navigator.clipboard.writeText(lastPlain);
-      btn.textContent = t('ts.copied');
-      setTimeout(() => (btn.textContent = t('td.copy')), 1200);
-    } catch {
-      btn.textContent = t('ts.copied');
-      setTimeout(() => (btn.textContent = t('td.copy')), 1200);
-    }
+    const ok = await copyText(lastPlain);
+    btn.textContent = ok ? t('ts.copied') : t('common.copyFail');
+    setTimeout(() => (btn.textContent = t('td.copy')), 1200);
   }
 
   // runDiff 计算并渲染差异

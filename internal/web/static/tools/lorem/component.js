@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { flashCopy } from '/core/clipboard.js';
 
 const WORDS = ('lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor ' +
   'incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ' +
@@ -23,7 +24,8 @@ export default function (el) {
     el.querySelector('#l-out').textContent = paras.join('\n\n');
     el.querySelector('#l-out').className = 'ok';
   };
-  el.querySelector('#l-copy').onclick = () => navigator.clipboard?.writeText(el.querySelector('#l-out').textContent);
+  el.querySelector('#l-copy').onclick = (e) =>
+    flashCopy(e.currentTarget, el.querySelector('#l-out').textContent, t('common.copy'));
 }
 
 // para 生成一段

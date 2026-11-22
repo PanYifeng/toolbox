@@ -525,24 +525,35 @@ func (s *roomStore) appendAction(code string, in roomActorInput) (actionView, er
 	return actionView{Seq: act.Seq, Seat: act.Seat, Action: act.Action, At: act.At}, nil
 }
 
-// roomAuthorize 座位归属校验：人类座位仅本人；AI 座位允许任意在座人类代驱
+// roomAuthorize 座位归属校验：本人人类座位仅本人；AI 座位与开局后仍空置的座位
+// （房子承诺「空位自动由 AI 补位」，快照里已冻结成 AI）允许任意在座人类代驱。
 func roomAuthorize(r *room, in roomActorInput) error {
 	if in.Seat < 0 || in.Seat >= len(r.Seats) {
 		return errBadInput
 	}
+	driverSeated := false
+	for i := range r.Seats {
+		if !r.Seats[i].IsAI && r.Seats[i].ClientID == in.ClientID {
+			driverSeated = true
+			break
+		}
+	}
+	if !driverSeated {
+		return errNotSeatOwner
+	}
 	se := r.Seats[in.Seat]
 	if se.IsAI {
-		for i := range r.Seats {
-			if !r.Seats[i].IsAI && r.Seats[i].ClientID == in.ClientID {
-				return nil // 在座人类可代驱机器人
-			}
-		}
-		return errNotSeatOwner
+		return nil // 机器人座位由在座人类代驱
 	}
-	if se.ClientID != in.ClientID {
-		return errNotSeatOwner
+	if se.ClientID == in.ClientID {
+		return nil
 	}
-	return nil
+	// 空置人类座位：仅开局后允许代驱（开局快照已把它冻结成 AI）；
+	// 开局前的空位归加入者，不接受他人代下
+	if se.ClientID == "" && len(r.Actions) > 0 {
+		return nil
+	}
+	return errNotSeatOwner
 }
 
 // closeRoom 房主关闭房间（拒收后续行动）

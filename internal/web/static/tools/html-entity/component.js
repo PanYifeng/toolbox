@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { flashCopy } from '/core/clipboard.js';
 
 // render HTML 实体编解码
 export default function (el) {
@@ -26,5 +27,5 @@ export default function (el) {
     $out.textContent = ta.value;
     $out.className = 'ok';
   };
-  el.querySelector('#h-copy').onclick = () => navigator.clipboard?.writeText($out.textContent);
+  el.querySelector('#h-copy').onclick = (e) => flashCopy(e.currentTarget, $out.textContent, t('common.copy'));
 }

@@ -9,6 +9,8 @@
 import { t, tr } from '/core/i18n.js';
 import { fmt, wireRulesBtn } from '/core/boardgame.js';
 import { mountGameCard } from '/core/game-card.js';
+import { randomUUID } from '/core/crypto-compat.js';
+import { copyText } from '/core/clipboard.js';
 
 const ON_AI_DELAY = 550;    // 机器人代驱延迟（与热座节奏一致）
 const ON_AI_JITTER = 350;   // 机器人代驱抖动上限
@@ -25,12 +27,14 @@ function esc(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// clientId 本浏览器唯一 id（占座凭证；跨房间复用）
+// clientId 本浏览器唯一 id（占座凭证；跨房间复用）。
+// 走 crypto-compat：crypto.randomUUID 只在安全上下文（HTTPS/localhost）可用，
+// 用普通 IP 经 HTTP 访问时它是 undefined，直接调用会抛 TypeError。
 function clientId() {
   let id = '';
   try { id = localStorage.getItem(CLIENT_KEY) || ''; } catch { /* 隐私模式 */ }
   if (!id) {
-    id = crypto.randomUUID();
+    id = randomUUID();
     try { localStorage.setItem(CLIENT_KEY, id); } catch { /* 忽略 */ }
   }
   return id;
@@ -347,8 +351,9 @@ export function mountOnlineRoom(el, game, code) {
   function wireLobby(invite) {
     const $copy = $root.querySelector('#on-copy');
     if ($copy) $copy.onclick = async () => {
-      try { await navigator.clipboard.writeText(invite); toast(t('on.copied')); }
-      catch { toast(invite); }
+      // 复制成功给短提示；失败（HTTP 非安全上下文且降级也被拒）直接把邀请链接摆出来
+      if (await copyText(invite)) toast(t('on.copied'));
+      else toast(invite);
     };
     const $start = $root.querySelector('#on-start');
     if ($start) $start.onclick = onStartGame;

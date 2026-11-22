@@ -2,6 +2,7 @@
 // 字符集按暗→亮排列（索引 0 = 最暗）；明暗方向可反转；行数按比例折半（字符高宽比约 2:1）。
 // 注：含状态（img/invert/el）的函数必须嵌在组件闭包内，避免 ES module 顶层引用未定义变量。
 import { t } from '/core/i18n.js';
+import { copyText } from '/core/clipboard.js';
 
 // RAMPS 字符集预设（暗→亮）：从密到疏，@ 最暗、空格最亮
 const RAMPS = [
@@ -41,14 +42,6 @@ function toAscii(im, cols, ramp, invert) {
     lines.push(line);
   }
   return lines.join('\n');
-}
-
-// fallbackCopy 无 Clipboard API 时的降级复制 — 纯函数
-function fallbackCopy(txt) {
-  const ta = document.createElement('textarea');
-  ta.value = txt; document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); } catch (e) { /* 忽略 */ }
-  ta.remove();
 }
 
 export default function (el) {
@@ -104,21 +97,17 @@ export default function (el) {
     $out.textContent = toAscii(img, cols, ramp, invert);
   }
 
-  // copyOut 复制输出文本到剪贴板（降级用 textarea + execCommand）
-  function copyOut($out) {
-    const txt = $out.textContent || '';
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(txt).then(() => hint()).catch(() => fallbackCopy(txt));
-    } else {
-      fallbackCopy(txt);
-    }
+  // copyOut 复制输出文本到剪贴板（统一走 clipboard 兼容层，失败如实提示）
+  async function copyOut($out) {
+    hint(await copyText($out.textContent || ''));
   }
 
-  // hint 短暂提示已复制（改按钮文案 1.2s）
-  function hint() {
+  // hint 短暂提示复制结果（改按钮文案 1.2s）
+  function hint(ok) {
     const $btn = el.querySelector('#asc-copy');
     if (!$btn) return;
     const old = $btn.textContent;
-    $btn.textContent = '✓'; setTimeout(() => { $btn.textContent = old; }, 1200);
+    $btn.textContent = ok ? '✓' : t('common.copyFail');
+    setTimeout(() => { $btn.textContent = old; }, 1200);
   }
 }

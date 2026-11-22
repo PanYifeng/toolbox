@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { flashCopy } from '/core/clipboard.js';
 
 // render Base64 编解码（兼容 UTF-8）
 export default function (el) {
@@ -26,13 +27,10 @@ export default function (el) {
       $out.className = 'ok';
     } catch (e) { fail(e); }
   };
-  el.querySelector('#b-copy').onclick = () => copy($out.textContent);
+  el.querySelector('#b-copy').onclick = (e) => flashCopy(e.currentTarget, $out.textContent, t('common.copy'));
 
   function fail(e) {
     $out.textContent = t('common.error') + ': ' + e.message;
     $out.className = 'err';
-  }
-  function copy(text) {
-    navigator.clipboard?.writeText(text);
   }
 }

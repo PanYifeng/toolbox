@@ -1,4 +1,5 @@
 import { t } from '/core/i18n.js';
+import { copyText } from '/core/clipboard.js';
 
 // render 时间戳 <-> 日期 双向转换
 export default function (el) {
@@ -24,15 +25,11 @@ export default function (el) {
   tick();
   setInterval(tick, 1000);
 
-  // 复制当前时间戳
+  // 复制当前时间戳（HTTP 非安全上下文走降级，失败如实提示）
   el.querySelector('#t-copy').onclick = async (e) => {
     const btn = e.currentTarget;
-    try {
-      await navigator.clipboard.writeText($now.textContent);
-      btn.textContent = t('ts.copied');
-    } catch {
-      btn.textContent = t('ts.copied');
-    }
+    const ok = await copyText($now.textContent);
+    btn.textContent = ok ? t('ts.copied') : t('common.copyFail');
     setTimeout(() => (btn.textContent = t('ts.copy')), 1200);
   };
 

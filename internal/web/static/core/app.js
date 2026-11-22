@@ -4,6 +4,7 @@ import { enhanceLined } from '/core/lined.js';
 import { renderMarkdown } from '/core/md.js';
 import { aboutPageHTML } from '/core/about.js';
 import { openFeedback } from '/core/feedback.js';
+import { copyText } from '/core/clipboard.js';
 
 const app = document.getElementById('app');
 let currentId = null;
@@ -440,7 +441,7 @@ function renderTool() {
   loadComponent(m, view.querySelector('#tool-body'));
 }
 
-// onShare 分享当前工具：移动端调原生分享面板，桌面端复制链接
+// onShare 分享当前工具：优先原生分享面板；否则复制链接，剪贴板受限时提示手动复制
 function onShare() {
   const url = location.href;
   const title = document.title;
@@ -448,12 +449,11 @@ function onShare() {
     navigator.share({ title, url }).catch(() => {});
     return;
   }
-  if (!navigator.clipboard) return;
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = app.querySelector('#tool-share');
+  const btn = app.querySelector('#tool-share');
+  copyText(url).then((ok) => {
     if (!btn) return;
     const orig = btn.textContent;
-    btn.textContent = '✓ ' + t('share.copied');
+    btn.textContent = ok ? '✓ ' + t('share.copied') : t('common.copyFail');
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
   });
