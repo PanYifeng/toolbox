@@ -137,13 +137,21 @@ export function mountOnlineRoom(el, game, code) {
   // —— 同步核心：重放 / 应用 / 重同步 ——
 
   // rebuildFromLog 用开局快照 + 行动日志重建状态；空日志返回 null（未开局）
+  // 单条行动重放失败（服务端不校验合法性的伪造/跨版本日志）不得拖垮整个房间：
+  // 跳过该条并继续，棋面可能与对手略有分叉，但牌局仍可继续
   function rebuildFromLog() {
     if (!log.length) return null;
     const start = log[0].action;
     if (!start || start.kind !== START_KIND) return null;
     const seats = start.seats.map((s, i) => ({ ...s, color: game.colors[i] }));
     let st = game.initialState({ seats, extras: room.options, seed: room.seed });
-    for (let i = 1; i < log.length; i++) st = game.apply(st, log[i].action);
+    for (let i = 1; i < log.length; i++) {
+      try {
+        st = game.apply(st, log[i].action);
+      } catch (e) {
+        console.warn('replay skipped bad action at seq', i, e && e.message);
+      }
+    }
     return st;
   }
 
@@ -162,7 +170,13 @@ export function mountOnlineRoom(el, game, code) {
       return;
     }
     log.push(a);
-    state = game.apply(state, a.action);
+    try {
+      state = game.apply(state, a.action);
+    } catch (e) {
+      console.warn('apply failed, resync', e && e.message);
+      resync();
+      return;
+    }
     refresh();
   }
 

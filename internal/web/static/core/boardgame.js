@@ -220,8 +220,20 @@ export function mountBoardGame(el, game) {
     commit(action);
   }
 
+  // actionKindAllowed apply 前的种类级守卫：动作 kind 必须是当前合法枚举中出现过的种类。
+  // 引擎内部仍做字段级深校验；这层只拦住完全跑偏的动作（调试钩子 __bgDebug.step、
+  // 过期 UI 点击、未来新引擎漏校验），不让无效动作污染悔棋快照栈与存档。
+  function actionKindAllowed(action) {
+    if (!action || typeof action.kind !== 'string') return false;
+    return game.legalActions(session.state).some((x) => x.kind === action.kind);
+  }
+
   // commit 应用一个行动：快照入悔棋栈 → apply → 存档 → 刷新
   function commit(action) {
+    if (!actionKindAllowed(action)) {
+      console.warn('commit rejected: action kind not in legalActions', action);
+      return;
+    }
     session.history.push(JSON.stringify(session.state));
     if (session.history.length > HISTORY_CAP) session.history.shift();
     session.state = game.apply(session.state, action);
