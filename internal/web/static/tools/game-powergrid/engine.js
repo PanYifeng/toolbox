@@ -293,9 +293,12 @@ function applyUnchecked(s, a) {
   const p = s.players[ph.cur];
   const legal = legalActions(s);
   const ok = legal.some((x) => JSON.stringify(x) === JSON.stringify(a));
-  // power 行动的 plants 子集由 UI/bot 自组（legal 仅含最大/空两档），此处单独校验燃料
-  if (a.kind === 'power') validatePower(p, a);
-  else if (!ok) throw new Error('illegal action: ' + JSON.stringify(a));
+  // power 行动的 plants 子集由 UI/bot 自组（legal 仅含最大/空两档），此处单独校验：
+  // 必须处于结算阶段、电厂不可重复（防 [4,4,4,4] 把容量翻四倍）、燃料须可行
+  if (a.kind === 'power') {
+    if (ph.kind !== 'bureaucracy') throw new Error('power: wrong phase');
+    validatePower(p, a);
+  } else if (!ok) throw new Error('illegal action: ' + JSON.stringify(a));
   switch (a.kind) {
     case 'chooseRegion': return applyChooseRegion(s, a, ph);
     case 'offer': return applyOffer(s, a, ph, p);
@@ -312,9 +315,11 @@ function applyUnchecked(s, a) {
   }
 }
 
-// validatePower 校验自组发电子集的燃料可行性
+// validatePower 校验自组发电子集的燃料可行性（电厂不可重复、最多 3 座）
 function validatePower(p, a) {
   const ids = a.plants || [];
+  if (!Array.isArray(ids) || ids.length > 3) throw new Error('power: bad plant list');
+  if (new Set(ids).size !== ids.length) throw new Error('power: duplicate plant');
   const pool = { ...p.res };
   for (const id of ids) {
     const pl = p.plants.find((x) => x.id === id);

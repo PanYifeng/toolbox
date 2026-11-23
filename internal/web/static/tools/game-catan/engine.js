@@ -354,8 +354,10 @@ function pushBankTrades(s, acts) {
 // —— apply ——
 
 // apply 执行行动：深拷贝入参后分发，返回新状态
+// 每个动作先过 actionAllowed 复核：不信任调用方（热座过期点击 / 联机重放 / 伪造客户端）
 export function apply(state, action) {
   const s = clone(state);
+  if (s.gameOver) return s;
   const kind = action.kind;
   const handlers = {
     placeSettlement: applySetupSettle, placeRoad: applySetupRoad,
@@ -369,8 +371,42 @@ export function apply(state, action) {
     endTurn: applyEndTurn,
   };
   if (!handlers[kind]) throw new Error(`unknown action: ${kind}`);
+  if (!actionAllowed(s, action)) return s; // 非法/过期动作：状态不变
   handlers[kind](s, action);
   return s;
+}
+
+// actionAllowed 合法性复核：微阶段/掷骰阶段对照 legalActions；主阶段逐类校验费用与目标
+function actionAllowed(s, a) {
+  if (s.pending) return legalActions(s).some((x) => JSON.stringify(x) === JSON.stringify(a));
+  if (s.phase === 'roll') return a.kind === 'roll';
+  return mainAllowed(s, a);
+}
+
+// mainAllowed 主阶段动作校验（建造费用 + 落点 + 发展卡 + 银行汇率）
+function mainAllowed(s, a) {
+  const p = s.players[s.cur];
+  switch (a.kind) {
+    case 'road': return canPay(p, COST_ROAD) && roadSpots(s, s.cur).includes(a.e);
+    case 'settlement': return canPay(p, COST_SETTLEMENT) && settlementSpots(s, s.cur).includes(a.v);
+    case 'city': return canPay(p, COST_CITY) && citySpots(s, s.cur).includes(a.v);
+    case 'buyDev': return canPay(p, COST_DEV) && s.devDeck.length > 0;
+    case 'playKnight': return playableDevs(s).includes('knight');
+    case 'playRoadBuild': return playableDevs(s).includes('roadBuild');
+    case 'playYop': return playableDevs(s).includes('yearOfPlenty');
+    case 'playMono': return playableDevs(s).includes('monopoly');
+    case 'bank': return bankAllowed(s, a);
+    case 'trade': return true; // 明细校验在 applyTradeOffer 内（非法提议抛错）
+    case 'endTurn': return true;
+    default: return false;
+  }
+}
+
+// bankAllowed 银行交易：自家该资源 ≥ 汇率、给出与取得不同、银行有货
+function bankAllowed(s, a) {
+  const p = s.players[s.cur];
+  if (!RESOURCES.includes(a.give) || !RESOURCES.includes(a.get) || a.give === a.get) return false;
+  return p.res[a.give] >= harborRatio(s, s.cur, a.give) && s.bank[a.get] > 0;
 }
 
 // —— 初始放置（蛇形）——
