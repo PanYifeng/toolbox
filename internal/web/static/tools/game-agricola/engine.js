@@ -23,7 +23,7 @@ import {
   SCORE_FIELDS, SCORE_PASTURES, SCORE_GRAIN, SCORE_VEG,
   SCORE_SHEEP, SCORE_BOAR, SCORE_CATTLE,
   SCORE_FAMILY, SCORE_ROOM_CLAY, SCORE_ROOM_STONE, SCORE_STABLE_FENCED,
-  SCORE_STABLE_MAX, SCORE_UNUSED, SCORE_BEGGAR, RES_INFO, ANIMAL_KEYS, MAT_NAMES, RENOV_CHAIN,
+  SCORE_STABLE_MAX, SCORE_UNUSED, SCORE_BEGGAR, RES_INFO, RES_KEYS, ANIMAL_KEYS, MAT_NAMES, RENOV_CHAIN,
   FAMILY_MAX,
 } from './actionboard-data.js';
 import { OCCUPATIONS, MINOR_IMPROVEMENTS, OCC_BY_ID, MINOR_BY_ID } from './cards-data.js';
@@ -509,7 +509,9 @@ function beginHarvest(s) {
 }
 
 // feedConfirmApply 喂食确认：付食，缺口 1 食 = 1 乞讨卡
+// 仅在喂食阶段、且待办确为当前玩家时生效（重放/伪造的 feedConfirm 不得连喂下家）
 function feedConfirmApply(s) {
+  if (s.phase.kind !== 'feed' || !s.pending || s.pending.type !== 'feed' || !s.feedQueue) return;
   const p = s.players[s.pending.seat];
   const need = feedNeedOf(p);
   const paid = Math.min(p.food, need);
@@ -561,6 +563,8 @@ export function legalActions(s) {
   const seat = currentPlayer(s);
   const p = s.players[seat];
   if (s.phase.kind === 'place') {
+    // 无剩余工人 → 无可放工空间（等待框架轮转，不应枚举出可执行动作）
+    if (remaining(p) <= 0) return [];
     return visibleSpaces(s.round, s.players.length)
       .filter((sp) => s.spaces[sp.id].taken === null && spaceOk(s, p, sp))
       .map((sp) => ({ kind: 'place', space: sp.id }));
@@ -833,7 +837,9 @@ function applyPlace(s, a) {
   const st = s.spaces[a.space];
   const seat = currentPlayer(s);
   const p = s.players[seat];
-  if (!sp || st.taken !== null || !spaceUnlocked(sp, s.round) || !playerOk(sp, s.players.length) || !spaceOk(s, p, sp)) {
+  // 无剩余工人则不能再放（防重放/伪造动作凭空多拿一次行动）
+  if (!sp || st.taken !== null || remaining(p) <= 0
+    || !spaceUnlocked(sp, s.round) || !playerOk(sp, s.players.length) || !spaceOk(s, p, sp)) {
     throw new Error(`illegal place ${a.space}`);
   }
   st.taken = seat;
@@ -1138,9 +1144,14 @@ function applyCancel(s) {
 // applyFeedCook 喂食烹食转换（raw = 谷/菜 1:1 直食）
 function applyFeedCook(s, a) {
   requirePhase(s, 'feed');
+  // 资源键必须是真实存在的资源；raw 直食只对谷物/蔬菜开放
+  // （否则 {res:'__nope', raw:true} 会以「库存 undefined」白拿食物）
+  if (!RES_KEYS.includes(a.res)) throw new Error('bad feedCook res');
+  if (a.raw && !['grain', 'veg'].includes(a.res)) throw new Error('bad feedCook raw');
+  if (!Number.isInteger(a.n) || a.n < 1) throw new Error('bad feedCook n');
   const p = s.players[s.pending.seat];
   const rate = a.raw ? 1 : I.cookRates(p)[a.res];
-  if (!rate || a.n < 1) throw new Error('bad feedCook');
+  if (!rate) throw new Error('bad feedCook');
   const stock = ANIMAL_KEYS.includes(a.res) ? totalAnimals(p, a.res) : p[a.res];
   if (stock < a.n) throw new Error('not enough to cook');
   if (ANIMAL_KEYS.includes(a.res)) removeAnimals(p, a.res, a.n);

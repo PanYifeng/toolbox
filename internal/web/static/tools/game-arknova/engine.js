@@ -555,6 +555,12 @@ function applyPlace(s, a) {
 // applyAssoc 协会行动（资金/合作动物园/大学/声望/员工/项目）
 function applyAssoc(s, a) {
   const p = s.players[s.turn];
+  // 先对照合法枚举：未知 opt（含伪造字符串）直接忽略，不白耗一次协会行动；
+  // rep 分支还要求钱够（legalAssoc 里已算，这里不再信任 action）
+  const legal = legalAssoc(s);
+  if (a.opt === 'project') {
+    if (!Number.isInteger(a.proj) || a.proj < 0 || a.proj >= s.projects.length) return;
+  } else if (!legal.some((x) => x.opt === a.opt)) return;
   const str = usedCard(s) ? usedCard(s).str : 1;
   const eff = effEffects(p);
   if (a.opt === 'money') {
@@ -564,10 +570,12 @@ function applyAssoc(s, a) {
   } else if (a.opt === 'pz') { p.partnerZoos++; log(s, s.turn, 'an.log.assocPz', {}); }
   else if (a.opt === 'uni') { p.universities++; log(s, s.turn, 'an.log.assocUni', {}); }
   else if (a.opt === 'worker') { p.workers++; log(s, s.turn, 'an.log.assocWorker', {}); }
-  else if (a.opt === 'rep') { moveRep(s, p, 1); }
+  else if (a.opt === 'rep') { moveRep(s, p, 1); } // 费用在 moveRep 内扣除
   else if (a.opt === 'project') {
+    // 项目须确实可选（已达第 1 档）且下标有效，否则忽略整个协会行动
     const pid = s.projects[a.proj];
     const proj = P_BY[pid];
+    if (!proj || projFulfilled(p, proj) < 1) return;
     const bestN = projFulfilled(p, proj);
     const best = proj.slots.filter((sl) => sl.n <= bestN).sort((x, y) => y.n - x.n)[0];
     p.projects.push(pid);
@@ -583,10 +591,14 @@ function applyAssoc(s, a) {
 }
 
 // applyBuild 建造（标准栏/特殊栏/小卖部/餐厅）
+// 费用与小卖部/餐厅上限一律以 legalBuild 重算结果为准，不信任 action 携带的 cost/what
 function applyBuild(s, a) {
   const p = s.players[s.turn];
+  const c = usedCard(s);
+  const opt = legalBuild(p, c ? c.str : 1).find((x) => x.what === a.what && x.cost === a.cost);
+  if (!opt) return;
   const eff = effEffects(p);
-  p.money -= a.cost;
+  p.money -= opt.cost;
   if (a.what === 'kiosk') { p.kiosk++; p.appeal += 1; }
   else if (a.what === 'rest') { p.rest++; p.appeal += 2; }
   else {
@@ -596,7 +608,7 @@ function applyBuild(s, a) {
       p.enc[a.what].pw += 1;
     }
   }
-  log(s, s.turn, 'an.log.build', { what: buildName(a.what), cost: a.cost });
+  log(s, s.turn, 'an.log.build', { what: buildName(a.what), cost: opt.cost });
   endAction(s);
 }
 
@@ -774,6 +786,8 @@ function nextTurn(s) {
 function applyDiscard(s, a) {
   const p = s.players[s.sub.seat];
   if (a.kind === 'discardCard') {
+    // 只能弃手中确实持有的牌（重放/伪造不得凭空移除或复制卡牌）
+    if (!p.hand.includes(a.card)) return;
     p.hand = p.hand.filter((x) => x !== a.card);
     s.discard.push(a.card);
     log(s, s.sub.seat, 'an.log.discard', { card: cardName(a.card) });
