@@ -235,8 +235,10 @@ function mainActions(s) {
 // —— apply ——
 
 // apply 执行行动：微阶段优先分发，主行动后走回合末结算链
+// 终局后一律拒绝（防陈旧动作重复结算）
 export function apply(state, action) {
   const s = clone(state);
+  if (s.gameOver) return s;
   if (s.pending && s.pending.kind === 'discard') applyDiscard(s, action);
   else if (s.pending && s.pending.kind === 'noble') applyNoblePick(s, action);
   else applyMain(s, action);
@@ -244,23 +246,28 @@ export function apply(state, action) {
 }
 
 // applyMain 主行动执行 + 进入回合末结算
+// 每个分支先自行复核合法性：apply 是唯一入口，不信任调用方（热座过期点击 / 联机重放 / 伪造客户端）
 function applyMain(s, a) {
   const p = s.players[s.cur];
   if (a.kind === 'take3') {
+    if (!isTake3(s, a.colors)) return;
     for (const c of a.colors) { s.supply.gems[c] -= 1; p.gems[c] += 1; }
     log(s, s.cur, 'sl.log.take3', { n: p.name, c: gemNames(a.colors) });
   } else if (a.kind === 'take2') {
+    if (!isColor(a.color) || s.supply.gems[a.color] < 2) return;
     s.supply.gems[a.color] -= 2;
     p.gems[a.color] += 2;
     log(s, s.cur, 'sl.log.take2', { n: p.name, c: GEM_NAMES[a.color] });
   } else if (a.kind === 'reserve') {
-    const cid = a.slot < 0 ? s.decks[a.tier].shift() : takeFromMarket(s, a.tier, a.slot);
+    const cid = reserveCard(s, a);
+    if (cid === null) return;
     p.reserved.push(cid);
     if (s.supply.gold > 0) { s.supply.gold -= 1; p.gold += 1; }
     log(s, s.cur, a.slot < 0 ? 'sl.log.reserveBlind' : 'sl.log.reserve', {
       n: p.name, t: a.tier + 1,
     });
   } else if (a.kind === 'buy') {
+    if (!buyTarget(s, p, a)) return;
     const cid = a.reserved !== undefined ? p.reserved.splice(a.reserved, 1)[0]
       : takeFromMarket(s, a.tier, a.slot);
     payFor(p, s.supply, cid);
@@ -272,13 +279,51 @@ function applyMain(s, a) {
     });
   } else if (a.kind === 'pass') {
     log(s, s.cur, 'sl.log.pass', { n: p.name });
+  } else {
+    return; // 未知动作：不推进回合
   }
   endOfTurn(s);
+}
+
+// isColor 宝石色索引是否合法（0-4）
+function isColor(c) { return Number.isInteger(c) && c >= 0 && c < 5; }
+
+// isTake3 拿 3 颗不同色：恰好 1-3 个互异合法色，且每色供应充足
+function isTake3(s, colors) {
+  if (!Array.isArray(colors) || colors.length < 1 || colors.length > 3) return false;
+  if (!colors.every(isColor)) return false;
+  if (new Set(colors).size !== colors.length) return false;
+  return colors.every((c) => s.supply.gems[c] > 0);
+}
+
+// reserveCard 预留取牌：返回卡 id，非法返回 null（不消耗金）
+// 盲留哨兵固定为 slot === -1（合法枚举只发 -1，不能把任意负数都当盲留）
+function reserveCard(s, a) {
+  if (s.players[s.cur].reserved.length >= RESERVE_CAP) return null;
+  if (!Number.isInteger(a.tier) || a.tier < 0 || a.tier >= 3) return null;
+  if (a.slot === -1) return s.decks[a.tier].length > 0 ? s.decks[a.tier].shift() : null;
+  if (!Number.isInteger(a.slot) || a.slot < 0 || a.slot >= MARKET_SLOTS) return null;
+  if (s.market[a.tier][a.slot] === null) return null;
+  return takeFromMarket(s, a.tier, a.slot);
+}
+
+// buyTarget 购买目标是否合法且买得起（预留牌按预留位，明牌按市场位）
+function buyTarget(s, p, a) {
+  if (a.reserved !== undefined) {
+    if (!Number.isInteger(a.reserved)) return false;
+    const cid = p.reserved[a.reserved];
+    return cid !== undefined && canAfford(p, cid);
+  }
+  if (!Number.isInteger(a.tier) || a.tier < 0 || a.tier >= 3) return false;
+  if (!Number.isInteger(a.slot) || a.slot < 0 || a.slot >= MARKET_SLOTS) return false;
+  const cid = s.market[a.tier][a.slot];
+  return cid !== null && cid !== undefined && canAfford(p, cid);
 }
 
 // applyDiscard 弃 1 颗宝石（回供应堆）；回到 ≤10 后进入贵族结算
 function applyDiscard(s, a) {
   const p = s.players[s.pending.seat];
+  if (a.color === -1 ? p.gold <= 0 : !isColor(a.color) || p.gems[a.color] <= 0) return;
   const name = a.color === -1 ? GOLD_NAME : GEM_NAMES[a.color];
   if (a.color === -1) { p.gold -= 1; s.supply.gold += 1; }
   else { p.gems[a.color] -= 1; s.supply.gems[a.color] += 1; }
@@ -289,8 +334,9 @@ function applyDiscard(s, a) {
   }
 }
 
-// applyNoblePick 择一位贵族来访（每回合至多 1 位）
+// applyNoblePick 择一位贵族来访（每回合至多 1 位；idx 必须在候选内）
 function applyNoblePick(s, a) {
+  if (!s.pending.options.includes(a.idx)) return;
   s.pending = null;
   visitNoble(s, a.idx);
   finishTurn(s);

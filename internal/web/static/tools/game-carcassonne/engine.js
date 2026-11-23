@@ -49,6 +49,9 @@ export function tileName(t) {
 
 // canPlace 落块合法性：空格 + 至少一个邻块 + 各邻边地形类型匹配
 export function canPlace(s, t, r, x, y) {
+  // 旋转只能是 0..3（取模虽能容忍任意整数，但伪造的 r=99999 会被当成合法朝向落块）
+  if (!Number.isInteger(r) || r < 0 || r > 3) return false;
+  if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
   if (cellAt(s, x, y)) return false;
   let any = false;
   for (let e = 0; e < 4; e++) {
@@ -367,8 +370,10 @@ export function legalActions(s) {
 }
 
 // apply 纯函数入口：深拷贝 → 派发 → 返回新 state
+// 终局后一律拒绝：防陈旧动作（热座过期点击 / 联机日志重放）二次结算
 export function apply(state, action) {
   const s = clone(state);
+  if (s.gameOver) return s;
   if (action.kind === 'place') applyPlace(s, action);
   else if (action.kind === 'meeple') applyMeeple(s, action);
   else if (action.kind === 'skip') applySkip(s);
@@ -439,17 +444,21 @@ function applySkip(s) {
       log(s, -1, 'ca.log.discard', { tile: tileName(s.current) });
     }
     drawForTurn(s);
-  } else {
-    const [x, y] = s.last.split(',').map(Number);
-    settleTurn(s, x, y);
-    endTurn(s);
+    return;
   }
+  // 随从阶段必须有刚落下的块（终局/异常态下 s.last 为 null，直接忽略）
+  if (s.phase !== 'meeple' || !s.last) return;
+  const [x, y] = s.last.split(',').map(Number);
+  settleTurn(s, x, y);
+  endTurn(s);
 }
 
 // —— 终局结算 ——
 
 // finalize 终局：未完成城市/道路减半 + 修道院按已占格 + 农夫计分
+// 幂等：重复调用直接返回（防陈旧动作把分数结算两遍）
 function finalize(s) {
+  if (s.gameOver) return;
   s.gameOver = true;
   s.phase = 'over';
   s.current = -1;

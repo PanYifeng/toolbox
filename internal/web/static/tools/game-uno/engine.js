@@ -249,11 +249,15 @@ function mainActions(s) {
 // —— apply ——
 
 // apply 执行行动（微阶段优先分发）
+// 局末只接受 nextRound：其余动作一律忽略（防重放本局最后的 draw→playDrawn 把奖励发两遍）
 export function apply(state, action) {
   const s = clone(state);
-  if (s.roundOver && action.kind === 'nextRound') {
-    dealRound(s);
-    checkGameOver(s);
+  if (s.gameOver) return s;
+  if (s.roundOver) {
+    if (action.kind === 'nextRound') {
+      dealRound(s);
+      checkGameOver(s);
+    }
     return s;
   }
   if (s.pending) applyPending(s, action);
@@ -261,8 +265,10 @@ export function apply(state, action) {
   return s;
 }
 
-// applyPending 微阶段分发
+// applyPending 微阶段分发：先对照该微阶段的合法 kind 白名单，未知 kind 一律拒绝
+// （否则 applyDrawPlay 会把任何非 playDrawn 的动作当成「留牌」直接过牌）
 function applyPending(s, a) {
+  if (!a || !pendingActions(s).some((x) => x.kind === a.kind)) return;
   const k = s.pending.kind;
   if (k === 'chooseColor') applyChooseColor(s, a);
   else if (k === 'uno') applyUno(s, a);
@@ -277,10 +283,13 @@ function applyMain(s, a) {
 }
 
 // applyPlay 打出手牌：万能牌先入弃牌堆并进入选色微阶段
+// 手牌必须持有该牌，且必须符合当前可出条件（连锁罚牌期走 canStack 白名单）
 function applyPlay(s, a) {
   const p = s.players[s.cur];
   const i = p.hand.indexOf(a.card);
   if (i < 0) return;
+  if (s.rules.stacking && s.drawStack > 0) { if (!canStack(s, a.card)) return; }
+  else if (!canPlay(s, a.card)) return;
   p.hand.splice(i, 1);
   const card = DECK[a.card];
   log(s, s.cur, s.drawStack > 0 ? 'un.log.stack' : 'un.log.play', {
@@ -296,6 +305,7 @@ function applyPlay(s, a) {
 
 // applyChooseColor 万能牌选色：首张起手只定色，其余走效果链
 function applyChooseColor(s, a) {
+  if (![0, 1, 2, 3].includes(a.color)) return;
   s.activeColor = a.color;
   const pend = s.pending;
   s.pending = null;
@@ -368,12 +378,13 @@ function applyDraw(s) {
 function applyDrawPlay(s, a) {
   const card = s.pending.card;
   s.pending = null;
-  if (a.kind === 'playDrawn' && s.rules.drawPlay) applyPlay(s, { card });
+  if (a.kind === 'playDrawn' && s.rules.drawPlay && canPlay(s, card)) applyPlay(s, { card });
   else s.cur = nextSeat(s, 1);
 }
 
 // applyDrawPenalty 连锁接不住：摸满累计张数并跳过
 function applyDrawPenalty(s) {
+  if (s.drawStack <= 0) return;
   const p = s.players[s.cur];
   const k = s.drawStack;
   drawCards(s, s.cur, k);

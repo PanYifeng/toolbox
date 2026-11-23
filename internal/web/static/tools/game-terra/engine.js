@@ -1247,10 +1247,12 @@ function pushShActions(s, p, acts) {
   const once = id !== 'ACTE' ? !(p.shUsed[id]) : true;
   if (!once) return;
   if (id === 'ACTW') {
+    if (builtCount(p, 'D') >= BLD_CAP.D) return; // 民居已满则无免费建民居动作可选
     for (const hex of buildRangeSet(s, p)) {
       if (s.hexes[hex].terrain === 'forest') acts.push({ kind: 'shAction', id, hex });
     }
   } else if (id === 'ACTN') {
+    if (builtCount(p, 'D') >= BLD_CAP.D) return; // 同上
     // 免费改造+建民居：直接邻接己方建筑（TF_NEED_HEX_ADJACENCY）
     for (const hex of directAdjacentSpots(s, p)) {
       acts.push({ kind: 'shAction', id, hex });
@@ -1329,8 +1331,20 @@ function legalResolve(s) {
 
 // —— apply ——
 
+// PHASE_ACTION_KINDS 各阶段允许的 action.kind 白名单。
+// 这几个阶段的 apply 只靠「取某个字段」（选了什么派系/格子/板块）就生效，
+// 不校验 kind 的话，一个 {kind:'x', faction:'halflings'} 的伪造动作照样能选派系。
+// 主行动阶段（PH_ACT）与微阶段（PH_RESOLVE）由 applyAct/applyResolve 内部按 kind 分派，天然拒绝未知 kind。
+const PHASE_ACTION_KINDS = {
+  [PH_FACTION]: ['faction'],
+  [PH_PLACE]: ['placeDwelling'],
+  [PH_BONUS]: ['pickBonus'],
+};
+
 export function apply(state, action) {
   const s = clone(state);
+  const kinds = PHASE_ACTION_KINDS[s.phase.kind];
+  if (kinds && (!action || !kinds.includes(action.kind))) return s;
   switch (s.phase.kind) {
     case PH_FACTION: applyFaction(s, action); break;
     case PH_PLACE: applyPlace(s, action); break;
@@ -1390,6 +1404,8 @@ function applyPlace(s, a) {
 function applyPickBonus(s, a) {
   const step = s.placeQueue[0];
   const p = s.players[step.seat];
+  // 合法枚举里动作带 seat（= 该步行动者）；伪造的 seat 与当前行李位不符一律拒绝
+  if (a.seat !== undefined && a.seat !== p.seat) return;
   if (!s.bonusAvail[a.bonus]) return;
   s.bonusAvail[a.bonus] = false;
   p.bonus = a.bonus;
@@ -1430,6 +1446,7 @@ function applyAct(s, a) {
 function applyBuild(s, p, a) {
   const { directShip, reach } = reachInfo(s, p);
   if (!reach.has(a.hex) || s.hexes[a.hex].owner !== null || s.hexes[a.hex].terrain === 'river') return;
+  if (builtCount(p, 'D') >= BLD_CAP.D) return; // 民居上限（合法枚举已拦，apply 再兜一层）
   const c = buildCost(s, p, a.hex);
   if (!canAffordBuild(s, p, a.hex)) return;
   if (c.teleport) {
@@ -1471,6 +1488,7 @@ function applyBuild(s, p, a) {
 function applyUpgrade(s, p, a) {
   const cur = p.buildings[a.hex];
   if (!cur || !chainOf(cur).includes(a.to)) return;
+  if (builtCount(p, a.to) >= BLD_CAP[a.to]) return; // 各建筑上限（枚举已拦，apply 再兜一层）
   const cost = upgradeCostOf(s, p, a.to, a.hex);
   const f = factionOf(p);
   const favors = a.to === 'TE' || a.to === 'SA' ? (Array.isArray(a.favor) ? a.favor : [a.favor]) : [];
@@ -1555,8 +1573,10 @@ function applyPowerAction(s, p, a) {
 }
 
 // applyConvert 资源转换（官方比率；免费子行动，不结束回合）
+// n 必须是正整数：负数/小数/字符串会把资源或 VP 反向刷出（历史漏洞）
 function applyConvert(s, p, a) {
-  const n = a.n || 1;
+  const n = a.n === undefined ? 1 : a.n;
+  if (!Number.isInteger(n) || n < 1) return;
   switch (`${a.from}>${a.to}`) {
     case 'power>coins':
       if (p.power.iii < 1 * n) return;
@@ -1671,6 +1691,7 @@ function applyShAction(s, p, a) {
       const { reach } = reachInfo(s, p);
       const h = s.hexes[a.hex];
       if (!reach.has(a.hex) || h.owner !== null || h.terrain !== 'forest') return;
+      if (builtCount(p, 'D') >= BLD_CAP.D) return; // 民居上限同样适用（免费建筑不得绕过）
       h.owner = p.seat;
       h.bld = 'D';
       p.buildings[a.hex] = 'D';
@@ -1681,6 +1702,7 @@ function applyShAction(s, p, a) {
     }
     case 'ACTN': { // 游牧：免费改造+建民居（直接邻接）
       if (!directAdjacentSpots(s, p).has(a.hex)) return;
+      if (builtCount(p, 'D') >= BLD_CAP.D) return; // 民居上限同样适用
       const h = s.hexes[a.hex];
       if (h.owner !== null) return;
       h.terrain = homeTerrain(p);
@@ -1728,7 +1750,9 @@ function applyShAction(s, p, a) {
 }
 
 // applyTileAction 板块免费行动：BON1 +1 铲；BON2/FAV6 +1 邪教步（每轮一次）
+// 白名单校验：其他板块（BON3/BON4/FAV9…）无免费行动，直接调用不得给收益
 function applyTileAction(s, p, a) {
+  if (a.id !== 'BON1' && a.id !== 'BON2' && a.id !== 'FAV6') return;
   const held = a.id === p.bonus || p.favor.includes(a.id);
   if (!held || p.tileUsed[a.id]) return;
   p.tileUsed[a.id] = true;
@@ -1744,6 +1768,7 @@ function applyTileAction(s, p, a) {
 // applyPass 过牌（commands.pm command_pass）：首个过牌者 = 下轮起始玩家 →
 // do_pass_vp 结算 → 换/持板块（第 6 轮不可拿，含累计金币）→ 全员过完收尾
 function applyPass(s, p, a) {
+  if (p.passed) return; // 已过牌：重复 pass 会重复领过牌 VP 并打乱顺位
   if (s.round === ROUNDS) {
     if (a.bonus !== null) return;
   } else if (!passableBonus(s, p).includes(a.bonus)) {
