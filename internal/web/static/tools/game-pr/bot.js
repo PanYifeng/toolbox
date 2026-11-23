@@ -123,12 +123,14 @@ function botMayor(s) {
   return { kind: 'mayorPlace', assigns };
 }
 
-// mayorTargets 安置目标展开到圆圈粒度（建筑每圆圈一个目标）
+// mayorTargets 安置目标展开到圆圈粒度（建筑每圆圈一个目标；大建筑只认首格，第 2 格为影子格）
 function mayorTargets(p) {
   const tiles = p.island.map((t, i) => ({ t, i })).filter((x) => !x.t.occ);
   const slots = p.city
     .map((c, i) => ({ c, i, b: c.id ? BUILDING_BY_ID[c.id] : null }))
-    .filter((x) => x.b && x.c.occ < x.b.circles);
+    .filter((x) => x.b && x.c.occ < x.b.circles)
+    // 同 id 的第 2 格是影子格，不承载圆圈
+    .filter((x) => p.city.findIndex((c) => c.id === x.c.id) === x.i);
   const millFor = (g) => p.city.some((x) => x.id && x.occ >= BUILDING_BY_ID[x.id].circles && BUILDING_BY_ID[x.id].prod === g);
   const tileFor = (g) => p.island.some((t) => t.type === g && t.occ);
   const out = [];
@@ -221,8 +223,16 @@ function botDiscard(s) {
 }
 
 // emptyCirclesOf 空圆圈数（engine 内部函数的同款实现，bot 独立计算避免依赖私有导出）
+// 大建筑占 2 格但只有一组圆圈，按去重建筑计（第 2 格是影子格）
 function emptyCirclesOf(p) {
   let n = p.island.filter((t) => !t.occ).length;
-  for (const slot of p.city) if (slot.id) n += BUILDING_BY_ID[slot.id].circles - slot.occ;
+  const seen = new Set();
+  for (const slot of p.city) {
+    if (!slot.id || seen.has(slot.id)) continue;
+    seen.add(slot.id);
+    let occ = 0;
+    for (const other of p.city) if (other.id === slot.id) occ = Math.max(occ, other.occ);
+    n += BUILDING_BY_ID[slot.id].circles - Math.min(occ, BUILDING_BY_ID[slot.id].circles);
+  }
   return n;
 }

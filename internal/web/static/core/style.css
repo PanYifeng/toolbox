@@ -1148,6 +1148,7 @@ pre {
 .pr-slot.pr-empty { border-style: dashed; opacity: 0.4; }
 .pr-slot.pr-occ { border-color: color-mix(in srgb, var(--pc) 60%, var(--border)); }
 .pr-slot.pr-click { cursor: pointer; border-color: var(--accent); }
+.pr-slot.pr-shadow { opacity: 0.45; }
 .pr-slot.pr-sel { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
 .pr-pgoods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; font-size: 13px; min-height: 20px; }
 .pr-good { border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; background: var(--bg); }

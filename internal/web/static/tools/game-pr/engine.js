@@ -29,23 +29,48 @@ function seatOrderFrom(start, n) { return Array.from({ length: n }, (_, i) => (s
 
 function occIsland(p, type) { return p.island.filter((t) => t.type === type && t.occ).length; }
 
-// emptyCircles 玩家全部空移民圆圈数（岛格 + 已建建筑的未满圆圈）
+// isShadowSlot 大建筑（size=2）占 2 格城市空间，但圆圈只在首格：
+// 同 id 的第 2 格是「影子格」，不承载移民圆圈，不可安置
+function isShadowSlot(p, i) {
+  const slot = p.city[i];
+  if (!slot || !slot.id) return false;
+  return p.city.findIndex((c) => c.id === slot.id) !== i;
+}
+
+// distinctCity 城市里的去重建筑列表（大建筑占 2 格但只算 1 座）：
+// occ 取该建筑各格已安置数最大值（正常放置只写首格）
+function distinctCity(p) {
+  const seen = new Set();
+  const out = [];
+  for (const slot of p.city) {
+    if (!slot.id || seen.has(slot.id)) continue;
+    seen.add(slot.id);
+    let occ = 0;
+    for (const other of p.city) if (other.id === slot.id) occ = Math.max(occ, other.occ);
+    const b = BUILDING_BY_ID[slot.id];
+    out.push({ b, occ: Math.min(occ, b.circles) });
+  }
+  return out;
+}
+
+// emptyCircles 玩家全部空移民圆圈数（岛格 + 已建建筑的未满圆圈，大建筑只算一组圆圈）
 function emptyCircles(p) {
   let n = p.island.filter((t) => !t.occ).length;
-  for (const slot of p.city) if (slot.id) n += BUILDING_BY_ID[slot.id].circles - slot.occ;
+  for (const { b, occ } of distinctCity(p)) n += b.circles - occ;
   return n;
 }
 
-// totalColonists 玩家移民总数（圣胡安 + 岛 + 城市）
+// totalColonists 玩家移民总数（圣胡安 + 岛 + 城市，大建筑只计 1 个移民圆圈）
 function totalColonists(p) {
   let n = p.san;
   for (const t of p.island) if (t.occ) n++;
-  for (const slot of p.city) if (slot.id) n += slot.occ;
+  for (const { occ } of distinctCity(p)) n += occ;
   return n;
 }
 
 // prodCapacity 生产产能：min(已占种植园数, 已占匹配生产建筑圆圈数)；玉米免建筑
 // ✅ 对照 dae-hany engine：生产按「每个圆圈一个移民」计，部分占用的建筑按已占圆圈数贡献产能
+// 大建筑无 prod 字段，不影响产能；生产建筑 size 均为 1，按格累加等价
 export function prodCapacity(p, good) {
   const plants = occIsland(p, good);
   if (good === 'corn') return plants;
@@ -56,7 +81,6 @@ export function prodCapacity(p, good) {
   }
   return Math.min(plants, circles);
 }
-
 // buildCost 建筑实际费用：建筑师特权 -1；每个已占采石场 -1，折扣上限 = 建筑 VP 值（所有建筑通用）
 // ✅ 对照 dae-hany engine：max_q_reduction = BUILDING_DATA[b][1]（即印刷 VP），非「紫建筑至多 -1」
 export function buildCost(p, buildingId, isChooser) {
@@ -181,9 +205,8 @@ export function score(s) {
 function buildingScore(p) {
   const r = { base: 0, guild: 0, residence: 0, fortress: 0, customs: 0, cityHall: 0 };
   let smallProd = 0, largeProd = 0, violet = 0;
-  for (const slot of p.city) {
-    if (!slot.id) continue;
-    const b = BUILDING_BY_ID[slot.id];
+  // 按去重建筑计：大建筑占 2 格城市空间，但印刷 VP/圈数只算 1 份
+  for (const { b } of distinctCity(p)) {
     r.base += b.vp;
     if (b.type === 'prod') {
       if (b.circles === 1) smallProd++; else largeProd++;
@@ -305,6 +328,7 @@ function maxShipLoad(s, p, g) {
 
 // legalCaptain 船长（✅ 对照 dae-hany action_captain_load/pass 逐条核对）：
 // - 货船只能装「该种货装得最多」的船，且必须全量装满到上限（能装必装）
+// - 一轮内可多次装货（官方：轮转装货直到全员连续弃权），故不用 shipped 做单次门禁
 // - 无可装之货且无可用码头 → 必须弃权；有可用码头 → 弃权保留轮位（有人装货后再轮回来）
 // - 码头全自愿（不计入强制装载），装载该种货的全部（不限船容量），每阶段限一次
 function legalCaptain(s, p, ph) {
@@ -331,8 +355,23 @@ function legalCaptain(s, p, ph) {
 
 // —— apply ——
 
+// PHASE_ACTIONS 各阶段允许的动作类型（结构性门禁：防陈旧/伪造动作在错误阶段结算）
+const PHASE_ACTIONS = {
+  pickRole: ['pickRole'],
+  settler: ['settler'],
+  builder: ['build', 'buildPass'],
+  mayor: ['mayorPlace'],
+  craftsman: ['craftsmanExtra', 'craftsmanPass'],
+  trader: ['sell', 'sellPass'],
+  captain: ['ship', 'wharf', 'captainPass'],
+  discard: ['discard'],
+};
+
 export function apply(state, action) {
   const s = cl(state);
+  // 终局后一律拒绝：防重放最后一步二次发分
+  if (s.gameOver) return s;
+  if (!action || !(PHASE_ACTIONS[s.phase.kind] || []).includes(action.kind)) return s;
   applyUnchecked(s, action);
   settle(s);
   return s;
@@ -353,14 +392,15 @@ function applyUnchecked(s, a) {
     case 'wharf': return applyWharf(s, a);
     case 'captainPass': return captainAdvance(s, true);
     case 'discard': return applyDiscard(s, a);
-    default: throw new Error('unknown action: ' + a.kind);
+    default: return;
   }
 }
 
-// applyPickRole 选角：拿角色+悬赏金币并入执行队列；全员选完开始第一个角色阶段
+// applyPickRole 选角：拿角色+悬赏金币并入执行队列；全员选完开始第一个角色阶段；
+// 角色已被选走则忽略（陈旧/伪造选角）
 function applyPickRole(s, a) {
   const role = s.roles.find((r) => r.id === a.role && r.taken === null);
-  if (!role) throw new Error('role taken');
+  if (!role) return;
   const seat = s.phase.cur;
   role.taken = seat;
   if (role.bonus > 0) {
@@ -396,7 +436,7 @@ function startNextRole(s) {
       return;
     case 'craftsman': {
       // produceAll 写入 s.phase.produced，随后立即被 phase 覆盖——须先存后传
-      produceAll(s);
+      produceAll(s, chooser);
       const produced = s.phase.produced;
       s.phase = { kind: 'craftsman', chooser, order, idx: 0, cur: chooser, produced };
       return;
@@ -467,20 +507,22 @@ function endMayorRefill(s) {
   log(s, -1, 'pr.log.mayorShip', { c: s.colonistShip });
 }
 
-// buildingEmptyCircles 玩家已建建筑的空移民圆圈数（岛格不计入补船公式）
+// buildingEmptyCircles 玩家已建建筑的空移民圆圈数（岛格不计入补船公式；
+// 大建筑占 2 格但只有一组圆圈，按去重建筑计）
 function buildingEmptyCircles(p) {
   let n = 0;
-  for (const slot of p.city) if (slot.id) n += BUILDING_BY_ID[slot.id].circles - slot.occ;
+  for (const { b, occ } of distinctCity(p)) n += b.circles - occ;
   return n;
 }
 
 // produceAll 工匠阶段开始：全体生产 + 工厂收入（按本次实际生产种类数）；
-// 返回选择者本回合实际生产的种类（特权额外货必须从中取）
-function produceAll(s) {
+// 返回选择者本回合实际生产的种类（特权额外货必须从中取）。
+// chooser 是座位号（此前误用 roleQueue[0]——那是角色 id，比较恒为 false，特权货永远拿不到）
+function produceAll(s, chooser) {
   let produced = [];
   for (const p of s.players) {
     let types = 0;
-    const isChooser = p.seat === s.roleQueue[0];
+    const isChooser = p.seat === chooser;
     for (const g of GOODS) {
       const n = prodCapacity(p, g);
       if (n > 0) {
@@ -537,6 +579,9 @@ function applySettler(s, a) {
   const p = s.players[ph.cur];
   const isRandom = a.tile === 'random';
   if (isRandom) {
+    // 庄园随机地块：须确有已占庄园、本阶段未用过、供应有货、岛未满 12 格
+    if (!hasOccupied(p, 'hacienda') || ph.haciendaUsed) return;
+    if (p.island.length >= 12 || supplyCount(s) <= 0) return;
     const type = drawTile(s, 'random');
     if (type) {
       ph.haciendaUsed = true;
@@ -549,6 +594,11 @@ function applySettler(s, a) {
   if (a.tile === 'pass' || islandFull) {
     log(s, p.seat, 'pr.log.settlerPass', { n: p.name });
   } else {
+    // 常规拿地：采石场须有权限（选择者或工棚），翻牌行下标须有牌；非法则整个动作忽略
+    const isQuarry = a.tile === 'quarry';
+    const mayQuarry = p.seat === ph.chooser || hasOccupied(p, 'construction_hut');
+    if (isQuarry && (!mayQuarry || s.quarrySupply <= 0)) return;
+    if (!isQuarry && (typeof a.tile !== 'number' || !s.offers[a.tile])) return;
     const type = drawTile(s, a.tile);
     if (type) {
       // 农舍移民只作用于「翻牌行/采石场」常规地块，庄园随机地块不适用
@@ -606,15 +656,16 @@ function tileName(type) { return type === 'quarry' ? { zh: '采石场', en: 'Qua
 function applyBuild(s, a) {
   const p = s.players[s.phase.cur];
   const b = BUILDING_BY_ID[a.building];
-  if (s.buildingStock[a.building] <= 0) throw new Error('out of stock');
-  if (p.city.some((slot) => slot.id === a.building)) throw new Error('duplicate building');
+  // 非法建造一律忽略（不抛错）：重放/伪造动作不能把状态带崩
+  if (!b || (s.buildingStock[a.building] || 0) <= 0) return;
+  if (p.city.some((slot) => slot.id === a.building)) return;
   const cost = buildCost(p, a.building, p.seat === s.phase.chooser);
-  if (cost > p.doubloons) throw new Error('cannot afford');
+  if (cost > p.doubloons) return;
   const size = b.size || 1;
   const first = p.city.findIndex((c) => !c.id);
   // 大建筑需要 2 个空位（模型按顺序填充，取首个空位起的对）
   const hasPair = first >= 0 && first + 1 < p.city.length && !p.city[first + 1].id;
-  if (first < 0 || (size === 2 && !hasPair)) throw new Error('city full');
+  if (first < 0 || (size === 2 && !hasPair)) return;
   p.doubloons -= cost;
   s.buildingStock[a.building]--;
   p.city[first].id = a.building;
@@ -633,12 +684,14 @@ function applyBuild(s, a) {
 }
 
 // applyMayorPlace 安置移民：assigns=[{where:'island'|'city',i}]；放不下的滞留圣胡安
+// 方案先整体校验再落位：任一格非法则整个动作忽略（防部分落位破坏移民守恒）
 function applyMayorPlace(s, a) {
   const p = s.players[s.phase.cur];
   const got = s.phase.pending[p.seat] || 0;
   const want = mayorWant(p, s.phase);
-  const assigns = a.assigns || [];
-  if (assigns.length !== want) throw new Error('must place ' + want + ' colonists, got ' + assigns.length);
+  const assigns = Array.isArray(a.assigns) ? a.assigns : [];
+  if (assigns.length !== want) return;
+  if (!assignsFeasible(p, assigns)) return;
   placeAssigns(p, assigns);
   // 船上未安置的滞留圣胡安；安置超出船上所得的部分从圣胡安补足
   const fromSan = Math.max(0, assigns.length - got);
@@ -648,7 +701,31 @@ function applyMayorPlace(s, a) {
   stepRole(s);
 }
 
-// placeAssigns 校验安置方案并落位：岛格一格一移民；建筑逐圆圈递增（同楼可多次安置）
+// assignsFeasible 安置方案可行性预检（按方案内累计占用判断，防同一格超放）
+function assignsFeasible(p, assigns) {
+  const used = new Map();
+  for (const asg of assigns) {
+    if (!asg || typeof asg.i !== 'number') return false;
+    const key = `${asg.where}:${asg.i}`;
+    const n = (used.get(key) || 0) + 1;
+    used.set(key, n);
+    if (asg.where === 'island') {
+      const tile = p.island[asg.i];
+      if (!tile || tile.occ || n > 1) return false;
+    } else if (asg.where === 'city') {
+      const slot = p.city[asg.i];
+      if (!slot || !slot.id) return false;
+      // 大建筑第 2 格是影子格，不承载圆圈
+      if (isShadowSlot(p, asg.i)) return false;
+      const b = BUILDING_BY_ID[slot.id];
+      if (slot.occ + n > b.circles) return false;
+    } else return false;
+  }
+  return true;
+}
+
+// placeAssigns 落位（调用前须经 assignsFeasible 预检）：岛格一格一移民；
+// 建筑逐圆圈递增（同楼可多次安置）；大建筑只认首格
 function placeAssigns(p, assigns) {
   for (const asg of assigns) {
     if (asg.where === 'island') {
@@ -663,23 +740,23 @@ function placeAssigns(p, assigns) {
   }
 }
 
-// applyCraftsmanExtra 工匠特权：额外取 1 件本回合实际生产过的货物
+// applyCraftsmanExtra 工匠特权：额外取 1 件本回合实际生产过的货物（非法动作忽略）
 function applyCraftsmanExtra(s, a) {
   const p = s.players[s.phase.cur];
   const produced = s.phase.produced || [];
-  if (p.seat !== s.phase.chooser || !produced.includes(a.good)) throw new Error('cannot take extra');
+  if (p.seat !== s.phase.chooser || !produced.includes(a.good)) return;
   p.goods[a.good] += 1;
   log(s, p.seat, 'pr.log.craftsmanExtra', { n: p.name, g: GOOD_NAMES[a.good] });
   stepRole(s);
 }
 
-// applySell 卖货：入交易所 1 槽（不可同种，事务所除外），得款
+// applySell 卖货：入交易所 1 槽（不可同种，事务所除外），得款；非法动作忽略
 function applySell(s, a) {
   const p = s.players[s.phase.cur];
   const slot = s.tradingHouse.indexOf(null);
-  if (slot < 0) throw new Error('trading house full');
-  if (p.goods[a.good] <= 0) throw new Error('no good');
-  if (!hasOccupied(p, 'office') && s.tradingHouse.includes(a.good)) throw new Error('duplicate good');
+  if (slot < 0) return;
+  if (!GOODS.includes(a.good) || p.goods[a.good] <= 0) return;
+  if (!hasOccupied(p, 'office') && s.tradingHouse.includes(a.good)) return;
   p.goods[a.good]--;
   s.tradingHouse[slot] = a.good;
   const price = sellPrice(p, a.good, p.seat === s.phase.chooser);
@@ -690,14 +767,13 @@ function applySell(s, a) {
 
 // applyShip 装货船（✅ 对照 dae-hany）：必须装满到该船该种货的上限；同种货锁定一船；
 // 每件 1 VP；船长特权首次装货（含码头）+1 VP；港口每次装货（含码头）+1 VP。
-// 任何装货都让「持码头弃权者」重获轮位。装完轮转下一人。
+// 任何装货都让「持码头弃权者」重获轮位。装完轮转下一人。非法动作忽略。
 function applyShip(s, a) {
   const p = s.players[s.phase.cur];
   const ship = s.ships[a.ship];
+  if (!ship || !GOODS.includes(a.good)) return;
   const loadable = shipLoadable(s, a.ship, p, a.good);
-  if (loadable <= 0 || a.count !== loadable || a.count !== maxShipLoad(s, p, a.good)) {
-    throw new Error('must load max on the max ship');
-  }
+  if (loadable <= 0 || a.count !== loadable || a.count !== maxShipLoad(s, p, a.good)) return;
   ship.good = a.good; ship.load += a.count;
   p.goods[a.good] -= a.count;
   s.phase.loaded[a.good] = a.ship;
@@ -713,8 +789,11 @@ function applyShip(s, a) {
 // 不受货船同种锁限制；每件 1 VP；港口适用；船长特权适用（首次装货含码头）。
 function applyWharf(s, a) {
   const p = s.players[s.phase.cur];
-  if (p.goods[a.good] <= 0) throw new Error('no goods');
-  if (s.phase.wharfUsed[p.seat]) throw new Error('wharf used');
+  // 码头须已占用，且一次装走该种货的全部（官方：装载该种货的全部）
+  if (!hasOccupied(p, 'wharf')) return;
+  if (s.phase.wharfUsed[p.seat]) return;
+  if (!GOODS.includes(a.good) || p.goods[a.good] <= 0) return;
+  if (a.count !== p.goods[a.good]) return;
   p.goods[a.good] -= a.count;
   s.phase.wharfUsed[p.seat] = true;
   s.phase.shipped[p.seat] = true;
@@ -769,14 +848,13 @@ function awardVP(s, seat, n) {
     log(s, -1, 'pr.log.endVp', {});
   }
 }
-// applyDiscard 弃货：keep 为保留方案（可省略种类），校验合法性后落袋（风 ros 1 桶/仓库全保留语义）
+// applyDiscard 弃货：keep 为保留方案（可省略种类），校验合法性后落袋（风 ros 1 桶/仓库全保留语义）；
+// 非法方案忽略（重放/伪造动作不能把状态带崩）
 function applyDiscard(s, a) {
   const p = s.players[s.phase.cur];
   const keep = {};
-  for (const g of GOODS) {
-    keep[g] = Math.min(keep[g] = (a.keep && a.keep[g]) || 0, p.goods[g]);
-  }
-  if (!keepFeasible(p, keep)) throw new Error('keep plan infeasible');
+  for (const g of GOODS) keep[g] = Math.min((a.keep && a.keep[g]) || 0, p.goods[g]);
+  if (!keepFeasible(p, keep)) return;
   for (const g of GOODS) {
     const dropped = p.goods[g] - keep[g];
     if (dropped > 0) {

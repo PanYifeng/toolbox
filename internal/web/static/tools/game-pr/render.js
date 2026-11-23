@@ -94,6 +94,12 @@ function renderPlayer(s, p, human, total) {
   const city = p.city.map((slot, i) => {
     if (!slot.id) return '<span class="pr-slot pr-empty"></span>';
     const b = BUILDING_BY_ID[slot.id];
+    // 大建筑第 2 格只是占位（圆圈只在首格）：不可点击、不重复显示圆圈计数
+    const shadow = p.city.findIndex((c) => c.id === slot.id) !== i;
+    if (shadow) {
+      return `<span class="pr-slot pr-occ pr-shadow" title="${tr(b.name)}">
+        <span class="pr-slotin"><i class="pr-bico">${BUILDING_ICON[slot.id] || '🏛️'}</i>${tr(b.name)}</span><i>—</i></span>`;
+    }
     const sel = mayorMode ? selCount('city', i) : 0;
     const free = b.circles - slot.occ - sel;
     const clickable = mayorMode && free > 0;
