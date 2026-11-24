@@ -2035,23 +2035,6 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
 .dd-bid:disabled, .dd-play:disabled { opacity: 0.5; cursor: not-allowed; }
 .dd-ok { color: var(--ok); font-weight: 700; }
 .dd-bad { color: var(--err); }
-/* 对手信息条 */
-.dd-opps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-.dd-opp {
-  flex: 1 1 130px; min-width: 118px; display: flex; align-items: center; gap: 7px;
-  border: 1px solid var(--border); border-left: 3px solid var(--pc, var(--border));
-  border-radius: 10px; background: var(--bg-soft); padding: 7px 10px; font-size: 13px;
-}
-.dd-opp-lord { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
-.dd-opp-me { border-style: dashed; }
-.dd-opp-head { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
-.dd-opp-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dd-opp-role { font-size: 12px; color: var(--muted); }
-.dd-opp-lord .dd-opp-role { color: var(--accent); font-weight: 700; }
-.dd-opp-count {
-  min-width: 22px; text-align: center; border-radius: 999px; padding: 1px 7px;
-  background: var(--bg); border: 1px solid var(--border); font-size: 12px; font-variant-numeric: tabular-nums;
-}
 /* 上一手牌 */
 .dd-last {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px;
@@ -2087,6 +2070,53 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
   border-color: #1b1e26;
 }
 .dd-card-back::after { content: ''; }
+/* 王：单独底色，与数字牌一眼可分 */
+.dd-card-joker {
+  background: linear-gradient(135deg, #3a2f4d, #5b4a76); color: #fff; border-color: #2a2138;
+}
+.dd-card-joker .dd-suit { font-size: 12px; opacity: 0.9; }
+/* 顶部信息条：底分 / 倍数 / 当前分值 / 地主 / 底牌 */
+.dd-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.dd-chip {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; background: var(--bg-soft);
+}
+.dd-chip b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.dd-chip-lord { border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.dd-chip-bottom { gap: 3px; padding-right: 6px; }
+.dd-chip-bottom .dd-card { width: 26px; height: 37px; border-radius: 5px; }
+.dd-chip-bottom .dd-rank { font-size: 13px; }
+.dd-chip-bottom .dd-suit { font-size: 9px; top: 2px; right: 3px; }
+/* 座位条：身份 / 相对位置 / 剩余张数 */
+.dd-seats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.dd-seat {
+  flex: 1 1 150px; min-width: 132px; display: flex; align-items: center; gap: 7px;
+  border: 1px solid var(--border); border-left: 3px solid var(--pc, var(--border));
+  border-radius: 10px; background: var(--bg-soft); padding: 7px 10px; font-size: 13px;
+}
+.dd-seat-cur { background: color-mix(in srgb, var(--accent) 10%, var(--bg-soft)); border-color: var(--accent); }
+.dd-seat-lord { border-left-width: 5px; }
+.dd-seat-low .dd-seat-count { border-color: var(--err); color: var(--err); font-weight: 700; }
+.dd-seat-tag {
+  font-size: 11px; color: var(--muted); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0 6px; flex: none;
+}
+.dd-seat-name { display: flex; align-items: center; gap: 5px; min-width: 0; flex: 1; }
+.dd-seat-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-seat-role { font-size: 12px; color: var(--muted); flex: none; }
+.dd-seat-lord .dd-seat-role { color: var(--accent); font-weight: 700; }
+.dd-seat-count {
+  min-width: 24px; text-align: center; border-radius: 999px; padding: 1px 7px; flex: none;
+  background: var(--bg); border: 1px solid var(--border); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+/* 出牌操作条：次要按钮统一描边样式，禁用态可见 */
+.dd-pass, .dd-bid-soft {
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px;
+  background: var(--bg-soft); color: var(--fg); font-size: 13px; cursor: pointer;
+}
+.dd-pass:hover, .dd-bid-soft:hover { border-color: var(--accent); }
+.dd-actions .btn-soft:disabled, .dd-play:disabled { opacity: 0.45; cursor: not-allowed; }
+.dd-selinfo { font-size: 13px; margin-left: 2px; }
 /* 终局结果 */
 .dd-result {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px;
