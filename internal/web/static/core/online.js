@@ -166,7 +166,11 @@ export function mountOnlineRoom(el, game, code) {
       return;
     }
     const legal = game.legalActions(state);
-    if (!legal.some((x) => JSON.stringify(x) === JSON.stringify(a.action))) {
+    // 枚举可穷举的动作走严格等值校验；无法穷举的（如大富翁交易）由 adapter 深校验
+    const okExact = legal.some((x) => JSON.stringify(x) === JSON.stringify(a.action));
+    const okDeep = !okExact && typeof game.validateAction === 'function'
+      && !!game.validateAction(state, a.action);
+    if (!okExact && !okDeep) {
       resync();
       return;
     }

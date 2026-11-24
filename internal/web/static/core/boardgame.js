@@ -226,7 +226,11 @@ export function mountBoardGame(el, game) {
   // 过期 UI 点击、未来新引擎漏校验），不让无效动作污染悔棋快照栈与存档。
   function actionKindAllowed(action) {
     if (!action || typeof action.kind !== 'string') return false;
-    return game.legalActions(session.state).some((x) => x.kind === action.kind);
+    const legal = game.legalActions(session.state);
+    if (legal.some((x) => x.kind === action.kind)) return true;
+    // 无法穷举的动作（如大富翁的交易提案）由 adapter 提供 validateAction 深校验
+    if (typeof game.validateAction === 'function') return !!game.validateAction(session.state, action);
+    return false;
   }
 
   // commit 应用一个行动：快照入悔棋栈 → apply → 存档 → 刷新

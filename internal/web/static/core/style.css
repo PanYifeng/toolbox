@@ -2020,3 +2020,235 @@ line.ca-city { stroke-width: 15; stroke-linecap: round; fill: none; }
   .un-piles { gap: 12px; }
   .un-opp { flex: 1 1 120px; min-width: 110px; }
 }
+
+/* —— 斗地主（game-doudizhu）—— */
+.dd-prompt { font-size: 14px; margin-bottom: 10px; color: var(--fg); }
+.dd-prompt b { color: var(--fg); }
+/* 叫分 / 出牌操作条 */
+.dd-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.dd-actions-label { font-size: 13px; color: var(--muted); }
+.dd-bid, .dd-play {
+  border: 1px solid var(--accent); border-radius: 8px; padding: 6px 14px;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.dd-bid:hover, .dd-play:hover { filter: brightness(1.08); }
+.dd-bid:disabled, .dd-play:disabled { opacity: 0.5; cursor: not-allowed; }
+.dd-ok { color: var(--ok); font-weight: 700; }
+.dd-bad { color: var(--err); }
+/* 对手信息条 */
+.dd-opps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.dd-opp {
+  flex: 1 1 130px; min-width: 118px; display: flex; align-items: center; gap: 7px;
+  border: 1px solid var(--border); border-left: 3px solid var(--pc, var(--border));
+  border-radius: 10px; background: var(--bg-soft); padding: 7px 10px; font-size: 13px;
+}
+.dd-opp-lord { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.dd-opp-me { border-style: dashed; }
+.dd-opp-head { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
+.dd-opp-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-opp-role { font-size: 12px; color: var(--muted); }
+.dd-opp-lord .dd-opp-role { color: var(--accent); font-weight: 700; }
+.dd-opp-count {
+  min-width: 22px; text-align: center; border-radius: 999px; padding: 1px 7px;
+  background: var(--bg); border: 1px solid var(--border); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+/* 上一手牌 */
+.dd-last {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px;
+  padding: 8px 10px; border: 1px dashed var(--border); border-radius: 10px; background: var(--bg-soft);
+}
+.dd-last-head { font-size: 12.5px; color: var(--muted); }
+.dd-last-cards { display: flex; gap: 4px; flex-wrap: wrap; }
+.dd-last .dd-card { width: 40px; height: 57px; font-size: 15px; }
+/* 手牌 */
+.dd-hand { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.dd-hand-label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.dd-hand-label b { color: var(--fg); }
+.dd-hand-cards { display: flex; flex-wrap: wrap; gap: 5px; align-items: flex-end; }
+/* 牌面 */
+.dd-card {
+  position: relative; width: 52px; height: 74px; border-radius: 8px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; color: #1f2328; border: 1px solid #b9bec7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); user-select: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.dd-card-red { color: #c8102e; }
+.dd-rank { font-size: 20px; font-weight: 700; line-height: 1; }
+.dd-suit { position: absolute; top: 4px; right: 5px; font-size: 11px; opacity: 0.75; }
+.dd-card-act { cursor: pointer; }
+.dd-card-act:hover { transform: translateY(-5px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25); }
+.dd-card-sel {
+  transform: translateY(-10px); border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+.dd-card-back {
+  background: repeating-linear-gradient(45deg, #2b2f3a 0 6px, #3a4050 6px 12px);
+  border-color: #1b1e26;
+}
+.dd-card-back::after { content: ''; }
+/* 终局结果 */
+.dd-result {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px;
+  padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft);
+}
+.dd-result b { color: var(--fg); }
+.dd-result span { font-size: 13px; color: var(--muted); }
+.dd-spring { color: var(--accent); font-weight: 700; }
+@media (max-width: 700px) {
+  .dd-card { width: 40px; height: 57px; }
+  .dd-rank { font-size: 16px; }
+  .dd-last .dd-card { width: 32px; height: 46px; font-size: 13px; }
+  .dd-opp { flex: 1 1 105px; min-width: 98px; }
+}
+
+/* —— 大富翁（game-monopoly）—— */
+.mo-prompt { font-size: 14px; margin-bottom: 10px; color: var(--fg); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mo-prompt b { color: var(--fg); }
+/* 开局附加项 */
+.mo-setup { display: flex; flex-direction: column; gap: 8px; }
+.mo-setup label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.mo-setup select { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.mo-opt-tip { margin: 0; font-size: 12px; }
+
+/* 棋盘：11×11 网格，外圈 40 格 + 中央区（9×9） */
+.mo-board {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  grid-template-rows: repeat(11, minmax(0, 1fr));
+  gap: 2px; width: 100%; max-width: 780px; margin: 0 auto 12px;
+  aspect-ratio: 1 / 1; padding: 3px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg-soft);
+}
+.mo-cell {
+  position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
+  background: var(--card); color: var(--fg); cursor: pointer;
+  font-size: 9px; line-height: 1.15; user-select: none;
+  transition: box-shadow 0.15s ease, background 0.15s ease;
+}
+.mo-cell:hover { box-shadow: 0 0 0 1.5px var(--accent) inset; }
+/* 各类型底色（与地产色组色条区分，保持低饱和） */
+.mo-chance { background: color-mix(in srgb, #f7941d 12%, var(--card)); }
+.mo-cc { background: color-mix(in srgb, #6da8d6 12%, var(--card)); }
+.mo-tax, .mo-luxury { background: color-mix(in srgb, #ed1b24 10%, var(--card)); }
+.mo-go { background: color-mix(in srgb, #1fb25a 14%, var(--card)); }
+.mo-jail { background: color-mix(in srgb, #8b8f98 14%, var(--card)); }
+.mo-free { background: color-mix(in srgb, #1fb25a 10%, var(--card)); }
+.mo-gotojail { background: color-mix(in srgb, #ed1b24 16%, var(--card)); }
+/* 有主：底色偏持有者颜色；无主：保留虚化提示 */
+.mo-owned { background: color-mix(in srgb, var(--pc, var(--border)) 14%, var(--card)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc, var(--border)) 55%, transparent); }
+.mo-sel { box-shadow: 0 0 0 2px var(--accent) !important; }
+.mo-bar { height: 5px; flex: none; }
+.mo-icon { font-size: 13px; line-height: 1; text-align: center; margin-top: 2px; }
+.mo-cell-name { padding: 2px 3px 0; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+.mo-cell-foot { margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 2px; padding: 1px 3px 3px; flex-wrap: wrap; }
+.mo-price { font-size: 8.5px; color: var(--muted); }
+.mo-house { font-size: 8px; letter-spacing: -1px; }
+.mo-hotel { font-size: 9px; }
+.mo-mort {
+  font-size: 8px; font-weight: 700; color: #fff; background: var(--err);
+  border-radius: 3px; padding: 0 3px; line-height: 1.35;
+}
+.mo-tokens { position: absolute; right: 2px; bottom: 2px; display: flex; gap: 1px; }
+.mo-token { width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }
+/* 中央：当前行动人 + 骰子 */
+.mo-center {
+  grid-row: 2 / 11; grid-column: 2 / 11;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 8px; background: var(--card); border: 1px dashed var(--border); padding: 8px;
+}
+.mo-turn {
+  display: flex; align-items: center; gap: 6px; font-size: 14px;
+  padding: 4px 12px; border-radius: 999px; border-left: 3px solid var(--pc, var(--border));
+  background: var(--bg-soft);
+}
+.mo-dice { display: flex; gap: 8px; }
+.mo-dice span {
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+.mo-center-note { font-size: 12px; color: var(--muted); text-align: center; }
+/* 玩家条 */
+.mo-players { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.mo-player {
+  flex: 1 1 150px; min-width: 132px; display: flex; flex-direction: column; gap: 3px;
+  border: 1px solid var(--border); border-left: 3px solid var(--pc, var(--border));
+  border-radius: 10px; background: var(--bg-soft); padding: 6px 10px;
+}
+.mo-player-cur { border-color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent); }
+.mo-player-out { opacity: 0.5; }
+.mo-phead { display: flex; align-items: center; gap: 5px; font-size: 13px; min-width: 0; }
+.mo-phead b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mo-pcash { font-size: 15px; font-weight: 700; color: var(--ok); }
+.mo-pmeta { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 操作面板 */
+.mo-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.mo-actions-label { font-size: 13px; color: var(--fg); font-weight: 700; }
+.mo-actions .mo-go, .mo-trade-form .mo-go {
+  border: 1px solid var(--accent); border-radius: 8px; padding: 6px 14px;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.mo-actions .mo-go:hover, .mo-trade-form .mo-go:hover { filter: brightness(1.06); }
+.mo-actions .btn-soft, .mo-actions .mo-mini, .mo-trade-form .mo-mini {
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+  background: var(--bg); color: var(--fg); font-size: 13px; cursor: pointer;
+}
+.mo-actions .btn-soft:hover, .mo-actions .mo-mini:hover, .mo-trade-form .mo-mini:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+}
+.mo-danger { border: 1px solid color-mix(in srgb, var(--err) 45%, var(--border)); border-radius: 10px; padding: 8px 10px; background: color-mix(in srgb, var(--err) 7%, var(--bg)); }
+.mo-bidrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mo-bid {
+  border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px;
+  background: var(--bg); color: var(--fg); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.mo-bid:hover { background: color-mix(in srgb, var(--accent) 18%, var(--bg)); border-color: var(--accent); }
+/* 地产详情卡 */
+.mo-card-info {
+  flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-soft); font-size: 13px;
+}
+.mo-card-info b { color: var(--fg); }
+.mo-card-info span { color: var(--muted); }
+.mo-rent-hint { color: var(--fg) !important; font-weight: 600; }
+/* 自有地产经营行 */
+.mo-manage { flex-basis: 100%; display: flex; flex-direction: column; gap: 5px; }
+.mo-prow {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 4px 8px; border-radius: 8px; background: var(--bg-soft);
+  border-left: 3px solid var(--pc, var(--border));
+}
+.mo-pname { font-size: 12.5px; font-weight: 700; min-width: 96px; }
+.mo-prow .mo-go { padding: 4px 10px; font-size: 12px; }
+.mo-prow .mo-mini { padding: 4px 9px; font-size: 12px; }
+/* 交易 */
+.mo-trade-wrap { flex-basis: 100%; display: flex; flex-direction: column; gap: 8px; }
+.mo-trade-form { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); }
+.mo-trade-form label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.mo-trade-form select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.mo-side { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mo-side-label { font-size: 12.5px; font-weight: 700; color: var(--fg); min-width: 62px; }
+.mo-side-props { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 200px; }
+.mo-chk { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--fg); cursor: pointer; padding: 2px 7px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); }
+.mo-chk input { accent-color: var(--accent); cursor: pointer; }
+.mo-cash { width: 96px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); font-size: 12.5px; }
+.mo-trade-btns { display: flex; gap: 8px; }
+.mo-trade-summary { flex-basis: 100%; display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.mo-trade-summary b { color: var(--fg); }
+/* 终局 */
+.mo-result { flex-direction: column; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); }
+.mo-res-row { font-size: 12.5px; color: var(--muted); }
+@media (max-width: 700px) {
+  .mo-board { gap: 1px; padding: 2px; }
+  .mo-cell { font-size: 7.5px; border-radius: 3px; }
+  .mo-cell-name { padding: 1px 1px 0; }
+  .mo-price { font-size: 7px; }
+  .mo-house, .mo-hotel { font-size: 6.5px; }
+  .mo-icon { font-size: 10px; }
+  .mo-dice span { width: 26px; height: 26px; font-size: 14px; }
+  .mo-turn { font-size: 11.5px; padding: 3px 8px; }
+  .mo-center-note { font-size: 10px; }
+  .mo-player { flex: 1 1 118px; min-width: 108px; }
+}
