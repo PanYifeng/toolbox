@@ -2,6 +2,7 @@
 // SVG 德国地图（42 城 + 费用边 + 产权位）+ 电厂市场 + 资源市场 + 拍卖/建城/结算交互。
 import { t, tr } from '/core/i18n.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import { PLANT_BY_ID } from './plant-data.js';
 import { CITY_NAMES, REGIONS } from './map-data.js';
 import {
@@ -23,7 +24,7 @@ export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.phase.kind}:${s.phase.cur}:${s.round}:${s.log.length}`;
   if (ui.stamp !== stamp) ui = { stamp, powerSel: null };
   ctx = { el, s, legal, pick };
-  const human = !s.players[s.phase.cur].isAI;
+  const human = isViewerSeat(s.phase.cur);
   el.innerHTML = `
     <div class="pg-board">
       ${renderStatus(s)}

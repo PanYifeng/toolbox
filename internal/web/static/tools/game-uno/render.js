@@ -4,6 +4,7 @@
 // 万能牌选色、摸到可出的牌「打/留」、剩 1 张喊/不喊 UNO、连锁罚牌认罚。
 import { t, getLang } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import { DECK, CARD_BG, CARD_FG, WILD, COLOR_NAMES, cardSym } from './data-cards.js';
 
@@ -41,7 +42,9 @@ export function renderBoard(el, s, legal, pick) {
   ctx = { el, s, legal, pick };
   const curSeat = s.pending ? s.pending.seat : s.cur;
   const p = s.players[curSeat];
-  const human = !p.isAI;
+  // 隐私口径：只有「坐在屏幕前的人」（热座当前人类 / 联机本人座位）的手牌可明牌，
+  // AI 与对手一律牌背——否则轮到 AI 时整副底牌会直接摊在屏幕上。
+  const human = isViewerSeat(curSeat);
 
   el.innerHTML = `
     <div class="un-prompt" data-bg-focus>${promptHtml(s, p, human)}</div>
@@ -181,12 +184,14 @@ function rulesHtml(s) {
   return `<div class="un-rules">${chips.map((c) => `<span>${c}</span>`).join('')}</div>`;
 }
 
-// handHtml 本家手牌：可出的牌高亮可点
+// handHtml 本家手牌：可出的牌高亮可点；非本人视角一律牌背（不泄露牌面）
 function handHtml(s, legal, human) {
   const me = s.pending ? s.pending.seat : s.cur;
   const p = s.players[me];
   const playable = new Set(legal.filter((a) => a.kind === 'play').map((a) => a.card));
-  const cards = p.hand.map((id) => cardHtml(id, human && playable.has(id), 'data-play')).join('');
+  const cards = human
+    ? p.hand.map((id) => cardHtml(id, playable.has(id), 'data-play')).join('')
+    : p.hand.map(() => backHtml()).join('');
   return `<div class="un-hand">
     <span class="un-hand-label"><span class="bg-dot" style="background:${p.color}"></span><b>${esc(p.name)}</b> · ${p.hand.length}</span>
     <div class="un-hand-cards">${cards || `<span class="muted">${t('un.ui.emptyHand')}</span>`}</div>

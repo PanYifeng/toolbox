@@ -44,7 +44,9 @@ const game = {
   name: { zh: '巫诺', en: 'UNO' },
   minPlayers: 2,
   maxPlayers: 6,
-  needsPrivacy: false, // 手牌数量公开可见，无需交接遮罩
+  // 手牌数量公开但牌面隐藏：多人热座换手时要挡一下，否则上一家还坐在屏幕前就摊出下一家的手牌
+  // （只有 1 个真人时框架不会弹遮罩，单人 + AI 玩法零打扰）
+  needsPrivacy: true,
   colors: ['#e05d5d', '#4d84e0', '#e0b23c', '#57b06a', '#a86bd1', '#d1774d'],
   initialState: engine.initialState,
   legalActions: engine.legalActions,

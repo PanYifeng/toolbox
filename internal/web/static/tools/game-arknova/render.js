@@ -4,6 +4,7 @@
 // 移动优先：竖向堆叠（地图板 → 市场 → 行动卡 → 玩家面板），clamp() 字号，≥44px 触达。
 import { t, tr, getLang } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import { fmtArgs, lackOf, noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import {
   animalOf, sponsorOf, projectOf, endgameOf, encUsed, encMeta, effTerrain, encIds,
@@ -510,8 +511,8 @@ function phasePrompt(s, legal) {
     extra = ` — ${t('an.ui.budget')} <b>${s.sub.budget - s.sub.spent}</b>`;
   }
   if (s.finalRound) extra += ` · 🏁 ${t('an.ui.finalRound')}`;
-  // AI 回合不显示操作提示（提示是给人类玩家的选择清单）
-  const human = !s.players[currentPlayer(s)].isAI;
+  // 非本视角回合不显示操作提示（提示是给坐在屏幕前的玩家的选择清单）
+  const human = isViewerSeat(currentPlayer(s));
   const chips = human ? renderActionHints(phaseHints(s, legal || [])) : '';
   return `<div class="an-prompt" data-bg-focus><span>💡 <b>${t(k)}</b>${extra}</span>${chips}</div>`;
 }
@@ -668,7 +669,8 @@ export function renderBoard(el, state, legal, pick, selArg, whyArg) {
   const $side = document.createElement('div');
   $side.className = 'an-side';
   $side.innerHTML = playersPanel(s, legal).innerHTML;
-  if (s.phase === 'place' || s.phase === 'sponsor' || s.phase === 'discard' || s.phase === 'take') {
+  if ((s.phase === 'place' || s.phase === 'sponsor' || s.phase === 'discard' || s.phase === 'take')
+    && isViewerSeat(currentPlayer(s))) {
     $side.append(handPanel(s, legal, pick, keepUi));
   }
   if (s.phase === 'assoc') $side.append(assocPanel(s, legal, pick));

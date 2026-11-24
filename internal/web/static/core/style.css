@@ -1481,6 +1481,8 @@ pre {
 .sl-deck-act:hover { background: color-mix(in srgb, var(--accent) 14%, var(--bg)); }
 .sl-card { position: relative; width: 128px; height: 92px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-soft); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; }
 .sl-card-empty { opacity: 0.25; background: transparent; border-style: dashed; }
+/* 预留牌牌背：他人视角只显示张数，不泄露被留的是哪张（盲留尤其需要） */
+.sl-card-back { background: repeating-linear-gradient(45deg, #2b2f3a 0 6px, #3a4050 6px 12px); border-color: #1b1e26; }
 .sl-card-top { display: flex; justify-content: space-between; align-items: center; }
 .sl-vp { font-weight: 700; font-size: 15px; color: var(--fg); }
 .sl-cost { display: flex; flex-wrap: wrap; gap: 5px; }

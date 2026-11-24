@@ -5,6 +5,7 @@
 
 import { t } from '/core/i18n.js';
 import { fmtArgs, lackOf, noHint, okHint, reasonCap, reasonNoSpot, renderActionHints } from '/core/action-hints.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import {
   HEX_SIZE, VERTICES, EDGES, HEXES, HEX_VERTS, RES_NAMES,
   COST_ROAD, COST_SETTLEMENT, COST_CITY, COST_DEV,
@@ -92,7 +93,7 @@ export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.turn}:${currentPlayer(s)}:${s.phase}:${s.pending ? s.pending.kind : ''}:${s.log.length}`;
   if (ui.stamp !== stamp) ui = { stamp, bank: { give: 0, get: 1 }, dom: { to: 1, giveRes: 0, giveN: 1, getRes: 1, getN: 1 } };
   ctx = { el, s, legal, pick };
-  const human = !s.players[currentPlayer(s)].isAI;
+  const human = isViewerSeat(currentPlayer(s));
   el.innerHTML = `
     <div class="ct-prompt">${promptHtml(s, human)}</div>
     <div class="ct-wrap">
@@ -252,7 +253,7 @@ function edgeBtns(edgeClicks, s) {
 // playerHtml 单个玩家面板
 function playerHtml(s, p, humanCur) {
   const isDiscarding = s.pending && s.pending.kind === 'discard'
-    && s.pending.seat === p.seat && !p.isAI;
+    && s.pending.seat === p.seat && isViewerSeat(p.seat);
   const badges = [
     s.longestRoad.seat === p.seat ? `<span class="ct-badge" title="${t('ct.ui.longestRoad')}">🛣️+2</span>` : '',
     s.largestArmy.seat === p.seat ? `<span class="ct-badge" title="${t('ct.ui.largestArmy')}">⚔️+2</span>` : '',

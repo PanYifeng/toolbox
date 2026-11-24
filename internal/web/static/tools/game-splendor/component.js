@@ -9,7 +9,8 @@ const game = {
   name: { zh: '璀璨宝石', en: 'Splendor' },
   minPlayers: 2,
   maxPlayers: 4,
-  needsPrivacy: false,
+  // 预留牌是隐藏信息（官方规则手牌不公开）：多人热座换手需要交接遮罩
+  needsPrivacy: true,
   colors: ['#e05d5d', '#4d84e0', '#e0b23c', '#57b06a'],
   initialState: engine.initialState,
   legalActions: engine.legalActions,

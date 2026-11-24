@@ -2,6 +2,7 @@
 // 多步收集（市长安置、弃货保留、装货数量）用模块级 ui 暂存；同一决策点内重绘不清空。
 import { t, tr } from '/core/i18n.js';
 import { lackOf, noHint, okHint, renderActionHints, fmtArgs } from '/core/action-hints.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import {
   GOODS, GOOD_VALUE, GOOD_ICON, ROLE_ICON, BUILDING_ICON, BUILDINGS, BUILDING_BY_ID, ROLE_NAMES, hasOccupied,
 } from './data.js';
@@ -20,7 +21,7 @@ export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.phase.kind}:${s.phase.cur}:${s.round}:${s.log.length}`;
   if (ui.stamp !== stamp) ui = { stamp, mayorAssigns: [], keep: null };
   ctx = { el, s, legal, pick };
-  const human = !s.players[s.phase.cur].isAI;
+  const human = isViewerSeat(s.phase.cur);
   // 实时总分（筹码 + 建筑 + 大建筑加成）：终局计分口径在任何时刻都可算，直接复用 engine.score
   const totals = new Map(score(s).map((x) => [x.seat, x]));
   el.innerHTML = `

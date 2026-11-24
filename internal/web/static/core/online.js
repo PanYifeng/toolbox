@@ -8,6 +8,7 @@
 // 联机模式不提供存档/付费悔棋；隐藏信息游戏的手牌经中继同步至各端（好友对局信任模型）。
 import { t, tr } from '/core/i18n.js';
 import { fmt, wireRulesBtn } from '/core/boardgame.js';
+import { setViewerSeat } from '/core/seat-view.js';
 import { mountGameCard } from '/core/game-card.js';
 import { randomUUID } from '/core/crypto-compat.js';
 import { copyText } from '/core/clipboard.js';
@@ -415,6 +416,8 @@ export function mountOnlineRoom(el, game, code) {
       wireRulesBtn($root.querySelector('#on-rules'));
     }
     updateGameChrome();
+    // 联机明牌口径：只有自己的座位可见手牌，他人一律牌背（mySeat < 0 = 观战，全部隐藏）
+    setViewerSeat(mySeat);
     const legal = game.legalActions(state);
     game.renderBoard($root.querySelector('#on-board'), state, legal, pick);
     renderLog();

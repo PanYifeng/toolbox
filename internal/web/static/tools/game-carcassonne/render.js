@@ -5,6 +5,7 @@
 import { t } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import { TILES } from './data-tiles.js';
 import { currentPlayer, projectedScore } from './engine.js';
 
@@ -35,7 +36,8 @@ let ctx = null; // {el, s, legal, pick, human}
 export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.turn}:${s.phase}:${s.log.length}`;
   if (ui.stamp !== stamp) ui = { stamp, rot: ui.rot };
-  const human = !s.players[currentPlayer(s)].isAI;
+  // 操作权口径：只有坐在屏幕前的人能操作（联机时远端人类的回合不该给可点交互）
+  const human = isViewerSeat(currentPlayer(s));
   ctx = { el, s, legal, pick, human };
   // 旋转角对齐当前块合法朝向（新块旧角不可放时自动纠正）
   const places = legal.filter((a) => a.kind === 'place');

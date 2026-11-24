@@ -3,6 +3,7 @@
 // 农场格点击直接映射子阶段动作（建房/犁田/播种/围栏 toggle），无需本地选择态。
 import { t, tr } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import {
   RES_INFO, RES_KEYS, ANIMAL_KEYS, MAT_NAMES, visibleSpaces,
@@ -412,7 +413,8 @@ export function renderBoard(el, s, legal, pick) {
   ctx = { el, s, legal, pick };
   const cur = E.currentPlayer(s);
   const p = s.players[cur];
-  const human = !p.isAI;
+  // 隐私口径：只有坐在屏幕前的人（热座当前人类 / 联机本人）可见手牌
+  const human = isViewerSeat(cur);
   const promptKey = s.phase.kind === 'place' ? 'ag.ui.prompt.place'
     : s.phase.kind === 'feed' ? 'ag.ui.prompt.feed' : 'ag.ui.prompt.sub';
   let panel = `<div class="ag-action" data-bg-focus><p class="muted">${t(promptKey)}</p>${placeHints(s, legal, human)}</div>`;

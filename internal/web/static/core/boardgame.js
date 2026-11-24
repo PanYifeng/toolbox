@@ -15,6 +15,7 @@
 // 引擎纯函数、state 必须 JSON-safe 且零 DOM/i18n 依赖（node 可直接 import 自测）。
 // 随机数入 state（state.rng），框架只透传 seed，保证悔棋/存档确定性。
 import { t, tr, getLang } from '/core/i18n.js';
+import { setViewerSeat } from '/core/seat-view.js';
 import { mountGameCard } from '/core/game-card.js';
 import { requestPaidUndo } from '/core/pay-undo.js';
 import { mountOnlineRoom, mountOnlineCreate } from '/core/online.js';
@@ -250,6 +251,10 @@ export function mountBoardGame(el, game) {
     updateBanner();
     updateStandings();
     if (needPrivacyGate()) return; // 遮罩确认后再继续渲染
+    // 热座明牌口径：轮到人类座位时，他就是坐在屏幕前的人；轮到 AI 时无视角
+    // （AI 的手牌永远不展示，避免把对手底牌摊在屏幕上）
+    const curSeat = game.currentPlayer(session.state);
+    setViewerSeat(session.state.players[curSeat].isAI ? -1 : curSeat);
     const legal = game.legalActions(session.state);
     game.renderBoard($root.querySelector('#bg-board'), session.state, legal, pick);
     renderLog();
@@ -332,6 +337,12 @@ export function mountBoardGame(el, game) {
         <button id="bg-ready">${fmt(t('bg.imReady'), { n: esc(p.name) })}</button>
       </div>`;
     $ov.style.display = 'flex';
+    // 交接遮罩期间顺手清空视角重绘一次：上一家的手牌不该继续留在 DOM 里等下一家接手。
+    // 遮罩是不透明全屏层，正常看不见牌面，但这里重绘的代价接近零，属于纵深防御
+    // （顺带把上一家的点击回调全部换掉，过期点击不会再落到新的当前玩家身上）。
+    setViewerSeat(-1);
+    game.renderBoard($root.querySelector('#bg-board'), session.state,
+      game.legalActions(session.state), pick);
     $ov.querySelector('#bg-ready').onclick = () => {
       session.lastHumanSeen = seat;
       $ov.style.display = 'none';

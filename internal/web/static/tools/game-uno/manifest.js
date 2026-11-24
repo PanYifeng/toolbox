@@ -30,6 +30,7 @@ export default {
 - **变色怎么选色**：打出变色或 +4 后界面弹出四色按钮，选完才轮到下家
 - **牌堆用尽**：弃牌堆除顶牌外的所有牌自动洗回牌堆，界面日志会有提示
 - **UNO 罚则**：热座与联机都没有「别人抢喊」机制，故由出牌者自己选择「喊 UNO / 忘喊（罚摸 2）」，避免互相盯人导致的操作负担
+- **隐私交接**：手牌只有「坐在屏幕前的人」看得到，其他人的手牌一律显示牌背与张数；多个真人同屏时，回合交接会弹遮罩确认，避免上一家还坐着就看到下一家的牌
 - **终局**：有人累计分达到目标分即整场结束，平分时胜局多者胜
 - **悔棋**：付费悔棋回退到最近一次人类待决策状态
 - **联机**：可在开局界面「创建联机房间」，把链接发给朋友；房间状态由服务端按行动序号同步，所有座位状态（含手牌数量）对参与者公开`,
@@ -57,6 +58,7 @@ A faithful implementation of classic UNO with the official 108-card deck (2-6 pl
 - **Choosing a colour**: after a Wild or +4 the four colour buttons appear; the turn passes only after you pick
 - **Pile exhaustion**: all discards except the top card are reshuffled into the draw pile, with a log notice
 - **UNO penalty**: neither hot seat nor online play has a "call out someone else" mechanic, so the player themselves chooses "call UNO" or "forgot (draw 2)" — this keeps the game playable without policing each other
+- **Hidden hands**: only the player at the screen sees their own cards; every other hand shows card backs plus a count. With two or more humans on one device a pass-to overlay appears between turns, so the previous player cannot glimpse the next player's hand
 - **Match end**: the match ends as soon as someone reaches the target score; ties are broken by rounds won
 - **Undo**: paid undo rolls back to your latest decision point
 - **Online**: use "Create online room" on the setup screen and send the link to friends; room state syncs by action sequence number and every seat's state (including hand counts) is public to participants`,

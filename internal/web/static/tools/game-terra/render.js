@@ -3,6 +3,7 @@
 // + 邪教轨/能量动作/板块区 + 规划提示（下轮收入 + 终局 VP 投影）+ 阶段操作区。
 import { t, tr, getLang } from '/core/i18n.js';
 import { fmtArgs, lackOf, noHint, okHint, reasonCap, reasonNoSpot, renderActionHints } from '/core/action-hints.js';
+import { isViewerSeat, getViewerSeat } from '/core/seat-view.js';
 import { HEXES, hexLabel } from './map-data.js';
 import { TERRAIN_NAMES, factionById, FACTION_ICON } from './data-factions.js';
 import {
@@ -96,7 +97,7 @@ export function renderBoard(el, s, legal, pick) {
   const stamp = `${s.phase.kind}:${s.phase.cur || 0}:${s.round}:${s.log.length}:${s.bridges.length}:${s.pending.map((x) => x.kind).join()}`;
   if (ui.stamp !== stamp) ui = { stamp, upSel: null, upFav: [], passBonus: null };
   ctx = { el, s, legal, pick };
-  const human = !s.players[currentPlayer(s)].isAI;
+  const human = isViewerSeat(currentPlayer(s));
   el.innerHTML = `
     <div class="tm-board">
       ${renderStatus(s)}
@@ -152,10 +153,13 @@ function vpGainOf(p) {
   return p.vp - (p.vpAtRoundStart !== undefined ? p.vpAtRoundStart : p.vp);
 }
 
-// bandSeat 读数条展示哪个座位：轮到自己就看自己；AI 回合时继续显示「我这个真人」的读数，
-// 否则读数条会在 AI 行动期间整条消失，布局上下跳动且无法趁机规划。
+// bandSeat 读数条展示哪个座位：优先「坐在屏幕前的人」自己的读数。
+// 热座轮到 AI 时视角为 -1，此时要回退到本机真人（否则读数条会在 AI 行动期间跳成 AI 的数，
+// 既不是玩家想看的数、又让布局上下跳动）；联机观战同样是 -1 但行动者是真人，退化为当前行动座位。
 function bandSeat(s) {
   const cur = currentPlayer(s);
+  const viewer = getViewerSeat();
+  if (viewer >= 0 && viewer < s.players.length && !s.players[viewer].isAI) return viewer;
   if (!s.players[cur].isAI) return cur;
   const mine = s.players.find((p) => !p.isAI);
   return mine ? mine.seat : cur;

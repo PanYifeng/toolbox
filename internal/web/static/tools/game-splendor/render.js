@@ -3,6 +3,7 @@
 // 微阶段：弃宝石时己方面板宝石可点；择贵族时贵族牌可点。
 import { t } from '/core/i18n.js';
 import { fmt } from '/core/boardgame.js';
+import { isViewerSeat } from '/core/seat-view.js';
 import { noHint, okHint, renderActionHints } from '/core/action-hints.js';
 import { CARDS, NOBLES, MARKET_SLOTS, RESERVE_CAP, GEM_CAP, VP_TO_END } from './data-cards.js';
 
@@ -72,21 +73,24 @@ function cardHtml(cid, tier, slot, buyable, reservable, extra) {
 // renderBoard 全量重绘入口
 export function renderBoard(el, s, legal, pick) {
   ctx = { el, s, legal, pick };
-  const pendingDiscard = s.pending && s.pending.kind === 'discard';
-  const pendingNoble = s.pending && s.pending.kind === 'noble';
-  const humanMain = !s.pending && !s.players[s.cur].isAI;
+  // 操作权口径：只有本人的回合/微阶段才给可点交互（旧的 !isAI 在联机里会把
+  // 远端人类的回合也做成可点，点了也提交不上去，还会误导旁观者）
+  const pendingDiscard = s.pending && s.pending.kind === 'discard' && isViewerSeat(s.pending.seat);
+  const pendingNoble = s.pending && s.pending.kind === 'noble' && isViewerSeat(s.pending.seat);
+  const humanMain = !s.pending && isViewerSeat(s.cur);
   if (!humanMain) ui.sel = [];
-  const buySet = new Set(legal.filter((a) => a.kind === 'buy' && a.reserved === undefined)
+  // 可点集合也按视角收口：非本人回合一律不给可点高亮，避免误导（牌市本身是公开信息）
+  const buySet = new Set((humanMain ? legal.filter((a) => a.kind === 'buy' && a.reserved === undefined) : [])
     .map((a) => `${a.tier}:${a.slot}`));
-  const resSet = new Set(legal.filter((a) => a.kind === 'reserve' && a.slot >= 0)
+  const resSet = new Set((humanMain ? legal.filter((a) => a.kind === 'reserve' && a.slot >= 0) : [])
     .map((a) => `${a.tier}:${a.slot}`));
-  const blindSet = new Set(legal.filter((a) => a.kind === 'reserve' && a.slot < 0)
+  const blindSet = new Set((humanMain ? legal.filter((a) => a.kind === 'reserve' && a.slot < 0) : [])
     .map((a) => a.tier));
   const resBuyIdx = new Set(legal.filter((a) => a.kind === 'buy' && a.reserved !== undefined)
     .map((a) => a.reserved));
 
   el.innerHTML = `
-    <div class="sl-prompt" data-bg-focus>${promptHtml(s, pendingDiscard, pendingNoble, humanMain)}</div>
+    <div class="sl-prompt" data-bg-focus>${promptHtml(s, pendingDiscard, pendingNoble)}</div>
     <div class="sl-wrap">
       <div class="sl-board">
         <div class="sl-row"><span class="sl-label">${t('sl.ui.nobles')}</span>
@@ -108,8 +112,9 @@ export function renderBoard(el, s, legal, pick) {
   wireEvents(el, pick);
 }
 
-// promptHtml 阶段提示行（humanMain 时附拿宝石操作提示）
-function promptHtml(s, pendingDiscard, pendingNoble, humanMain) {
+// promptHtml 阶段提示行（本人视角时附拿宝石操作提示）
+function promptHtml(s, pendingDiscard, pendingNoble) {
+  const humanMain = !s.pending && isViewerSeat(s.cur);
   if (pendingDiscard) return `⚠️ ${t('sl.ui.prompt.discard')}${pendingHints(s, 'discard')}`;
   if (pendingNoble) return `👑 ${t('sl.ui.prompt.noble')}${pendingHints(s, 'noble')}`;
   const p = s.players[s.cur];
@@ -225,7 +230,11 @@ function playerHtml(s, p, seatIdx, pendingDiscard, resBuyIdx) {
   const bonus = p.bonus.map((n, i) => n > 0
     ? `<span class="sl-bonus" style="background:${GEM_COLOR[i]};color:${i === 0 ? '#333' : '#fff'};${i === 0 || i === 4 ? 'box-shadow:0 0 0 1.5px var(--border);' : ''}">${n}</span>`
     : '').join('');
+  // 预留牌是隐藏信息（官方规则：手牌不对他人公开，盲留尤其如此）：
+  // 只有本人视角看得到牌面，其他人只看到牌背与张数
+  const ownView = isViewerSeat(seatIdx);
   const reserved = p.reserved.map((cid, i) => {
+    if (!ownView) return '<div class="sl-card sl-card-res sl-card-back"></div>';
     const buyable = seatIdx === s.cur && resBuyIdx.has(i);
     const [, vp, gives, cost] = CARDS[cid];
     return `<div class="sl-card sl-card-res${buyable ? ' sl-card-act' : ''}"${buyable ? ` data-buyres="${i}"` : ''}>
