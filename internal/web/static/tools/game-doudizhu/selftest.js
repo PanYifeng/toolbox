@@ -218,6 +218,78 @@ section('倍数与结算');
   eq(a3.result.points, 1 * 4, '底分 1 × 炸弹倍数 2 × 春天 2 = 4');
 }
 
+// —— 王炸可达性（回归：枚举层曾把点数 16/17 当牌 id 推出，导致王炸永远不出现在合法动作里）——
+
+section('王炸可达性');
+{
+  const jokers = [52, 53];
+  const lead = C.legalPlays([0, ...jokers], null);
+  ok(lead.some((cs) => cs.length === 2 && cs.includes(52) && cs.includes(53)),
+    '领出时王炸出现在合法牌型里');
+  const follow = C.legalPlays([0, ...jokers], C.parseCombo([0]));
+  ok(follow.some((cs) => cs.length === 2 && cs.includes(52) && cs.includes(53)),
+    '跟单张时王炸出现在合法牌型里');
+  // 枚举出的每手都必须是真实手牌 id（不得出现点数当 id 的越界值）
+  const allCards = [...lead, ...follow].flat();
+  ok(allCards.every((id) => Number.isInteger(id) && id >= 0 && id <= 53),
+    '枚举结果只含合法牌 id（0..53）');
+  // 王炸压炸弹、炸弹压不过王炸
+  const rocket = C.parseCombo([52, 53]);
+  ok(C.beats(rocket, C.parseCombo(cardsOf([7, 7, 7, 7]))), '王炸压炸弹');
+  ok(!C.beats(C.parseCombo(cardsOf([7, 7, 7, 7])), rocket), '炸弹压不过王炸');
+  ok(!C.beats(rocket, rocket), '王炸不可压王炸');
+  ok(C.legalPlays([52, 53], rocket).length === 0, '上一手是王炸时无牌可压');
+}
+
+// —— 枚举完备性（暴力对拍）——
+// 穷举手牌全部子集，用 parseCombo 判定合法牌型作为标准答案，与 legalPlays 逐项比对。
+// 覆盖领出与跟牌两个方向，任何漏枚举 / 多枚举都会被抓出来。
+
+section('枚举完备性');
+const enumerateCases = [
+  [3, 3, 4, 4, 5, 5, 6, 7, 8, 9],
+  [5, 5, 5, 6, 6, 6, 7, 8, 9, 10],
+  [3, 3, 3, 3, 4, 5, 6, 7, 8, 9],
+  [10, 11, 12, 13, 14, 15, 15, 16, 17],
+  [16, 17, 3, 3, 4, 4, 5, 5],
+];
+{
+  const rankKey = (cs) => cs.map((id) => D.rankOf(id)).sort((a, b) => a - b).join(',');
+  let leadOk = true;
+  let followOk = true;
+  let firstBad = '';
+  for (const ranks of enumerateCases) {
+    const h = cardsOf(ranks);
+    // 标准答案：全部合法子集（按点数多重集去重，同点数换花色不算新品）
+    const truth = new Map();
+    for (let mask = 1; mask < (1 << h.length); mask++) {
+      const sub = h.filter((_, i) => mask & (1 << i));
+      const cmb = C.parseCombo(sub);
+      if (cmb) truth.set(rankKey(sub), cmb);
+    }
+    const leadSet = new Set(C.legalPlays(h, null).map(rankKey));
+    for (const k of truth.keys()) {
+      if (!leadSet.has(k)) { leadOk = false; if (!firstBad) firstBad = `领出漏枚举 ${k}（${truth.get(k).type}）`; }
+    }
+    for (const k of leadSet) {
+      if (!truth.has(k)) { leadOk = false; if (!firstBad) firstBad = `领出多枚举 ${k}`; }
+    }
+    // 跟牌：每个标准牌型当上一手，比对「能压过的集合」
+    for (const [, cmb] of truth) {
+      const got = new Set(C.legalPlays(h, cmb).map(rankKey));
+      for (const [k2, c2] of truth) {
+        const expect = C.beats(c2, cmb);
+        if (expect !== got.has(k2)) {
+          followOk = false;
+          if (!firstBad) firstBad = `跟 ${cmb.type} 时 ${k2}（${c2.type}）判定不符`;
+        }
+      }
+    }
+  }
+  ok(leadOk, `领出枚举与暴力对拍一致${firstBad ? `（${firstBad}）` : ''}`);
+  ok(followOk, `跟牌枚举与暴力对拍一致${firstBad ? `（${firstBad}）` : ''}`);
+}
+
 // —— 过牌与重新领出 ——
 
 section('过牌与重新领出');

@@ -214,8 +214,10 @@ function addBombs(g, last, out) {
   for (const r of [...g.keys()].sort((a, b) => a - b)) {
     if (g.get(r).length === 4 && r > minRank) out.push(take(g, r, 4));
   }
+  // 王炸：必须推真实牌 id（52/53）。曾误推点数 16/17，parseCombo 会按 id 反解成 6、7
+  // 两张杂牌而丢弃，导致王炸从不出现在合法动作里（提示、AI、联机校验全线失效）。
   if (g.has(SMALL_JOKER) && g.has(BIG_JOKER) && (!last || last.type !== 'rocket')) {
-    out.push([SMALL_JOKER, BIG_JOKER]);
+    out.push([g.get(SMALL_JOKER)[0], g.get(BIG_JOKER)[0]]);
   }
 }
 
